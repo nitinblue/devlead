@@ -3,6 +3,8 @@
 > Type: PROJECT
 > Last updated: 2026-04-05 | Open: 0 | In Progress: 0 | Done: 12
 
+Note: Original 12 implementation tasks all DONE. New work tracked via FEAT intake items.
+
 ## Active
 
 | ID | Task | Story | Priority | Status | Assignee | Blockers |

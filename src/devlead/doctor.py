@@ -12,6 +12,7 @@ EXPECTED_DOCS = [
     "_intake_issues.md",
     "_intake_features.md",
     "_living_standing_instructions.md",
+    "_living_business_objectives.md",
 ]
 
 

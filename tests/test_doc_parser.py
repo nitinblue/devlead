@@ -18,6 +18,7 @@ import pytest
 from pathlib import Path
 from datetime import date
 from devlead.doc_parser import (
+    parse_file_metadata,
     parse_table,
     count_by_status,
     count_with_pattern,
@@ -28,6 +29,37 @@ from devlead.doc_parser import (
 
 
 FIXTURES = Path(__file__).parent / "fixtures"
+
+
+# --- parse_file_metadata ---
+
+def test_parse_file_metadata_tasks():
+    text = (FIXTURES / "_project_tasks.md").read_text()
+    meta = parse_file_metadata(text)
+    assert meta["title"] == "Project Tasks"
+    assert meta["type"] == "PROJECT"
+    assert "2026" in meta["last_updated"]
+
+
+def test_parse_file_metadata_with_stats():
+    text = (FIXTURES / "_intake_issues.md").read_text()
+    meta = parse_file_metadata(text)
+    assert meta["title"] == "Issue Intake"
+    assert meta["type"] == "INTAKE"
+    assert meta["open"] == "3"
+    assert meta["closed"] == "1"
+
+
+def test_parse_file_metadata_empty():
+    meta = parse_file_metadata("")
+    assert meta["title"] == ""
+    assert meta["type"] == ""
+
+
+def test_parse_file_metadata_no_blockquotes():
+    meta = parse_file_metadata("# Just a Title\n\nSome content.\n")
+    assert meta["title"] == "Just a Title"
+    assert meta["type"] == ""
 
 
 # --- parse_table ---

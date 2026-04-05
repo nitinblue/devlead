@@ -37,9 +37,25 @@
 
 13. **Register discoveries in `_intake_*.md` immediately.** Don't wait until session end.
 
+## Two Tracks: Business vs Technical
+
+14. **TBO (Tangible Business Outcome) is the unit of business progress.** A TBO is written from the end user's perspective — what they can do now that they couldn't before. TBOs live in `_living_business_objectives.md`. Each TBO links to the stories that must be delivered before it's considered done. TBOs are the ONLY thing tracked in the progress timeline.
+
+15. **Epic/Story/Task is all technical — these are "enablers."** Epics categorize technical work (by team, area, theme). Stories are technical deliverables. Tasks are implementation steps. None of these are business progress by themselves. They are enablers — necessary work that enables TBOs, but not progress until a TBO moves.
+
+16. **Every task is classified as: Functional, Non-Functional, or Shadow Work.**
+    - **Functional** = directly delivers user-facing capability. Task → Story → TBO chain is traceable.
+    - **Non-Functional** = infrastructure, refactoring, performance, testing, tooling. Supports delivery indirectly. Task → Story link exists but the work isn't user-visible.
+    - **Shadow Work** = task that contributes to no TBO. Always bad — wasted effort, wasted tokens, wasted time.
+    - Classification lives at the task level. Each task belongs to a story. Each story feeds one or more TBOs. If a task's story has no TBO link, the task is shadow work by definition.
+
+17. **Convergence = TBOs done / TBOs total.** Not stories. Not tasks. A TBO is done when ALL its linked stories are delivered AND the user can actually do the thing described. 100 stories delivered with 0 TBOs completed = 0% convergence.
+
+17. **The dashboard bookends are the truth.** Business tab (first, TBOs) and Distribution tab (last, productionization) are what matters. Everything in between is operational detail.
+
 ## Rollover Policy
 
-14. **Rollover triggers:** Configurable in `devlead.toml` — either by date (first of month) OR by file size (when file exceeds N lines). Default: date-based. Config:
+18. **Rollover triggers:** Configurable in `devlead.toml` — either by date (first of month) OR by file size (when file exceeds N lines). Default: date-based. Config:
     ```toml
     [rollover]
     trigger = "date"       # "date" or "size"

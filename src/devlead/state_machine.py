@@ -229,6 +229,17 @@ def do_transition(state_file: Path, target: str) -> None:
     state["transitions"].append({"from": current, "to": target, "at": now})
     state["state"] = target
     save_state(state, state_file)
+
+    # Capture session snapshot on entering UPDATE or SESSION_END
+    if target in ("UPDATE", "SESSION_END"):
+        try:
+            from devlead.session_history import capture_session_snapshot
+            docs_dir = state_file.parent
+            history_file = docs_dir / "session_history.jsonl"
+            capture_session_snapshot(docs_dir, state, history_file)
+        except Exception:
+            pass  # Never block transition for history capture
+
     hook_allow(f"Transitioned from {current} to {target}.")
 
 

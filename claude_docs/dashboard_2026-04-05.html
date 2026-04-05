@@ -1,0 +1,609 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>DevLead — devlead — 2026-04-05</title>
+<style>
+:root {
+    --bg: #0f1117; --card: #1a1d27; --border: #2a2d3a; --text: #e0e0e0;
+    --muted: #888; --accent: #6c5ce7; --green: #27ae60; --yellow: #f39c12;
+    --red: #e74c3c; --blue: #3498db;
+}
+* { margin: 0; padding: 0; box-sizing: border-box; }
+body {
+    font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+    background: var(--bg); color: var(--text);
+    padding: 24px; max-width: 1280px; margin: 0 auto; line-height: 1.6;
+}
+h1 { font-size: 1.8em; font-weight: 700; }
+h2 { font-size: 1.2em; font-weight: 600; margin-bottom: 16px; color: var(--accent); }
+h3 { font-size: 1em; font-weight: 600; margin-bottom: 8px; color: var(--blue); }
+.card {
+    background: var(--card); border: 1px solid var(--border);
+    border-radius: 12px; padding: 24px; margin-bottom: 20px;
+}
+.header-card {
+    background: linear-gradient(135deg, #1a1d27 0%, #2a1d3a 100%);
+    border-color: var(--accent);
+}
+.header-top { display: flex; align-items: baseline; gap: 12px; margin-bottom: 8px; }
+.project-name { color: var(--muted); font-size: 1.2em; }
+.header-meta {
+    display: flex; gap: 16px; flex-wrap: wrap; align-items: center;
+    color: var(--muted); font-size: 0.9em;
+}
+.section { margin-bottom: 28px; }
+
+/* --- Tabs --- */
+.tab-input { display: none; }
+.tab-bar {
+    display: flex; gap: 4px; border-bottom: 2px solid var(--border);
+    margin-bottom: 24px; padding: 0 4px;
+}
+.tab-label {
+    padding: 10px 20px; cursor: pointer; color: var(--muted);
+    font-weight: 500; font-size: 0.95em; border-bottom: 2px solid transparent;
+    margin-bottom: -2px; transition: all 0.2s;
+}
+.tab-label:hover { color: var(--text); }
+.tab-panel { display: none; }
+
+/* Radio button tab switching — one rule per tab */
+#tab-overview:checked ~ .tab-bar label[for="tab-overview"],
+#tab-business:checked ~ .tab-bar label[for="tab-business"],
+#tab-roadmap:checked ~ .tab-bar label[for="tab-roadmap"],
+#tab-kpis:checked ~ .tab-bar label[for="tab-kpis"],
+#tab-intake:checked ~ .tab-bar label[for="tab-intake"],
+#tab-session:checked ~ .tab-bar label[for="tab-session"],
+#tab-audit:checked ~ .tab-bar label[for="tab-audit"],
+#tab-trends:checked ~ .tab-bar label[for="tab-trends"],
+#tab-distribution:checked ~ .tab-bar label[for="tab-distribution"] {
+    color: var(--accent); border-bottom-color: var(--accent);
+}
+#tab-overview:checked ~ .tab-panels #panel-overview,
+#tab-business:checked ~ .tab-panels #panel-business,
+#tab-roadmap:checked ~ .tab-panels #panel-roadmap,
+#tab-kpis:checked ~ .tab-panels #panel-kpis,
+#tab-intake:checked ~ .tab-panels #panel-intake,
+#tab-session:checked ~ .tab-panels #panel-session,
+#tab-audit:checked ~ .tab-panels #panel-audit,
+#tab-trends:checked ~ .tab-panels #panel-trends,
+#tab-distribution:checked ~ .tab-panels #panel-distribution { display: block; }
+
+/* --- Badges --- */
+.badge { display: inline-block; padding: 4px 12px; border-radius: 20px; font-size: 0.8em; font-weight: 600; }
+.badge-sm { display: inline-block; padding: 3px 10px; border-radius: 16px; font-size: 0.75em; font-weight: 600; }
+.badge-xs { display: inline-block; padding: 2px 8px; border-radius: 12px; font-size: 0.7em; font-weight: 600; }
+.state-badge { background: var(--accent); color: white; }
+.st-done { background: var(--green); color: white; }
+.st-prog { background: var(--blue); color: white; }
+.st-open { background: #3a3d4a; color: var(--text); }
+.st-block { background: var(--red); color: white; }
+.st-reopen { background: var(--yellow); color: #222; }
+.st-default { background: var(--border); color: var(--text); }
+.warn-bg { background: var(--red); color: white; }
+.blue-bg { background: var(--blue); color: white; }
+
+/* --- Stats --- */
+.stat-grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(140px, 1fr)); gap: 12px; }
+.stat-card {
+    background: var(--bg); border: 1px solid var(--border);
+    border-radius: 8px; padding: 16px; text-align: center;
+}
+.stat-value { font-size: 1.5em; font-weight: 700; }
+.stat-of { font-size: 0.6em; color: var(--muted); }
+.stat-label { color: var(--muted); font-size: 0.8em; margin-top: 4px; }
+.stat-sub { color: var(--muted); font-size: 0.75em; margin-top: 4px; }
+.progress-bar { height: 4px; background: var(--border); border-radius: 2px; margin-top: 6px; overflow: hidden; }
+.progress-fill { height: 100%; border-radius: 2px; }
+
+/* --- Tables --- */
+.data-table { width: 100%; border-collapse: collapse; }
+.data-table th {
+    text-align: left; padding: 8px 12px; color: var(--muted); font-weight: 500;
+    font-size: 0.8em; text-transform: uppercase; letter-spacing: 0.05em;
+    border-bottom: 1px solid var(--border);
+}
+.data-table td { padding: 8px 12px; border-bottom: 1px solid var(--border); font-size: 0.9em; }
+tr.warn { background: rgba(231, 76, 60, 0.08); }
+.kpi-name { font-weight: 500; }
+.kpi-value { font-weight: 700; font-variant-numeric: tabular-nums; }
+.kpi-detail { color: var(--muted); font-size: 0.85em; }
+.kpi-cat { margin-bottom: 24px; }
+.cat-desc { color: var(--muted); font-size: 0.85em; margin-bottom: 12px; }
+.fp { word-break: break-all; font-family: monospace; font-size: 0.8em; }
+.mono { font-family: monospace; font-size: 0.85em; }
+.count { color: var(--muted); font-weight: 400; font-size: 0.85em; }
+.muted { color: var(--muted); }
+
+/* --- Roadmap --- */
+.roadmap-epic {
+    background: var(--card); border: 1px solid var(--border);
+    border-radius: 10px; padding: 16px; margin-bottom: 16px;
+    border-left: 3px solid var(--accent);
+}
+.epic-header {
+    display: flex; align-items: center; gap: 10px; flex-wrap: wrap; margin-bottom: 8px;
+}
+.epic-id { font-family: monospace; color: var(--accent); font-weight: 600; font-size: 0.85em; }
+.epic-name { font-weight: 600; font-size: 1.05em; }
+.roadmap-story {
+    margin-left: 20px; padding: 10px 16px;
+    border-left: 2px solid var(--blue); margin-bottom: 8px;
+}
+.story-header {
+    display: flex; align-items: center; gap: 8px; flex-wrap: wrap;
+}
+.story-id { font-family: monospace; color: var(--blue); font-size: 0.8em; }
+.story-name { font-weight: 500; }
+.task-list { margin-left: 20px; margin-top: 6px; }
+.task-row {
+    display: flex; align-items: center; gap: 8px; padding: 4px 0;
+    font-size: 0.9em; flex-wrap: wrap;
+}
+.task-id { font-family: monospace; font-size: 0.8em; color: var(--muted); }
+.task-name { }
+.orphan-section { background: rgba(231, 76, 60, 0.05); border-radius: 8px; padding: 16px; }
+
+/* --- Timeline (horizontal) --- */
+.timeline-h { display: flex; gap: 0; overflow-x: auto; padding: 16px 0; }
+.tl-step {
+    display: flex; flex-direction: column; align-items: center; min-width: 100px;
+    position: relative; flex: 1;
+}
+.tl-step:not(:last-child)::after {
+    content: ''; position: absolute; top: 10px; left: 50%; right: -50%;
+    height: 2px; background: var(--border);
+}
+.tl-dot {
+    width: 14px; height: 14px; border-radius: 50%;
+    background: var(--border); border: 2px solid var(--card);
+    position: relative; z-index: 1;
+}
+.tl-step.active .tl-dot { background: var(--accent); box-shadow: 0 0 10px var(--accent); }
+.tl-label { font-size: 0.8em; font-weight: 600; margin-top: 8px; }
+.tl-time { font-size: 0.7em; color: var(--muted); font-family: monospace; }
+
+/* --- Checklists --- */
+.ck-grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(220px, 1fr)); gap: 12px; }
+.ck-group {
+    background: var(--bg); border: 1px solid var(--border);
+    border-radius: 8px; padding: 14px;
+}
+.ck-header { display: flex; justify-content: space-between; align-items: center; margin-bottom: 6px; }
+.ck-count { color: var(--muted); font-size: 0.85em; }
+.ck-item { padding: 3px 0; font-size: 0.85em; }
+
+/* --- Scope --- */
+.scope-list { list-style: none; }
+.scope-list li {
+    font-family: monospace; padding: 6px 12px;
+    background: var(--bg); border: 1px solid var(--border);
+    border-radius: 6px; margin-bottom: 4px; font-size: 0.85em;
+}
+
+/* --- Business --- */
+.convergence-hero { text-align: center; padding: 20px; }
+.conv-number { font-size: 3em; font-weight: 800; }
+.conv-label { color: var(--muted); margin-top: 4px; }
+.biz-grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(280px, 1fr)); gap: 12px; }
+.biz-epic-card {
+    background: var(--bg); border: 1px solid var(--border);
+    border-radius: 8px; padding: 16px; border-left: 3px solid var(--accent);
+}
+.biz-epic-header { display: flex; align-items: center; gap: 8px; margin-bottom: 8px; flex-wrap: wrap; }
+.biz-epic-stats { display: flex; gap: 16px; color: var(--muted); font-size: 0.85em; margin-bottom: 6px; }
+.epic-risk { color: var(--yellow); font-size: 0.85em; margin-top: 6px; }
+.epic-block { color: var(--red); font-size: 0.85em; margin-top: 4px; }
+.nba-box {
+    background: linear-gradient(135deg, rgba(108, 92, 231, 0.1), rgba(52, 152, 219, 0.1));
+    border: 1px solid var(--accent); border-radius: 8px;
+    padding: 16px; font-weight: 500; font-size: 1.05em;
+}
+.status-prose { line-height: 1.8; }
+.status-prose h3 { margin-top: 12px; color: var(--blue); }
+.status-prose li { margin-left: 20px; list-style: disc; }
+
+/* --- Footer --- */
+.footer { text-align: center; color: var(--muted); font-size: 0.8em; padding: 24px 0; }
+</style>
+</head>
+<body>
+
+    <div class="card header-card">
+        <div class="header-top">
+            <h1>DevLead &mdash; Project Status</h1>
+            <span class="project-name">devlead</span>
+        </div>
+        <div class="header-meta">
+            <span class="badge state-badge">ORIENT</span>
+            <span>2026-04-05</span>
+            <span>Started: 2026-04-05 20:08:25</span>
+            <span>Duration: 0m</span>
+            <span>1 transitions</span>
+        </div>
+    </div>
+    
+    <div class="tabs">
+        <input type="radio" name="tabs" id="tab-business" checked class="tab-input">
+<input type="radio" name="tabs" id="tab-overview" class="tab-input">
+<input type="radio" name="tabs" id="tab-roadmap" class="tab-input">
+<input type="radio" name="tabs" id="tab-kpis" class="tab-input">
+<input type="radio" name="tabs" id="tab-trends" class="tab-input">
+<input type="radio" name="tabs" id="tab-intake" class="tab-input">
+<input type="radio" name="tabs" id="tab-session" class="tab-input">
+<input type="radio" name="tabs" id="tab-audit" class="tab-input">
+<input type="radio" name="tabs" id="tab-distribution" class="tab-input">
+
+        <div class="tab-bar"><label for="tab-business" class="tab-label">Business</label>
+<label for="tab-overview" class="tab-label">Overview</label>
+<label for="tab-roadmap" class="tab-label">Roadmap</label>
+<label for="tab-kpis" class="tab-label">KPIs</label>
+<label for="tab-trends" class="tab-label">Trends</label>
+<label for="tab-intake" class="tab-label">Intake</label>
+<label for="tab-session" class="tab-label">Session</label>
+<label for="tab-audit" class="tab-label">Audit</label>
+<label for="tab-distribution" class="tab-label">Distribution</label>
+</div>
+        <div class="tab-panels"><div class="tab-panel" id="panel-business"><div class="section"><div class="section"><h2>Project Status</h2><div class="status-prose"><h3>Current State</h3><li>**All 12 implementation tasks DONE.** 138 tests passing.</li><li>Full CLI operational: init, start, status, gate, transition, checklist, kpis, rollover, doctor, portfolio, collab.</li><li>Zero external dependencies. Python 3.11+ stdlib only.</li><h3>This Session</h3><li>TASK-002: state_machine.py â€” 7 states, transitions, gates, checklists (22 tests)</li><li>TASK-003: config.py â€” devlead.toml parsing with tomllib, defaults (15 tests)</li><li>TASK-004: doc_parser.py â€” markdown table parsing, 18 builtin variables (20 tests)</li><li>TASK-005: kpi_engine.py â€” safe formula evaluator, 23 built-in KPIs, custom TOML, plugins (24 tests)</li><li>TASK-006: Wire KPIs into CLI â€” status, kpis, start with dashboard (8 integration tests)</li><li>TASK-007: scaffold/ + devlead init â€” templates, hook merge, gitignore (10 tests)</li><li>TASK-008: rollover.py â€” monthly archival with carry-forward (8 tests)</li><li>TASK-009: doctor command â€” health check (7 tests)</li><li>TASK-010: portfolio.py â€” multi-project workspace, cross-project KPIs (7 tests)</li><li>TASK-011: collab.py â€” cross-project channel, inbox/outbox (8 tests)</li><li>Updated TASK-001 status to DONE (was OPEN despite being committed)</li><h3>Next Steps</h3><li>Commit all work</li><li>Session history (session_history.jsonl) for LLM Learning Curve KPIs</li><li>Intake features FEAT-004 (cross-project guard) and FEAT-005 (file path enforcement)</li><li>PyPI packaging prep (OBJ-3)</li></div></div>
+    <div class="section">
+        <h2>Business Convergence</h2>
+        <div class="convergence-hero">
+            <div class="conv-number" style="color: #e74c3c">0%</div>
+            <div class="conv-label">0 of 0 stories delivered</div>
+        </div>
+    </div>
+    <div class="section"><h2>Epic Progress</h2><div class="biz-grid">
+            <div class="biz-epic-card">
+                <div class="biz-epic-header">
+                    <span class="badge-sm st-prog">IN_PROGRESS</span>
+                    <span class="epic-id">E-001</span>
+                    <span class="epic-name">Core Engine â€” state machine + hooks + config</span>
+                </div>
+                <div class="biz-epic-stats">
+                    <div>Stories: 0/0</div>
+                    <div>Tasks: 0/0</div>
+                </div>
+                <div class="progress-bar"><div class="progress-fill" style="width: 0%; background: #e74c3c"></div></div>
+                
+            </div>
+            
+            <div class="biz-epic-card">
+                <div class="biz-epic-header">
+                    <span class="badge-sm st-open">OPEN</span>
+                    <span class="epic-id">E-002</span>
+                    <span class="epic-name">KPI Engine â€” 30 built-in + custom + plugins</span>
+                </div>
+                <div class="biz-epic-stats">
+                    <div>Stories: 0/0</div>
+                    <div>Tasks: 0/0</div>
+                </div>
+                <div class="progress-bar"><div class="progress-fill" style="width: 0%; background: #e74c3c"></div></div>
+                
+            </div>
+            
+            <div class="biz-epic-card">
+                <div class="biz-epic-header">
+                    <span class="badge-sm st-open">OPEN</span>
+                    <span class="epic-id">E-003</span>
+                    <span class="epic-name">Developer Experience â€” init, rollover, doctor</span>
+                </div>
+                <div class="biz-epic-stats">
+                    <div>Stories: 0/0</div>
+                    <div>Tasks: 0/0</div>
+                </div>
+                <div class="progress-bar"><div class="progress-fill" style="width: 0%; background: #e74c3c"></div></div>
+                
+            </div>
+            
+            <div class="biz-epic-card">
+                <div class="biz-epic-header">
+                    <span class="badge-sm st-open">OPEN</span>
+                    <span class="epic-id">E-004</span>
+                    <span class="epic-name">Multi-Project â€” portfolio + collab channel</span>
+                </div>
+                <div class="biz-epic-stats">
+                    <div>Stories: 0/0</div>
+                    <div>Tasks: 0/0</div>
+                </div>
+                <div class="progress-bar"><div class="progress-fill" style="width: 0%; background: #e74c3c"></div></div>
+                
+            </div>
+            </div></div><div class="section"><h2>Recommended Next Action</h2><div class="nba-box">Triage backlog — 14 intake items open</div></div></div></div>
+<div class="tab-panel" id="panel-overview"><div class="section"><h2>Pipeline</h2><div class="stat-grid">
+        <div class="stat-card">
+            <div class="stat-value" style="color: #e74c3c">0<span class="stat-of">/4</span></div>
+            <div class="stat-label">Epics</div>
+            <div class="progress-bar"><div class="progress-fill" style="width: 0%; background: #e74c3c"></div></div>
+            <div class="stat-sub">1 in progress</div>
+        </div>
+        
+        <div class="stat-card">
+            <div class="stat-value" style="color: #e74c3c">0<span class="stat-of">/0</span></div>
+            <div class="stat-label">Stories</div>
+            <div class="progress-bar"><div class="progress-fill" style="width: 0%; background: #e74c3c"></div></div>
+            <div class="stat-sub">0 in progress</div>
+        </div>
+        
+        <div class="stat-card">
+            <div class="stat-value" style="color: #27ae60">12<span class="stat-of">/12</span></div>
+            <div class="stat-label">Tasks</div>
+            <div class="progress-bar"><div class="progress-fill" style="width: 100%; background: #27ae60"></div></div>
+            <div class="stat-sub">0 in progress</div>
+        </div>
+        
+        <div class="stat-card">
+            <div class="stat-value" style="color: #e74c3c">0<span class="stat-of">/14</span></div>
+            <div class="stat-label">Intake</div>
+            <div class="progress-bar"><div class="progress-fill" style="width: 0%; background: #e74c3c"></div></div>
+            <div class="stat-sub">0 in progress</div>
+        </div>
+        
+    <div class="stat-card">
+        <div class="stat-value" style="color: #27ae60">0</div>
+        <div class="stat-label">Blocked</div>
+    </div>
+    <div class="stat-card">
+        <div class="stat-value" style="color: #27ae60">0</div>
+        <div class="stat-label">Overdue</div>
+    </div>
+    <div class="stat-card">
+        <div class="stat-value" style="color: #e74c3c">0<span class="stat-of">%</span></div>
+        <div class="stat-label">Convergence</div>
+    </div>
+    </div></div><div class="section"><h2>What to Work On Next</h2><div class="nba-box">Triage backlog — 14 intake items open</div></div>
+    <div class="section">
+        <h2>Project Files <span class="count">(7)</span></h2>
+        <table class="data-table"><thead><tr><th>Type</th><th>File</th><th>Title</th><th>Updated</th></tr></thead><tbody><tr>
+            <td><span class="badge-xs st-open">INTAKE</span></td>
+            <td class="mono">_intake_bugs.md</td>
+            <td>Bug Intake</td>
+            <td class="muted">2026-04-05</td>
+        </tr><tr>
+            <td><span class="badge-xs st-open">INTAKE</span></td>
+            <td class="mono">_intake_changes.md</td>
+            <td>Change Intake</td>
+            <td class="muted">2026-04-05</td>
+        </tr><tr>
+            <td><span class="badge-xs st-open">INTAKE</span></td>
+            <td class="mono">_intake_features.md</td>
+            <td>Feature Intake</td>
+            <td class="muted">2026-04-05</td>
+        </tr><tr>
+            <td><span class="badge-xs st-open">INTAKE</span></td>
+            <td class="mono">_intake_gaps.md</td>
+            <td>Gap Intake</td>
+            <td class="muted">2026-04-05</td>
+        </tr><tr>
+            <td><span class="badge-xs st-prog">PROJECT</span></td>
+            <td class="mono">_project_roadmap.md</td>
+            <td>Project Roadmap</td>
+            <td class="muted">2026-04-05</td>
+        </tr><tr>
+            <td><span class="badge-xs st-prog">PROJECT</span></td>
+            <td class="mono">_project_status.md</td>
+            <td>Project Status</td>
+            <td class="muted">2026-04-05 (Session 2)</td>
+        </tr><tr>
+            <td><span class="badge-xs st-prog">PROJECT</span></td>
+            <td class="mono">_project_tasks.md</td>
+            <td>Project Tasks</td>
+            <td class="muted">2026-04-05</td>
+        </tr></tbody></table>
+    </div>
+    <div class="section"><h2>State Timeline</h2><div class="timeline-h"><div class="tl-step active"><div class="tl-dot"></div><div class="tl-label">ORIENT</div><div class="tl-time">2026-04-05 20:08:25</div></div></div></div><div class="section"><h2>Checklists</h2><div class="ck-grid">
+        <div class="ck-group">
+            <div class="ck-header">
+                <h3>ORIENT</h3>
+                <span class="ck-count">0/4</span>
+            </div>
+            <div class="progress-bar"><div class="progress-fill" style="width: 0%; background: #e74c3c"></div></div>
+            <div class="ck-item">&#x26AA; status_read</div><div class="ck-item">&#x26AA; tasks_read</div><div class="ck-item">&#x26AA; intake_scanned</div><div class="ck-item">&#x26AA; kpis_reported</div>
+        </div>
+        
+        <div class="ck-group">
+            <div class="ck-header">
+                <h3>INTAKE</h3>
+                <span class="ck-count">0/2</span>
+            </div>
+            <div class="progress-bar"><div class="progress-fill" style="width: 0%; background: #e74c3c"></div></div>
+            <div class="ck-item">&#x26AA; requests_captured</div><div class="ck-item">&#x26AA; triaged</div>
+        </div>
+        
+        <div class="ck-group">
+            <div class="ck-header">
+                <h3>UPDATE</h3>
+                <span class="ck-count">0/5</span>
+            </div>
+            <div class="progress-bar"><div class="progress-fill" style="width: 0%; background: #e74c3c"></div></div>
+            <div class="ck-item">&#x26AA; intake_updated</div><div class="ck-item">&#x26AA; tasks_updated</div><div class="ck-item">&#x26AA; status_updated</div><div class="ck-item">&#x26AA; living_reviewed</div><div class="ck-item">&#x26AA; memory_derived</div>
+        </div>
+        </div></div></div>
+<div class="tab-panel" id="panel-roadmap"><div class="section">
+        <div class="roadmap-epic">
+            <div class="epic-header">
+                <span class="badge st-prog">IN_PROGRESS</span>
+                <span class="epic-id">E-001</span>
+                <span class="epic-name">Core Engine â€” state machine + hooks + config</span>
+                <span class="muted">P1</span>
+                <span class="muted"></span>
+                <span class="muted">0/0 stories</span>
+            </div>
+        </div>
+        <div class="roadmap-epic">
+            <div class="epic-header">
+                <span class="badge st-open">OPEN</span>
+                <span class="epic-id">E-002</span>
+                <span class="epic-name">KPI Engine â€” 30 built-in + custom + plugins</span>
+                <span class="muted">P1</span>
+                <span class="muted"></span>
+                <span class="muted">0/0 stories</span>
+            </div>
+        </div>
+        <div class="roadmap-epic">
+            <div class="epic-header">
+                <span class="badge st-open">OPEN</span>
+                <span class="epic-id">E-003</span>
+                <span class="epic-name">Developer Experience â€” init, rollover, doctor</span>
+                <span class="muted">P1</span>
+                <span class="muted"></span>
+                <span class="muted">0/0 stories</span>
+            </div>
+        </div>
+        <div class="roadmap-epic">
+            <div class="epic-header">
+                <span class="badge st-open">OPEN</span>
+                <span class="epic-id">E-004</span>
+                <span class="epic-name">Multi-Project â€” portfolio + collab channel</span>
+                <span class="muted">P2</span>
+                <span class="muted"></span>
+                <span class="muted">0/0 stories</span>
+            </div>
+        </div><div class="section orphan-section"><h3>Unlinked Tasks <span class="muted">(no story reference)</span></h3><div class="task-row"><span class="badge-xs st-done">DONE</span> <span class="task-id">TASK-000</span> <span class="task-name">Project skeleton â€” pyproject.toml, src layout, CLI stub</span></div><div class="task-row"><span class="badge-xs st-done">DONE</span> <span class="task-id">TASK-001</span> <span class="task-name">hooks.py â€” hook_allow, hook_block, hook_context</span></div><div class="task-row"><span class="badge-xs st-done">DONE</span> <span class="task-id">TASK-002</span> <span class="task-name">state_machine.py â€” 7 states, transitions, gates, checklists</span></div><div class="task-row"><span class="badge-xs st-done">DONE</span> <span class="task-id">TASK-003</span> <span class="task-name">config.py â€” devlead.toml parsing, defaults</span></div><div class="task-row"><span class="badge-xs st-done">DONE</span> <span class="task-id">TASK-004</span> <span class="task-name">doc_parser.py â€” markdown table parsing, builtin variables</span></div><div class="task-row"><span class="badge-xs st-done">DONE</span> <span class="task-id">TASK-005</span> <span class="task-name">kpi_engine.py â€” 30 built-in KPIs, formula evaluator, plugins</span></div><div class="task-row"><span class="badge-xs st-done">DONE</span> <span class="task-id">TASK-006</span> <span class="task-name">Wire KPIs into CLI â€” devlead status, devlead kpis</span></div><div class="task-row"><span class="badge-xs st-done">DONE</span> <span class="task-id">TASK-007</span> <span class="task-name">scaffold/ + devlead init â€” templates, hook merge, gitignore</span></div><div class="task-row"><span class="badge-xs st-done">DONE</span> <span class="task-id">TASK-008</span> <span class="task-name">rollover.py â€” monthly archival, open item carry-forward</span></div><div class="task-row"><span class="badge-xs st-done">DONE</span> <span class="task-id">TASK-009</span> <span class="task-name">doctor + session history â€” health check, LLM Learning Curve</span></div><div class="task-row"><span class="badge-xs st-done">DONE</span> <span class="task-id">TASK-010</span> <span class="task-name">portfolio.py â€” multi-project workspace, cross-project KPIs</span></div><div class="task-row"><span class="badge-xs st-done">DONE</span> <span class="task-id">TASK-011</span> <span class="task-name">collab.py â€” cross-project channel, inbox scanning, final polish</span></div></div></div></div>
+<div class="tab-panel" id="panel-kpis"><div class="section">
+        <div class="kpi-cat">
+            <h3>LLM Effectiveness</h3>
+            <p class="cat-desc">Is the AI getting better?</p>
+            <table class="data-table"><thead><tr><th>KPI</th><th>Value</th><th>Detail</th></tr></thead><tbody><tr><td class="kpi-name">LLM Learning Curve</td><td class="kpi-value">0/100</td><td class="kpi-detail">Requires session history</td></tr><tr><td class="kpi-name">Going in Circles</td><td class="kpi-value">0/100</td><td class="kpi-detail">0 reopened, 0 blocked</td></tr><tr><td class="kpi-name">Skin in the Game</td><td class="kpi-value">0/100</td><td class="kpi-detail">0/0 tasks have story ref</td></tr><tr><td class="kpi-name">Definition of Done</td><td class="kpi-value">100/100</td><td class="kpi-detail">0 reopened</td></tr><tr><td class="kpi-name">Plan Adherence</td><td class="kpi-value">0/100</td><td class="kpi-detail">Requires session history</td></tr><tr><td class="kpi-name">State Discipline</td><td class="kpi-value">0/100</td><td class="kpi-detail">Requires session history</td></tr><tr><td class="kpi-name">Session Completeness</td><td class="kpi-value">0/100</td><td class="kpi-detail">Requires session history</td></tr><tr><td class="kpi-name">First-Time-Right</td><td class="kpi-value">100%</td><td class="kpi-detail">12/12 stayed done</td></tr><tr><td class="kpi-name">Bug Introduction Rate</td><td class="kpi-value">14</td><td class="kpi-detail">14 open issues</td></tr><tr><td class="kpi-name">Scope Creep</td><td class="kpi-value">0</td><td class="kpi-detail">Requires session tracking</td></tr></tbody></table>
+        </div>
+        
+        <div class="kpi-cat">
+            <h3>Delivery &amp; Project Management</h3>
+            <p class="cat-desc">Is business value being produced?</p>
+            <table class="data-table"><thead><tr><th>KPI</th><th>Value</th><th>Detail</th></tr></thead><tbody><tr><td class="kpi-name">Code-Domain Convergence</td><td class="kpi-value">0/100</td><td class="kpi-detail">0/0 tasks have story ref</td></tr><tr><td class="kpi-name">Roadmap Velocity</td><td class="kpi-value">0</td><td class="kpi-detail">0 stories completed</td></tr><tr><td class="kpi-name">Intake Throughput</td><td class="kpi-value">0%</td><td class="kpi-detail">0/14 closed</td></tr><tr><td class="kpi-name">Blocker Resolution</td><td class="kpi-value">0</td><td class="kpi-detail">0 currently blocked</td></tr><tr><td class="kpi-name">Value per Session</td><td class="kpi-value">0</td><td class="kpi-detail">Requires session tracking</td></tr><tr><td class="kpi-name">Bug-to-Feature Ratio</td><td class="kpi-value">1.17</td><td class="kpi-detail">14 issues / 12 done</td></tr><tr><td class="kpi-name">Risk Concentration</td><td class="kpi-value">0/100</td><td class="kpi-detail">0 blocked of 0 active</td></tr><tr><td class="kpi-name">Next Best Action</td><td class="kpi-value">—</td><td class="kpi-detail">Triage backlog — 14 intake items open</td></tr></tbody></table>
+        </div>
+        
+        <div class="kpi-cat">
+            <h3>Project Health</h3>
+            <p class="cat-desc">Is the system of record healthy?</p>
+            <table class="data-table"><thead><tr><th>KPI</th><th>Value</th><th>Detail</th></tr></thead><tbody><tr><td class="kpi-name">Doc Freshness</td><td class="kpi-value">0/100</td><td class="kpi-detail">Requires file timestamps</td></tr><tr><td class="kpi-name">Traceability</td><td class="kpi-value">0/100</td><td class="kpi-detail">0/12 tasks traced to stories</td></tr><tr class="warn"><td class="kpi-name">Intake Staleness</td><td class="kpi-value">14</td><td class="kpi-detail">14 items open</td></tr><tr><td class="kpi-name">Archive Health</td><td class="kpi-value">0/100</td><td class="kpi-detail">Requires rollover history</td></tr><tr class="warn"><td class="kpi-name">Coverage Gap</td><td class="kpi-value">2</td><td class="kpi-detail">2 missing files</td></tr></tbody></table>
+        </div>
+        </div></div>
+<div class="tab-panel" id="panel-trends"><div class="section"><p class="muted">No session history yet. Complete a session to start tracking trends.</p></div></div>
+<div class="tab-panel" id="panel-intake"><div class="section">
+        <div class="kpi-cat">
+            <h3>Features <span class="count">(14)</span></h3>
+            <table class="data-table"><thead><tr><th>Status</th><th>Key</th><th>Item</th><th>Priority</th><th>Added</th></tr></thead><tbody><tr>
+                <td><span class="badge-xs st-open">OPEN</span></td>
+                <td>FEAT-001</td>
+                <td>Token usage KPIs â€” cost per task, wasted tokens, efficiency</td>
+                <td class="muted">P3</td>
+                <td class="muted">2026-04-05</td>
+            </tr><tr>
+                <td><span class="badge-xs st-open">OPEN</span></td>
+                <td>FEAT-002</td>
+                <td>Claude Workflow hooks â€” governance for scheduled agents</td>
+                <td class="muted">P3</td>
+                <td class="muted">2026-04-05</td>
+            </tr><tr>
+                <td><span class="badge-xs st-open">OPEN</span></td>
+                <td>FEAT-003</td>
+                <td>Rollover policy â€” by date OR by file size (lines threshold)</td>
+                <td class="muted">P2</td>
+                <td class="muted">2026-04-05</td>
+            </tr><tr>
+                <td><span class="badge-xs st-open">OPEN</span></td>
+                <td>FEAT-004</td>
+                <td>Cross-project guard â€” user-level hook protects all DevLead projects</td>
+                <td class="muted">P1</td>
+                <td class="muted">2026-04-05</td>
+            </tr><tr>
+                <td><span class="badge-xs st-open">OPEN</span></td>
+                <td>FEAT-005</td>
+                <td>File path enforcement in gate â€” inspect stdin JSON for target path</td>
+                <td class="muted">P1</td>
+                <td class="muted">2026-04-05</td>
+            </tr><tr>
+                <td><span class="badge-xs st-open">OPEN</span></td>
+                <td>FEAT-006</td>
+                <td>Session-end HTML dashboard â€” beautiful local report with all KPIs, project updates, stats</td>
+                <td class="muted">P1</td>
+                <td class="muted">2026-04-05</td>
+            </tr><tr>
+                <td><span class="badge-xs st-open">OPEN</span></td>
+                <td>FEAT-007</td>
+                <td>Token usage auditing â€” full capability for tracking, waste detection, best practices</td>
+                <td class="muted">P1</td>
+                <td class="muted">2026-04-05</td>
+            </tr><tr>
+                <td><span class="badge-xs st-open">OPEN</span></td>
+                <td>FEAT-008</td>
+                <td>Scope lock â€” user defines surgical focus for what LLM must work on</td>
+                <td class="muted">P1</td>
+                <td class="muted">2026-04-05</td>
+            </tr><tr>
+                <td><span class="badge-xs st-open">OPEN</span></td>
+                <td>FEAT-009</td>
+                <td>Record model name everywhere â€” audit log, session history, HTML dashboard</td>
+                <td class="muted">P2</td>
+                <td class="muted">2026-04-05</td>
+            </tr><tr>
+                <td><span class="badge-xs st-open">OPEN</span></td>
+                <td>FEAT-010</td>
+                <td>API key / license management â€” free vs Pro tier gating</td>
+                <td class="muted">P1</td>
+                <td class="muted">2026-04-05</td>
+            </tr><tr>
+                <td><span class="badge-xs st-open">OPEN</span></td>
+                <td>FEAT-011</td>
+                <td>HTML dashboard â†’ markdown updates â€” interactive edits from browser</td>
+                <td class="muted">P2</td>
+                <td class="muted">2026-04-05</td>
+            </tr><tr>
+                <td><span class="badge-xs st-open">OPEN</span></td>
+                <td>FEAT-012</td>
+                <td>GitHub open-source packaging â€” LICENSE, proper README, PyPI distribution</td>
+                <td class="muted">P1</td>
+                <td class="muted">2026-04-05</td>
+            </tr><tr>
+                <td><span class="badge-xs st-open">OPEN</span></td>
+                <td>FEAT-013</td>
+                <td>Portfolio dashboard â€” multi-project view with project selector</td>
+                <td class="muted">P2</td>
+                <td class="muted">2026-04-05</td>
+            </tr><tr>
+                <td><span class="badge-xs st-open">OPEN</span></td>
+                <td>FEAT-014</td>
+                <td>Progress vs Shadow Work â€” classify file changes as business progress or technical noise</td>
+                <td class="muted">P1</td>
+                <td class="muted">2026-04-05</td>
+            </tr></tbody></table>
+        </div>
+        </div></div>
+<div class="tab-panel" id="panel-session"><div class="section"><h2>State Timeline</h2><div class="timeline-h"><div class="tl-step active"><div class="tl-dot"></div><div class="tl-label">ORIENT</div><div class="tl-time">2026-04-05 20:08:25</div></div></div></div><div class="section"><h2>Checklists</h2><div class="ck-grid">
+        <div class="ck-group">
+            <div class="ck-header">
+                <h3>ORIENT</h3>
+                <span class="ck-count">0/4</span>
+            </div>
+            <div class="progress-bar"><div class="progress-fill" style="width: 0%; background: #e74c3c"></div></div>
+            <div class="ck-item">&#x26AA; status_read</div><div class="ck-item">&#x26AA; tasks_read</div><div class="ck-item">&#x26AA; intake_scanned</div><div class="ck-item">&#x26AA; kpis_reported</div>
+        </div>
+        
+        <div class="ck-group">
+            <div class="ck-header">
+                <h3>INTAKE</h3>
+                <span class="ck-count">0/2</span>
+            </div>
+            <div class="progress-bar"><div class="progress-fill" style="width: 0%; background: #e74c3c"></div></div>
+            <div class="ck-item">&#x26AA; requests_captured</div><div class="ck-item">&#x26AA; triaged</div>
+        </div>
+        
+        <div class="ck-group">
+            <div class="ck-header">
+                <h3>UPDATE</h3>
+                <span class="ck-count">0/5</span>
+            </div>
+            <div class="progress-bar"><div class="progress-fill" style="width: 0%; background: #e74c3c"></div></div>
+            <div class="ck-item">&#x26AA; intake_updated</div><div class="ck-item">&#x26AA; tasks_updated</div><div class="ck-item">&#x26AA; status_updated</div><div class="ck-item">&#x26AA; living_reviewed</div><div class="ck-item">&#x26AA; memory_derived</div>
+        </div>
+        </div></div></div>
+<div class="tab-panel" id="panel-audit"><div class="section"><p class="muted">No file writes recorded.</p></div></div>
+<div class="tab-panel" id="panel-distribution"><div class="section"><p class="muted">No distribution data. Create _living_distribution.md to track your go-to-market plan.</p></div></div>
+</div>
+    </div>
+    
+<div class="footer">Generated by DevLead &mdash; Lead your development. Don't let AI wander.</div>
+</body>
+</html>

@@ -5,27 +5,39 @@
 
 ## Current State
 
-- **All 12 implementation tasks DONE.** 138 tests passing.
-- Full CLI operational: init, start, status, gate, transition, checklist, kpis, rollover, doctor, portfolio, collab.
-- Zero external dependencies. Python 3.11+ stdlib only.
+- **All 12 original tasks DONE.** 209 tests passing.
+- Full CLI: init, start, status, gate, transition, checklist, kpis, rollover, healthcheck, portfolio, collab, audit, scope, dashboard.
+- Audit layer live — every file write logged with session context and cross-project detection.
+- Scope lock — configurable enforcement (log/warn/block), auto-clears on transition.
+- Collab pipeline — 4 message types (CHANGE_REQUEST, ISSUE_ESCALATION, STATUS_UPDATE, FEEDBACK) + sync.
+- Rollover supports date OR size triggers.
+- HTML dashboard — 9 tabbed tabs: Business → Overview → Roadmap → KPIs → Trends → Intake → Session → Audit → Distribution.
+- Session history captures snapshots per session for trend tracking and drift detection.
+- Doc model: Epic → Story → Task hierarchy. Business Objectives and Distribution as living docs.
+- Design principle established: progress = business objectives or productionization moved. Everything else is shadow work.
 
 ## This Session
 
-- TASK-002: state_machine.py — 7 states, transitions, gates, checklists (22 tests)
-- TASK-003: config.py — devlead.toml parsing with tomllib, defaults (15 tests)
-- TASK-004: doc_parser.py — markdown table parsing, 18 builtin variables (20 tests)
-- TASK-005: kpi_engine.py — safe formula evaluator, 23 built-in KPIs, custom TOML, plugins (24 tests)
-- TASK-006: Wire KPIs into CLI — status, kpis, start with dashboard (8 integration tests)
-- TASK-007: scaffold/ + devlead init — templates, hook merge, gitignore (10 tests)
-- TASK-008: rollover.py — monthly archival with carry-forward (8 tests)
-- TASK-009: doctor command — health check (7 tests)
-- TASK-010: portfolio.py — multi-project workspace, cross-project KPIs (7 tests)
-- TASK-011: collab.py — cross-project channel, inbox/outbox (8 tests)
-- Updated TASK-001 status to DONE (was OPEN despite being committed)
+- TASK-002 through TASK-011: all core modules implemented
+- Renamed doctor → healthcheck
+- Restructured intake: merged bugs+gaps → issues, dropped changes
+- Restructured doc model: Epic/Story/Task with PM fields (Risks, Delays, Blockers, Dependencies)
+- Added _project_stories.md as separate file
+- Built audit layer (audit.py) — hook stdin parsing, JSONL logging, cross-project detection
+- Wired audit into gate checks — every Edit/Write logged
+- Built scope lock (scope.py) — configurable file path enforcement
+- Strengthened collab pipeline — 4 structured message types + sync between projects
+- Added size-based rollover trigger
+- Built HTML dashboard with 9 tabs (Business, Overview, Roadmap, KPIs, Trends, Intake, Session, Audit, Distribution)
+- Added session_history.jsonl — session snapshots, delta computation, drift detection
+- Added _living_business_objectives.md and _living_distribution.md scaffolds
+- Established design principle: bookend tabs (Business/Distribution) are progress, middle tabs are shadow work
+- Registered 14 intake features (FEAT-001 through FEAT-014)
 
-## Next Steps
+## Next Session
 
-- Commit all work
-- Session history (session_history.jsonl) for LLM Learning Curve KPIs
-- Intake features FEAT-004 (cross-project guard) and FEAT-005 (file path enforcement)
-- PyPI packaging prep (OBJ-3)
+- FEAT-014: Progress timeline — only business milestones, not tech deliverables
+- FEAT-007: Token usage auditing — transcript parsing, waste detection, cost tracking
+- FEAT-010: License key management — free vs Pro tier
+- FEAT-012: GitHub packaging — LICENSE, README, PyPI distribution
+- FEAT-006: Enhance HTML dashboard — token stats, LLM effectiveness metrics

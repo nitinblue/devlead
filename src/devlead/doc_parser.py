@@ -9,6 +9,52 @@ from datetime import date
 from pathlib import Path
 
 
+def parse_file_metadata(text: str) -> dict[str, str]:
+    """Extract metadata from markdown file header blockquotes.
+
+    Parses lines like:
+        # Title Here
+        > Type: PROJECT
+        > Last updated: 2026-04-05 | Open: 3 | Done: 2
+
+    Returns dict with: title, type, last_updated, and any key-value pairs
+    found in the blockquote stats (Open, Done, etc).
+    Never crashes on unexpected formats.
+    """
+    meta: dict[str, str] = {"title": "", "type": "", "last_updated": ""}
+
+    for line in text.splitlines():
+        line = line.strip()
+
+        # Title
+        if line.startswith("# ") and not meta["title"]:
+            meta["title"] = line[2:].strip()
+
+        # Blockquote metadata
+        if line.startswith("> "):
+            content = line[2:].strip()
+
+            # Type field
+            m = re.match(r"Type:\s*(.+)", content)
+            if m:
+                meta["type"] = m.group(1).strip()
+                continue
+
+            # Last updated + inline stats
+            m = re.match(r"Last updated:\s*(.+)", content)
+            if m:
+                parts = m.group(1).split("|")
+                meta["last_updated"] = parts[0].strip()
+                # Parse inline stats: "Open: 3", "Done: 2", etc.
+                for part in parts[1:]:
+                    kv = part.strip().split(":", 1)
+                    if len(kv) == 2:
+                        key = kv[0].strip().lower().replace(" ", "_")
+                        meta[key] = kv[1].strip()
+
+    return meta
+
+
 def parse_table(text: str) -> list[dict[str, str]]:
     """Parse the first markdown table in text into a list of dicts.
 

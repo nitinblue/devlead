@@ -19,6 +19,7 @@ COMMANDS = [
     "collab",
     "audit",
     "scope",
+    "dashboard",
 ]
 
 USAGE = f"""\
@@ -40,6 +41,7 @@ Commands:
   collab        Cross-repo collaboration
   audit         Show file write audit log
   scope         Set/show/clear file scope lock
+  dashboard     Generate HTML session report
 
 Options:
   --help        Show this help message
@@ -114,6 +116,8 @@ def main() -> None:
         _cmd_audit(docs_dir)
     elif command == "scope":
         _cmd_scope(args[1:], state_file)
+    elif command == "dashboard":
+        _cmd_dashboard()
     else:
         print(f"devlead: '{command}' not yet implemented.")
 
@@ -315,3 +319,13 @@ def _cmd_scope(sub_args: list[str], state_file: Path) -> None:
     else:
         print(f"Unknown scope subcommand: {sub_args[0]}", file=sys.stderr)
         sys.exit(1)
+
+
+def _cmd_dashboard() -> None:
+    """Generate HTML session report."""
+    from devlead.dashboard import write_dashboard
+
+    project_dir = Path.cwd()
+    path = write_dashboard(project_dir)
+    print(f"Dashboard generated: {path}")
+    print(f"Open in browser: file:///{path.as_posix()}")
