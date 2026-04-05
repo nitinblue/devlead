@@ -17,6 +17,10 @@ files = [
     "_intake_features.md",
 ]
 
+[paths]
+memory_policy = "warn"      # "log" = silent, "warn" = allow + warn, "block" = deny memory writes outside UPDATE
+docs_policy = "warn"        # "log" = silent, "warn" = allow + warn, "block" = deny claude_docs writes outside UPDATE
+
 [scope]
 enforcement = "log"         # "log" = silent, "warn" = allow + warn, "block" = deny
 auto_clear = true           # clear scope when leaving EXECUTE

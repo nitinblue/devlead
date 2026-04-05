@@ -155,10 +155,53 @@ def check_gate_with_audit(
         scope = state.get("scope", [])
         scope_enforcement = state.get("scope_enforcement", "log")
 
+    # Load path policies
+    memory_policy = "warn"  # default: warn for memory writes outside UPDATE
+    docs_policy = "warn"    # default: warn for claude_docs writes outside UPDATE
+    if state_file.exists():
+        state_data = load_state(state_file)
+        memory_policy = state_data.get("memory_policy", "warn")
+        docs_policy = state_data.get("docs_policy", "warn")
+
     # Log the write attempt (whether allowed or blocked)
     if entry and entry.file_path:
         entry.state = current_state
         log_write(entry, audit_log)
+
+    # --- File path enforcement (only outside UPDATE) ---
+    if entry and entry.file_path and current_state not in ("UPDATE", "SESSION_END"):
+        norm_path = entry.file_path.replace("\\", "/")
+
+        # Memory write detection — path contains .claude/*/memory/
+        is_memory = "/.claude/" in norm_path and "/memory/" in norm_path
+        if is_memory:
+            if memory_policy == "block":
+                hook_block(
+                    f"BLOCKED: Memory writes only allowed in UPDATE state. "
+                    f"Current state: {current_state}. "
+                    f"Transition to UPDATE before writing to memory."
+                )
+            elif memory_policy == "warn":
+                hook_context(
+                    f"WARNING: Writing to memory outside UPDATE state. "
+                    f"Memory should be derived from claude_docs/ during UPDATE. "
+                    f"Current state: {current_state}."
+                )
+
+        # claude_docs write detection
+        is_docs = "/claude_docs/" in norm_path or "\\claude_docs\\" in entry.file_path
+        if is_docs:
+            if docs_policy == "block":
+                hook_block(
+                    f"BLOCKED: claude_docs/ writes only allowed in UPDATE state. "
+                    f"Current state: {current_state}."
+                )
+            elif docs_policy == "warn":
+                hook_context(
+                    f"WARNING: Editing claude_docs/ outside UPDATE state. "
+                    f"Project docs should be updated during UPDATE. "
+                    f"Current state: {current_state}."
+                )
 
     # Scope enforcement — only in EXECUTE state
     if (
@@ -175,7 +218,6 @@ def check_gate_with_audit(
                 f"Use 'devlead scope show' to see allowed paths."
             )
         elif scope_enforcement == "warn":
-            # Allow but inject warning into conversation
             hook_context(
                 f"WARNING: Editing file outside scope: {entry.file_path}. "
                 f"Scope allows: {', '.join(scope)}"

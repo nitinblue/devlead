@@ -32,6 +32,10 @@ DEFAULT_CONFIG: dict = {
         "enforcement": "log",  # "log", "warn", "block"
         "auto_clear": True,
     },
+    "paths": {
+        "memory_policy": "warn",   # "log", "warn", "block" — memory writes outside UPDATE
+        "docs_policy": "warn",     # "log", "warn", "block" — claude_docs writes outside UPDATE
+    },
     "audit": {
         "enabled": True,
         "cross_project_policy": "log",  # "log", "warn", "block"

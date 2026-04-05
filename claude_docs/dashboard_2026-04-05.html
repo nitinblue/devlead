@@ -196,6 +196,14 @@ tr.warn { background: rgba(231, 76, 60, 0.08); }
 .biz-epic-stats { display: flex; gap: 16px; color: var(--muted); font-size: 0.85em; margin-bottom: 6px; }
 .epic-risk { color: var(--yellow); font-size: 0.85em; margin-top: 6px; }
 .epic-block { color: var(--red); font-size: 0.85em; margin-top: 4px; }
+.vision-box {
+    background: linear-gradient(135deg, rgba(108, 92, 231, 0.08), rgba(52, 152, 219, 0.08));
+    border: 1px solid var(--border); border-radius: 8px;
+    padding: 20px; font-size: 1.05em; line-height: 1.8;
+}
+.tbo-table td { vertical-align: top; }
+.tbo-name { font-weight: 600; margin-bottom: 4px; }
+.tbo-meta { display: flex; gap: 12px; flex-wrap: wrap; font-size: 0.85em; }
 .nba-box {
     background: linear-gradient(135deg, rgba(108, 92, 231, 0.1), rgba(52, 152, 219, 0.1));
     border: 1px solid var(--accent); border-radius: 8px;
@@ -246,71 +254,14 @@ tr.warn { background: rgba(231, 76, 60, 0.08); }
 <label for="tab-audit" class="tab-label">Audit</label>
 <label for="tab-distribution" class="tab-label">Distribution</label>
 </div>
-        <div class="tab-panels"><div class="tab-panel" id="panel-business"><div class="section"><div class="section"><h2>Project Status</h2><div class="status-prose"><h3>Current State</h3><li>**All 12 implementation tasks DONE.** 138 tests passing.</li><li>Full CLI operational: init, start, status, gate, transition, checklist, kpis, rollover, doctor, portfolio, collab.</li><li>Zero external dependencies. Python 3.11+ stdlib only.</li><h3>This Session</h3><li>TASK-002: state_machine.py â€” 7 states, transitions, gates, checklists (22 tests)</li><li>TASK-003: config.py â€” devlead.toml parsing with tomllib, defaults (15 tests)</li><li>TASK-004: doc_parser.py â€” markdown table parsing, 18 builtin variables (20 tests)</li><li>TASK-005: kpi_engine.py â€” safe formula evaluator, 23 built-in KPIs, custom TOML, plugins (24 tests)</li><li>TASK-006: Wire KPIs into CLI â€” status, kpis, start with dashboard (8 integration tests)</li><li>TASK-007: scaffold/ + devlead init â€” templates, hook merge, gitignore (10 tests)</li><li>TASK-008: rollover.py â€” monthly archival with carry-forward (8 tests)</li><li>TASK-009: doctor command â€” health check (7 tests)</li><li>TASK-010: portfolio.py â€” multi-project workspace, cross-project KPIs (7 tests)</li><li>TASK-011: collab.py â€” cross-project channel, inbox/outbox (8 tests)</li><li>Updated TASK-001 status to DONE (was OPEN despite being committed)</li><h3>Next Steps</h3><li>Commit all work</li><li>Session history (session_history.jsonl) for LLM Learning Curve KPIs</li><li>Intake features FEAT-004 (cross-project guard) and FEAT-005 (file path enforcement)</li><li>PyPI packaging prep (OBJ-3)</li></div></div>
+        <div class="tab-panels"><div class="tab-panel" id="panel-business"><div class="section">
     <div class="section">
-        <h2>Business Convergence</h2>
         <div class="convergence-hero">
             <div class="conv-number" style="color: #e74c3c">0%</div>
-            <div class="conv-label">0 of 0 stories delivered</div>
+            <div class="conv-label">0 of 0 business outcomes delivered</div>
         </div>
     </div>
-    <div class="section"><h2>Epic Progress</h2><div class="biz-grid">
-            <div class="biz-epic-card">
-                <div class="biz-epic-header">
-                    <span class="badge-sm st-prog">IN_PROGRESS</span>
-                    <span class="epic-id">E-001</span>
-                    <span class="epic-name">Core Engine â€” state machine + hooks + config</span>
-                </div>
-                <div class="biz-epic-stats">
-                    <div>Stories: 0/0</div>
-                    <div>Tasks: 0/0</div>
-                </div>
-                <div class="progress-bar"><div class="progress-fill" style="width: 0%; background: #e74c3c"></div></div>
-                
-            </div>
-            
-            <div class="biz-epic-card">
-                <div class="biz-epic-header">
-                    <span class="badge-sm st-open">OPEN</span>
-                    <span class="epic-id">E-002</span>
-                    <span class="epic-name">KPI Engine â€” 30 built-in + custom + plugins</span>
-                </div>
-                <div class="biz-epic-stats">
-                    <div>Stories: 0/0</div>
-                    <div>Tasks: 0/0</div>
-                </div>
-                <div class="progress-bar"><div class="progress-fill" style="width: 0%; background: #e74c3c"></div></div>
-                
-            </div>
-            
-            <div class="biz-epic-card">
-                <div class="biz-epic-header">
-                    <span class="badge-sm st-open">OPEN</span>
-                    <span class="epic-id">E-003</span>
-                    <span class="epic-name">Developer Experience â€” init, rollover, doctor</span>
-                </div>
-                <div class="biz-epic-stats">
-                    <div>Stories: 0/0</div>
-                    <div>Tasks: 0/0</div>
-                </div>
-                <div class="progress-bar"><div class="progress-fill" style="width: 0%; background: #e74c3c"></div></div>
-                
-            </div>
-            
-            <div class="biz-epic-card">
-                <div class="biz-epic-header">
-                    <span class="badge-sm st-open">OPEN</span>
-                    <span class="epic-id">E-004</span>
-                    <span class="epic-name">Multi-Project â€” portfolio + collab channel</span>
-                </div>
-                <div class="biz-epic-stats">
-                    <div>Stories: 0/0</div>
-                    <div>Tasks: 0/0</div>
-                </div>
-                <div class="progress-bar"><div class="progress-fill" style="width: 0%; background: #e74c3c"></div></div>
-                
-            </div>
-            </div></div><div class="section"><h2>Recommended Next Action</h2><div class="nba-box">Triage backlog — 14 intake items open</div></div></div></div>
+    <div class="section"><h2>Tangible Business Outcomes</h2><p class="muted">No TBOs defined yet. Populate _living_business_objectives.md with user-facing outcomes.</p></div><div class="section"><h2>Project Status</h2><div class="status-prose"><h3>Current State</h3><li>**All 12 original tasks DONE.** 209 tests passing.</li><li>Full CLI: init, start, status, gate, transition, checklist, kpis, rollover, healthcheck, portfolio, collab, audit, scope, dashboard.</li><li>Audit layer live â€” every file write logged with session context and cross-project detection.</li><li>Scope lock â€” configurable enforcement (log/warn/block), auto-clears on transition.</li><li>Collab pipeline â€” 4 message types (CHANGE_REQUEST, ISSUE_ESCALATION, STATUS_UPDATE, FEEDBACK) + sync.</li><li>Rollover supports date OR size triggers.</li><li>HTML dashboard â€” 9 tabbed tabs: Business â†’ Overview â†’ Roadmap â†’ KPIs â†’ Trends â†’ Intake â†’ Session â†’ Audit â†’ Distribution.</li><li>Session history captures snapshots per session for trend tracking and drift detection.</li><li>Doc model: Epic â†’ Story â†’ Task hierarchy. Business Objectives and Distribution as living docs.</li><li>Design principle established: progress = business objectives or productionization moved. Everything else is shadow work.</li><h3>This Session</h3><li>TASK-002 through TASK-011: all core modules implemented</li><li>Renamed doctor â†’ healthcheck</li><li>Restructured intake: merged bugs+gaps â†’ issues, dropped changes</li><li>Restructured doc model: Epic/Story/Task with PM fields (Risks, Delays, Blockers, Dependencies)</li><li>Added _project_stories.md as separate file</li><li>Built audit layer (audit.py) â€” hook stdin parsing, JSONL logging, cross-project detection</li><li>Wired audit into gate checks â€” every Edit/Write logged</li><li>Built scope lock (scope.py) â€” configurable file path enforcement</li><li>Strengthened collab pipeline â€” 4 structured message types + sync between projects</li><li>Added size-based rollover trigger</li><li>Built HTML dashboard with 9 tabs (Business, Overview, Roadmap, KPIs, Trends, Intake, Session, Audit, Distribution)</li><li>Added session_history.jsonl â€” session snapshots, delta computation, drift detection</li><li>Added _living_business_objectives.md and _living_distribution.md scaffolds</li><li>Established design principle: bookend tabs (Business/Distribution) are progress, middle tabs are shadow work</li><li>Registered 14 intake features (FEAT-001 through FEAT-014)</li><h3>Next Session</h3><li>FEAT-014: Progress timeline â€” only business milestones, not tech deliverables</li><li>FEAT-007: Token usage auditing â€” transcript parsing, waste detection, cost tracking</li><li>FEAT-010: License key management â€” free vs Pro tier</li><li>FEAT-012: GitHub packaging â€” LICENSE, README, PyPI distribution</li><li>FEAT-006: Enhance HTML dashboard â€” token stats, LLM effectiveness metrics</li></div></div></div></div>
 <div class="tab-panel" id="panel-overview"><div class="section"><h2>Pipeline</h2><div class="stat-grid">
         <div class="stat-card">
             <div class="stat-value" style="color: #e74c3c">0<span class="stat-of">/4</span></div>
@@ -334,7 +285,7 @@ tr.warn { background: rgba(231, 76, 60, 0.08); }
         </div>
         
         <div class="stat-card">
-            <div class="stat-value" style="color: #e74c3c">0<span class="stat-of">/14</span></div>
+            <div class="stat-value" style="color: #e74c3c">0<span class="stat-of">/15</span></div>
             <div class="stat-label">Intake</div>
             <div class="progress-bar"><div class="progress-fill" style="width: 0%; background: #e74c3c"></div></div>
             <div class="stat-sub">0 in progress</div>
@@ -352,7 +303,7 @@ tr.warn { background: rgba(231, 76, 60, 0.08); }
         <div class="stat-value" style="color: #e74c3c">0<span class="stat-of">%</span></div>
         <div class="stat-label">Convergence</div>
     </div>
-    </div></div><div class="section"><h2>What to Work On Next</h2><div class="nba-box">Triage backlog — 14 intake items open</div></div>
+    </div></div><div class="section"><h2>What to Work On Next</h2><div class="nba-box">Triage backlog — 15 intake items open</div></div>
     <div class="section">
         <h2>Project Files <span class="count">(7)</span></h2>
         <table class="data-table"><thead><tr><th>Type</th><th>File</th><th>Title</th><th>Updated</th></tr></thead><tbody><tr>
@@ -465,25 +416,25 @@ tr.warn { background: rgba(231, 76, 60, 0.08); }
         <div class="kpi-cat">
             <h3>LLM Effectiveness</h3>
             <p class="cat-desc">Is the AI getting better?</p>
-            <table class="data-table"><thead><tr><th>KPI</th><th>Value</th><th>Detail</th></tr></thead><tbody><tr><td class="kpi-name">LLM Learning Curve</td><td class="kpi-value">0/100</td><td class="kpi-detail">Requires session history</td></tr><tr><td class="kpi-name">Going in Circles</td><td class="kpi-value">0/100</td><td class="kpi-detail">0 reopened, 0 blocked</td></tr><tr><td class="kpi-name">Skin in the Game</td><td class="kpi-value">0/100</td><td class="kpi-detail">0/0 tasks have story ref</td></tr><tr><td class="kpi-name">Definition of Done</td><td class="kpi-value">100/100</td><td class="kpi-detail">0 reopened</td></tr><tr><td class="kpi-name">Plan Adherence</td><td class="kpi-value">0/100</td><td class="kpi-detail">Requires session history</td></tr><tr><td class="kpi-name">State Discipline</td><td class="kpi-value">0/100</td><td class="kpi-detail">Requires session history</td></tr><tr><td class="kpi-name">Session Completeness</td><td class="kpi-value">0/100</td><td class="kpi-detail">Requires session history</td></tr><tr><td class="kpi-name">First-Time-Right</td><td class="kpi-value">100%</td><td class="kpi-detail">12/12 stayed done</td></tr><tr><td class="kpi-name">Bug Introduction Rate</td><td class="kpi-value">14</td><td class="kpi-detail">14 open issues</td></tr><tr><td class="kpi-name">Scope Creep</td><td class="kpi-value">0</td><td class="kpi-detail">Requires session tracking</td></tr></tbody></table>
+            <table class="data-table"><thead><tr><th>KPI</th><th>Value</th><th>Detail</th></tr></thead><tbody><tr><td class="kpi-name">LLM Learning Curve</td><td class="kpi-value">0/100</td><td class="kpi-detail">Requires session history</td></tr><tr><td class="kpi-name">Going in Circles</td><td class="kpi-value">0/100</td><td class="kpi-detail">0 reopened, 0 blocked</td></tr><tr><td class="kpi-name">Skin in the Game</td><td class="kpi-value">0/100</td><td class="kpi-detail">0/0 tasks have story ref</td></tr><tr><td class="kpi-name">Definition of Done</td><td class="kpi-value">100/100</td><td class="kpi-detail">0 reopened</td></tr><tr><td class="kpi-name">Plan Adherence</td><td class="kpi-value">0/100</td><td class="kpi-detail">Requires session history</td></tr><tr><td class="kpi-name">State Discipline</td><td class="kpi-value">0/100</td><td class="kpi-detail">Requires session history</td></tr><tr><td class="kpi-name">Session Completeness</td><td class="kpi-value">0/100</td><td class="kpi-detail">Requires session history</td></tr><tr><td class="kpi-name">First-Time-Right</td><td class="kpi-value">100%</td><td class="kpi-detail">12/12 stayed done</td></tr><tr><td class="kpi-name">Bug Introduction Rate</td><td class="kpi-value">15</td><td class="kpi-detail">15 open issues</td></tr><tr><td class="kpi-name">Scope Creep</td><td class="kpi-value">0</td><td class="kpi-detail">Requires session tracking</td></tr></tbody></table>
         </div>
         
         <div class="kpi-cat">
             <h3>Delivery &amp; Project Management</h3>
             <p class="cat-desc">Is business value being produced?</p>
-            <table class="data-table"><thead><tr><th>KPI</th><th>Value</th><th>Detail</th></tr></thead><tbody><tr><td class="kpi-name">Code-Domain Convergence</td><td class="kpi-value">0/100</td><td class="kpi-detail">0/0 tasks have story ref</td></tr><tr><td class="kpi-name">Roadmap Velocity</td><td class="kpi-value">0</td><td class="kpi-detail">0 stories completed</td></tr><tr><td class="kpi-name">Intake Throughput</td><td class="kpi-value">0%</td><td class="kpi-detail">0/14 closed</td></tr><tr><td class="kpi-name">Blocker Resolution</td><td class="kpi-value">0</td><td class="kpi-detail">0 currently blocked</td></tr><tr><td class="kpi-name">Value per Session</td><td class="kpi-value">0</td><td class="kpi-detail">Requires session tracking</td></tr><tr><td class="kpi-name">Bug-to-Feature Ratio</td><td class="kpi-value">1.17</td><td class="kpi-detail">14 issues / 12 done</td></tr><tr><td class="kpi-name">Risk Concentration</td><td class="kpi-value">0/100</td><td class="kpi-detail">0 blocked of 0 active</td></tr><tr><td class="kpi-name">Next Best Action</td><td class="kpi-value">—</td><td class="kpi-detail">Triage backlog — 14 intake items open</td></tr></tbody></table>
+            <table class="data-table"><thead><tr><th>KPI</th><th>Value</th><th>Detail</th></tr></thead><tbody><tr><td class="kpi-name">Code-Domain Convergence</td><td class="kpi-value">0/100</td><td class="kpi-detail">0/0 tasks have story ref</td></tr><tr><td class="kpi-name">Roadmap Velocity</td><td class="kpi-value">0</td><td class="kpi-detail">0 stories completed</td></tr><tr><td class="kpi-name">Intake Throughput</td><td class="kpi-value">0%</td><td class="kpi-detail">0/15 closed</td></tr><tr><td class="kpi-name">Blocker Resolution</td><td class="kpi-value">0</td><td class="kpi-detail">0 currently blocked</td></tr><tr><td class="kpi-name">Value per Session</td><td class="kpi-value">0</td><td class="kpi-detail">Requires session tracking</td></tr><tr><td class="kpi-name">Bug-to-Feature Ratio</td><td class="kpi-value">1.25</td><td class="kpi-detail">15 issues / 12 done</td></tr><tr><td class="kpi-name">Risk Concentration</td><td class="kpi-value">0/100</td><td class="kpi-detail">0 blocked of 0 active</td></tr><tr><td class="kpi-name">Next Best Action</td><td class="kpi-value">—</td><td class="kpi-detail">Triage backlog — 15 intake items open</td></tr></tbody></table>
         </div>
         
         <div class="kpi-cat">
             <h3>Project Health</h3>
             <p class="cat-desc">Is the system of record healthy?</p>
-            <table class="data-table"><thead><tr><th>KPI</th><th>Value</th><th>Detail</th></tr></thead><tbody><tr><td class="kpi-name">Doc Freshness</td><td class="kpi-value">0/100</td><td class="kpi-detail">Requires file timestamps</td></tr><tr><td class="kpi-name">Traceability</td><td class="kpi-value">0/100</td><td class="kpi-detail">0/12 tasks traced to stories</td></tr><tr class="warn"><td class="kpi-name">Intake Staleness</td><td class="kpi-value">14</td><td class="kpi-detail">14 items open</td></tr><tr><td class="kpi-name">Archive Health</td><td class="kpi-value">0/100</td><td class="kpi-detail">Requires rollover history</td></tr><tr class="warn"><td class="kpi-name">Coverage Gap</td><td class="kpi-value">2</td><td class="kpi-detail">2 missing files</td></tr></tbody></table>
+            <table class="data-table"><thead><tr><th>KPI</th><th>Value</th><th>Detail</th></tr></thead><tbody><tr><td class="kpi-name">Doc Freshness</td><td class="kpi-value">0/100</td><td class="kpi-detail">Requires file timestamps</td></tr><tr><td class="kpi-name">Traceability</td><td class="kpi-value">0/100</td><td class="kpi-detail">0/12 tasks traced to stories</td></tr><tr class="warn"><td class="kpi-name">Intake Staleness</td><td class="kpi-value">15</td><td class="kpi-detail">15 items open</td></tr><tr><td class="kpi-name">Archive Health</td><td class="kpi-value">0/100</td><td class="kpi-detail">Requires rollover history</td></tr><tr class="warn"><td class="kpi-name">Coverage Gap</td><td class="kpi-value">2</td><td class="kpi-detail">2 missing files</td></tr></tbody></table>
         </div>
         </div></div>
 <div class="tab-panel" id="panel-trends"><div class="section"><p class="muted">No session history yet. Complete a session to start tracking trends.</p></div></div>
 <div class="tab-panel" id="panel-intake"><div class="section">
         <div class="kpi-cat">
-            <h3>Features <span class="count">(14)</span></h3>
+            <h3>Features <span class="count">(15)</span></h3>
             <table class="data-table"><thead><tr><th>Status</th><th>Key</th><th>Item</th><th>Priority</th><th>Added</th></tr></thead><tbody><tr>
                 <td><span class="badge-xs st-open">OPEN</span></td>
                 <td>FEAT-001</td>
@@ -565,8 +516,14 @@ tr.warn { background: rgba(231, 76, 60, 0.08); }
             </tr><tr>
                 <td><span class="badge-xs st-open">OPEN</span></td>
                 <td>FEAT-014</td>
-                <td>Progress vs Shadow Work â€” classify file changes as business progress or technical noise</td>
+                <td>Progress timeline â€” only TBO milestones and productionization</td>
                 <td class="muted">P1</td>
+                <td class="muted">2026-04-05</td>
+            </tr><tr>
+                <td><span class="badge-xs st-open">OPEN</span></td>
+                <td>FEAT-015</td>
+                <td>Split dashboard.py into smaller modules</td>
+                <td class="muted">P2</td>
                 <td class="muted">2026-04-05</td>
             </tr></tbody></table>
         </div>
@@ -598,7 +555,41 @@ tr.warn { background: rgba(231, 76, 60, 0.08); }
             <div class="progress-bar"><div class="progress-fill" style="width: 0%; background: #e74c3c"></div></div>
             <div class="ck-item">&#x26AA; intake_updated</div><div class="ck-item">&#x26AA; tasks_updated</div><div class="ck-item">&#x26AA; status_updated</div><div class="ck-item">&#x26AA; living_reviewed</div><div class="ck-item">&#x26AA; memory_derived</div>
         </div>
-        </div></div></div>
+        </div></div>
+    <div class="section">
+        <h2>Claude Memory <span class="count">(5 entries)</span></h2>
+        <p class="muted" style="margin-bottom: 12px;">What Claude remembered from this project. Better signals in your docs = better memory.</p>
+        <table class="data-table">
+            <thead><tr><th>Type</th><th>File</th><th>Name</th><th>Description</th></tr></thead>
+            <tbody><tr>
+            <td><span class="badge-xs st-open">feedback</span></td>
+            <td class="mono">feedback_enforcement_posture.md</td>
+            <td>relaxed-enforcement-posture</td>
+            <td class="muted">Default to log/audit, not block â€” user wants configurable enforcement that starts relaxed</td>
+        </tr><tr>
+            <td><span class="badge-xs st-open">feedback</span></td>
+            <td class="mono">feedback_file_size.md</td>
+            <td>keep-files-small</td>
+            <td class="muted">User wants files under ~200 lines â€” split large modules proactively</td>
+        </tr><tr>
+            <td><span class="badge-xs st-done">project</span></td>
+            <td class="mono">project_dashboard_bookends.md</td>
+            <td>dashboard-bookend-principle</td>
+            <td class="muted">Business tab (first) and Distribution tab (last) are truth â€” middle tabs are operational</td>
+        </tr><tr>
+            <td><span class="badge-xs st-done">project</span></td>
+            <td class="mono">project_tbo_model.md</td>
+            <td>tbo-business-model</td>
+            <td class="muted">TBO (Tangible Business Outcome) is the unit of progress â€” core design principle from session 2</td>
+        </tr><tr>
+            <td><span class="badge-xs st-prog">user</span></td>
+            <td class="mono">user_nitin.md</td>
+            <td>nitin-profile</td>
+            <td class="muted">Nitin's role, thinking style, and product instincts â€” shapes how to collaborate</td>
+        </tr></tbody>
+        </table>
+    </div>
+    </div>
 <div class="tab-panel" id="panel-audit"><div class="section"><p class="muted">No file writes recorded.</p></div></div>
 <div class="tab-panel" id="panel-distribution"><div class="section"><p class="muted">No distribution data. Create _living_distribution.md to track your go-to-market plan.</p></div></div>
 </div>
