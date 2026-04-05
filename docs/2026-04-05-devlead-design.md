@@ -48,7 +48,18 @@ Dev teams of 2-10 people using AI coding assistants (starting with Claude Code).
 
 ## 4. Revenue Model
 
-One-time purchase ($29-49). No subscription. Developer buys it, installs it, owns it. Distribution via Gumroad or GitHub Sponsors. Free updates.
+**Freemium with one-time upgrade.**
+
+| Tier | Price | What You Get |
+|------|-------|-------------|
+| **Free** | $0 | 1 project. Full state machine, hooks, all 23 KPIs, doc model, rollover. No limits on features. |
+| **Pro** | $49 one-time | Unlimited projects. Portfolio dashboard, cross-project KPIs, cross-project dependencies, unified "Next Best Action" across projects. |
+
+**Why this works:**
+- Free tier is genuinely useful — not crippled. A solo dev with one project gets everything.
+- The moment you have 2+ projects (which is most teams), you need the portfolio view. That's the natural upgrade trigger.
+- One-time, not subscription. Developer buys it, owns it. No recurring revenue headache for the buyer.
+- Distribution via Gumroad, GitHub Sponsors, or PyPI (free tier on PyPI, Pro via license key).
 
 ### 4.1 Installation
 
@@ -721,7 +732,167 @@ gate_session_end = true
 
 Sample markdown files in `tests/fixtures/` with known data for deterministic KPI testing.
 
-## 12. What DevLead Does NOT Do
+## 12. Multi-Project Portfolio (Pro Tier)
+
+### 12.1 Architecture
+
+```
+~/.devlead/                              # DevLead home (user-level)
+├── workspace.toml                       # Registered projects
+├── portfolio_history.jsonl              # Aggregate KPI history across projects
+│
+│   Per-project (unchanged from single-project):
+├── ~/projects/eTrading/claude_docs/     # Project A
+├── ~/projects/income_desk/claude_docs/  # Project B
+└── ~/projects/devlead/claude_docs/      # Project C
+```
+
+### 12.2 Workspace Registration
+
+```bash
+devlead portfolio add ~/projects/eTrading --name "eTrading"
+devlead portfolio add ~/projects/income_desk --name "income_desk"
+devlead portfolio list
+devlead portfolio remove eTrading
+```
+
+```toml
+# ~/.devlead/workspace.toml
+[[projects]]
+name = "eTrading"
+path = "C:/Users/nitin/PythonProjects/eTrading"
+
+[[projects]]
+name = "income_desk"
+path = "C:/Users/nitin/PythonProjects/income_desk"
+```
+
+### 12.3 Portfolio Dashboard
+
+```bash
+devlead portfolio
+```
+
+```
+========================================================================
+  DevLead Portfolio — 2026-04-05
+========================================================================
+
+  PROJECT          | Convergence | Circles | FTR  | LLM Learning | State
+  -----------------------------------------------------------------------
+  eTrading         | 35%         | 12/100  | 78%  | IMPROVING     | EXECUTE
+  income_desk      | 62%         | 5/100   | 91%  | STABLE        | ORIENT
+
+  CROSS-PROJECT
+  -----------------------------------------------------------------------
+  Portfolio Conv.  | 48% (weighted)
+  Total velocity   | 4 stories/day across 2 projects
+  Biggest blocker  | GAP-006 in eTrading blocks FEAT-002 in income_desk
+  Time allocation  | eTrading 70% | income_desk 30%
+  Weakest link     | eTrading (convergence declining -5% this week)
+
+  >> Next Best Action (cross-project):
+     1. income_desk: Close REQUEST-003 (unblocks eTrading TASK-045)
+        Advances: eTrading Go-Live US 3/12 → 4/12
+     2. eTrading: TASK-048 — Exit monitor integration
+        Advances: eTrading Go-Live US 4/12 → 5/12
+========================================================================
+```
+
+### 12.4 Cross-Project Collaboration Channel
+
+Projects that depend on each other need a communication channel. DevLead provides this via a `.collab/` folder convention — a shared mailbox between projects.
+
+**How it works:**
+
+Each project has a `.collab/` folder at its root. When Project A needs something from Project B, it writes a request file. When Project B's DevLead session starts (ORIENT state), it scans for incoming requests and registers them as `_intake` items.
+
+```
+eTrading/.collab/
+├── OUTBOX/                          # Requests FROM eTrading TO other projects
+│   └── REQUEST_income_desk_001.md   # "We need batch_reprice to support X"
+└── INBOX/                           # Requests FROM other projects TO eTrading
+    └── FEEDBACK_income_desk_003.md  # "Here's why batch_reprice works this way"
+
+income_desk/.collab/
+├── OUTBOX/
+│   └── FEEDBACK_etrading_003.md     # Response to eTrading's request
+└── INBOX/
+    └── REQUEST_etrading_001.md      # eTrading's request lands here
+```
+
+**Collab file format:**
+
+```markdown
+# REQUEST: Batch reprice support for multi-leg trades
+
+> From: eTrading
+> To: income_desk
+> Date: 2026-04-05
+> Priority: P1
+> Blocks: eTrading/TASK-045
+> Status: OPEN
+
+## What We Need
+batch_reprice() currently only handles single-leg trades...
+
+## Why It Matters
+This blocks Go-Live US gate 4/12...
+
+## Acceptance Criteria
+- [ ] batch_reprice handles multi-leg TradeSpecs
+- [ ] Returns per-leg Greeks
+```
+
+**DevLead automation:**
+
+| When | What DevLead Does |
+|------|------------------|
+| `devlead init` | Creates `.collab/INBOX/` and `.collab/OUTBOX/` |
+| ORIENT state | Scans `.collab/INBOX/` for new requests → registers as `_intake_changes.md` items |
+| EXECUTE state | If work resolves a collab request → writes response to `.collab/OUTBOX/` |
+| `devlead portfolio` | Shows cross-project blockers from collab channel |
+| Portfolio KPIs | Counts open collab requests as cross-project blockers |
+
+**Sync mechanism:**
+
+For projects on the same machine (like eTrading + income_desk), DevLead can symlink or copy between `.collab/` folders:
+
+```bash
+devlead collab sync   # Push OUTBOX to target project's INBOX
+```
+
+For remote projects (different machines/repos), `.collab/` is committed to git. PR-based collaboration.
+
+### 12.5 Cross-Project KPIs
+
+| # | KPI | What It Measures | Signal |
+|---|-----|-----------------|--------|
+| 24 | **Portfolio Convergence** | Weighted avg convergence across projects | Per-project convergence × project weight |
+| 25 | **Cross-Project Blockers** | Dependencies between projects that are stuck | Open collab requests with Status: OPEN |
+| 26 | **Time Allocation Balance** | Is one project starving? | Sessions per project over rolling 7 days |
+| 27 | **Weakest Link** | Which project needs attention most? | Project with worst composite KPI score |
+| 28 | **Portfolio Velocity** | Aggregate delivery rate | Total stories completed across all projects per week |
+| 29 | **Context Switch Cost** | Jumping between projects too often? | Project switches per day (high = fragmented attention) |
+| 30 | **Collab Response Time** | Are cross-project requests getting answered? | Avg days from REQUEST filed to FEEDBACK received |
+
+### 12.6 CLI Commands (Pro)
+
+```bash
+devlead portfolio                        # Cross-project dashboard
+devlead portfolio add <path> --name <n>  # Register project
+devlead portfolio remove <name>          # Unregister
+devlead portfolio sync                   # Refresh all project KPIs
+devlead collab sync                      # Push outbox to target inboxes
+devlead collab status                    # Show open cross-project requests
+devlead next --all                       # Next best action across ALL projects
+devlead kpis --all                       # KPIs for every project
+devlead status --project <name>          # Single project status
+```
+
+---
+
+## 13. What DevLead Does NOT Do
 
 - **Does not ship code.** It governs the development phase, not deployment or release.
 - **Does not replace PM tools.** No Jira, no Linear, no sprint ceremonies. DevLead governs how AI assists in development — it doesn't manage your project backlog.
@@ -731,7 +902,7 @@ Sample markdown files in `tests/fixtures/` with known data for deterministic KPI
 - **Does not phone home.** No telemetry, no license server.
 - **Does not lock you in.** If you uninstall, your `claude_docs/` files still work as plain markdown.
 
-## 13. Future (Not in V1)
+## 14. Future
 
 - Node.js adapter for npm distribution
 - Cursor/Copilot hook adapters
