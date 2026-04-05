@@ -1,0 +1,31 @@
+[project]
+name = "test-project"
+docs_dir = "my_docs"
+
+[kpis]
+circles_warning = 40
+ftr_minimum = 70
+convergence_target = 90
+
+[[kpis.custom]]
+name = "Test KPI"
+description = "A test custom KPI"
+formula = "(tasks_done / tasks_total) * 100"
+range = [0, 100]
+warning_below = 50
+format = "percent"
+
+[rollover]
+trigger = "date"
+day_of_month = 15
+retain_months = 6
+files = [
+    "_project_tasks.md",
+    "_intake_bugs.md",
+]
+
+[hooks]
+session_start = true
+gate_edits = true
+gate_plan_mode = false
+gate_session_end = true
