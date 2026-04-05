@@ -5,6 +5,6 @@
 
 ## Active
 
-| ID | Task | Story | Priority | Status | Assignee | Due | Blockers |
-|----|------|-------|----------|--------|----------|-----|----------|
+| ID | Task | Story | Priority | Status | Assignee | Due | Dependencies | Notes |
+|----|------|-------|----------|--------|----------|-----|--------------|-------|
 

@@ -58,9 +58,9 @@ def test_doctor_missing_doc_file(tmp_path):
     """Doctor reports missing doc files."""
     _full_setup(tmp_path)
     # Remove one file
-    (tmp_path / "claude_docs" / "_intake_bugs.md").unlink()
+    (tmp_path / "claude_docs" / "_intake_issues.md").unlink()
     results = do_doctor(tmp_path)
-    warns = [r for r in results if r["status"] == "WARN" and "bugs" in r["check"]]
+    warns = [r for r in results if r["status"] == "WARN" and "issues" in r["check"]]
     assert len(warns) >= 1
 
 
@@ -77,7 +77,7 @@ def test_doctor_cli(tmp_path):
     from devlead.init import do_init
     do_init(tmp_path)
     result = subprocess.run(
-        [sys.executable, "-m", "devlead", "doctor"],
+        [sys.executable, "-m", "devlead", "healthcheck"],
         capture_output=True,
         text=True,
         cwd=str(tmp_path),

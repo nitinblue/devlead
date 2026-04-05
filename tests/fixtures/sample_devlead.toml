@@ -21,7 +21,7 @@ day_of_month = 15
 retain_months = 6
 files = [
     "_project_tasks.md",
-    "_intake_bugs.md",
+    "_intake_issues.md",
 ]
 
 [hooks]

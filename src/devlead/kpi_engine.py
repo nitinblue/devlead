@@ -261,10 +261,10 @@ def compute_builtin_kpis(
     # Bug Introduction Rate — requires session tracking
     results.append(KpiResult(
         name="Bug Introduction Rate",
-        value=vars.get("intake_bugs_open", 0),
+        value=vars.get("intake_open", 0),
         format="count",
         category="A",
-        detail=f"{vars.get('intake_bugs_open', 0)} open bugs",
+        detail=f"{vars.get('intake_open', 0)} open issues",
     ))
 
     # Scope Creep — requires plan tracking
@@ -326,13 +326,13 @@ def compute_builtin_kpis(
     ))
 
     # Bug-to-Feature Ratio
-    bug_ratio = _safe_div(vars.get("intake_bugs_open", 0), max(vars.get("tasks_done", 0), 1))
+    bug_ratio = _safe_div(vars.get("intake_open", 0), max(vars.get("tasks_done", 0), 1))
     results.append(KpiResult(
         name="Bug-to-Feature Ratio",
         value=round(bug_ratio, 2),
         format="ratio",
         category="B",
-        detail=f"{vars.get('intake_bugs_open', 0)} bugs / {vars.get('tasks_done', 0)} done",
+        detail=f"{vars.get('intake_open', 0)} issues / {vars.get('tasks_done', 0)} done",
     ))
 
     # Risk Concentration — simplified: tasks_blocked / tasks_active
@@ -401,9 +401,10 @@ def compute_builtin_kpis(
     if docs_dir:
         expected = [
             "_project_status.md",
-            "_project_tasks.md",
             "_project_roadmap.md",
-            "_intake_bugs.md",
+            "_project_stories.md",
+            "_project_tasks.md",
+            "_intake_issues.md",
             "_intake_features.md",
         ]
         for fname in expected:

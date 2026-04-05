@@ -132,34 +132,49 @@ def _count_intake_status(
     return count_by_status(rows, status)
 
 
+def _count_table_stats(docs_dir: Path, filename: str) -> dict[str, int]:
+    """Count standard PM stats for any file with a Status column."""
+    text = _read_if_exists(docs_dir / filename)
+    rows = parse_table(text)
+    total = len(rows)
+    return {
+        "total": total,
+        "open": count_by_status(rows, "OPEN"),
+        "in_progress": count_by_status(rows, "IN_PROGRESS"),
+        "done": count_by_status(rows, "DONE"),
+        "blocked": count_by_status(rows, "BLOCKED"),
+        "reopened": count_by_status(rows, "REOPEN"),
+        "active": total - count_by_status(rows, "DONE"),
+    }
+
+
 def get_builtin_vars(
     docs_dir: Path, today: date | None = None
 ) -> dict[str, int | float]:
-    """Compute all 18 builtin variables from docs_dir files.
+    """Compute builtin variables from docs_dir files.
 
-    Returns dict with keys matching spec section 8.3.
+    Three-level hierarchy: Epics → Stories → Tasks.
+    Plus aggregate intake counts.
     Missing files produce 0 values (no crash).
     """
     if today is None:
         today = date.today()
 
+    # --- Epics (from _project_roadmap.md) ---
+    epic_stats = _count_table_stats(docs_dir, "_project_roadmap.md")
+
+    # --- Stories (from _project_stories.md) ---
+    story_stats = _count_table_stats(docs_dir, "_project_stories.md")
+    stories_text = _read_if_exists(docs_dir / "_project_stories.md")
+    story_rows = parse_table(stories_text)
+    stories_with_epic = count_with_pattern(story_rows, "Epic", r"E-\d+")
+
     # --- Tasks ---
     tasks_text = _read_if_exists(docs_dir / "_project_tasks.md")
     task_rows = parse_table(tasks_text)
-
-    tasks_open = count_by_status(task_rows, "OPEN")
-    tasks_in_progress = count_by_status(task_rows, "IN_PROGRESS")
-    tasks_done = count_by_status(task_rows, "DONE")
-    tasks_blocked = count_by_status(task_rows, "BLOCKED")
-    tasks_reopened = count_by_status(task_rows, "REOPEN")
+    task_stats = _count_table_stats(docs_dir, "_project_tasks.md")
     tasks_overdue = count_overdue(task_rows, "Due", today)
-    tasks_with_story = count_with_pattern(task_rows, "Story", r"[SE]-\d+")
-    tasks_total = len(task_rows)
-    tasks_active = tasks_total - tasks_done
-
-    # --- Stories ---
-    roadmap_text = _read_if_exists(docs_dir / "_project_roadmap.md")
-    stories_done, stories_total = count_checkboxes(roadmap_text)
+    tasks_with_story = count_with_pattern(task_rows, "Story", r"S-\d+")
 
     # --- Intake (aggregate across all _intake_*.md files) ---
     intake_open = 0
@@ -172,35 +187,43 @@ def get_builtin_vars(
 
     intake_total = intake_open + intake_closed
 
-    # Specific intake files
-    intake_bugs_open = _count_intake_status(docs_dir, "_intake_bugs.md", "OPEN")
-    intake_features_open = _count_intake_status(
-        docs_dir, "_intake_features.md", "OPEN"
-    )
-    intake_gaps_open = _count_intake_status(docs_dir, "_intake_gaps.md", "OPEN")
-
     # --- Derived ---
+    stories_total = story_stats["total"]
+    stories_done = story_stats["done"]
     convergence = (
         (stories_done / stories_total * 100) if stories_total > 0 else 0
     )
 
     return {
-        "tasks_open": tasks_open,
-        "tasks_in_progress": tasks_in_progress,
-        "tasks_done": tasks_done,
-        "tasks_total": tasks_total,
-        "tasks_blocked": tasks_blocked,
-        "tasks_reopened": tasks_reopened,
+        # Epics
+        "epics_total": epic_stats["total"],
+        "epics_open": epic_stats["open"],
+        "epics_in_progress": epic_stats["in_progress"],
+        "epics_done": epic_stats["done"],
+        "epics_blocked": epic_stats["blocked"],
+        "epics_active": epic_stats["active"],
+        # Stories
+        "stories_total": stories_total,
+        "stories_open": story_stats["open"],
+        "stories_in_progress": story_stats["in_progress"],
+        "stories_done": stories_done,
+        "stories_blocked": story_stats["blocked"],
+        "stories_active": story_stats["active"],
+        "stories_with_epic": stories_with_epic,
+        # Tasks
+        "tasks_total": task_stats["total"],
+        "tasks_open": task_stats["open"],
+        "tasks_in_progress": task_stats["in_progress"],
+        "tasks_done": task_stats["done"],
+        "tasks_blocked": task_stats["blocked"],
+        "tasks_reopened": task_stats["reopened"],
+        "tasks_active": task_stats["active"],
         "tasks_overdue": tasks_overdue,
         "tasks_with_story": tasks_with_story,
-        "tasks_active": tasks_active,
-        "stories_total": stories_total,
-        "stories_done": stories_done,
+        # Intake
         "intake_open": intake_open,
         "intake_closed": intake_closed,
         "intake_total": intake_total,
-        "intake_bugs_open": intake_bugs_open,
-        "intake_features_open": intake_features_open,
-        "intake_gaps_open": intake_gaps_open,
+        # Derived
         "convergence": convergence,
     }

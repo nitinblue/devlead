@@ -11,12 +11,11 @@ SCAFFOLD_DIR = Path(__file__).parent / "scaffold"
 # Files to copy into claude_docs/
 DOC_FILES = [
     "_project_status.md",
-    "_project_tasks.md",
     "_project_roadmap.md",
-    "_intake_bugs.md",
+    "_project_stories.md",
+    "_project_tasks.md",
+    "_intake_issues.md",
     "_intake_features.md",
-    "_intake_gaps.md",
-    "_intake_changes.md",
     "_living_standing_instructions.md",
 ]
 
@@ -67,7 +66,7 @@ def do_init(project_dir: Path) -> None:
     print(f"  claude_docs/ — {len(list(docs_dir.glob('*.md')))} doc files")
     print(f"  devlead.toml — project configuration")
     print(f"  .claude/settings.json — hooks configured")
-    print(f"\nRun 'devlead doctor' to verify installation.")
+    print(f"\nRun 'devlead healthcheck' to verify installation.")
 
 
 def _merge_hooks(project_dir: Path) -> None:

@@ -1,4 +1,4 @@
-# Gap Intake
+# Issue Intake
 
 > Type: INTAKE
 > Last updated: {date} | Open: 0 | Closed: 0

@@ -1,0 +1,65 @@
+{
+  "hooks": {
+    "SessionStart": [
+      {
+        "hooks": [
+          {
+            "type": "command",
+            "command": "devlead start",
+            "timeout": 15,
+            "statusMessage": "Initializing DevLead session..."
+          }
+        ]
+      }
+    ],
+    "PreToolUse": [
+      {
+        "matcher": "Edit|Write",
+        "hooks": [
+          {
+            "type": "command",
+            "command": "devlead gate EXECUTE",
+            "timeout": 5,
+            "statusMessage": "Checking state gate..."
+          }
+        ]
+      },
+      {
+        "matcher": "EnterPlanMode",
+        "hooks": [
+          {
+            "type": "command",
+            "command": "devlead gate PLAN",
+            "timeout": 5,
+            "statusMessage": "Checking plan gate..."
+          }
+        ]
+      }
+    ],
+    "PostToolUse": [
+      {
+        "matcher": "ExitPlanMode",
+        "hooks": [
+          {
+            "type": "command",
+            "command": "devlead transition EXECUTE",
+            "timeout": 5,
+            "statusMessage": "Transitioning to EXECUTE..."
+          }
+        ]
+      }
+    ],
+    "Stop": [
+      {
+        "hooks": [
+          {
+            "type": "command",
+            "command": "devlead gate SESSION_END",
+            "timeout": 10,
+            "statusMessage": "Checking session end..."
+          }
+        ]
+      }
+    ]
+  }
+}

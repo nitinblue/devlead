@@ -22,12 +22,11 @@ def test_init_creates_all_doc_files(tmp_path):
     docs = tmp_path / "claude_docs"
     expected = [
         "_project_status.md",
-        "_project_tasks.md",
         "_project_roadmap.md",
-        "_intake_bugs.md",
+        "_project_stories.md",
+        "_project_tasks.md",
+        "_intake_issues.md",
         "_intake_features.md",
-        "_intake_gaps.md",
-        "_intake_changes.md",
         "_living_standing_instructions.md",
     ]
     for fname in expected:

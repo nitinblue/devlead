@@ -1,16 +1,16 @@
 """Tests for doc_parser.py — markdown table parsing and builtin variables.
 
 Fixture counts (known values):
+- _project_roadmap.md: 2 epics (1 IN_PROGRESS, 1 OPEN)
+- _project_stories.md: 5 stories (2 DONE, 3 OPEN), all linked to epics
 - _project_tasks.md: 10 tasks total
   - 3 OPEN (TASK-004, 005, 006), 2 IN_PROGRESS (003, 009), 3 DONE (001, 002, 010)
   - 1 REOPENED (007), 1 BLOCKED (008)
-  - tasks_with_story: 8 (all except 006 and 008)
-  - tasks_overdue: 2 (TASK-004 due 04-01, TASK-007 due 03-30 — both before 04-05)
-  - tasks_active: OPEN + IN_PROGRESS + REOPENED + BLOCKED = 3+2+1+1 = 7
-- _project_roadmap.md: 5 stories, 2 done ([x])
-- _intake_bugs.md: 3 items (2 open, 1 closed)
+  - tasks_with_story: 7 (those with S-NNN ref; 006 has no story, 008 has no story, 004 has E-001)
+  - tasks_overdue: 2 (TASK-004 due 04-01, TASK-007 due 03-30)
+  - tasks_active: total - done = 10 - 3 = 7
+- _intake_issues.md: 4 items (3 open, 1 closed)
 - _intake_features.md: 2 items (1 open, 1 closed)
-- _intake_gaps.md: 1 item (1 open, 0 closed)
 - intake totals: 6 total, 4 open, 2 closed
 """
 
@@ -106,10 +106,11 @@ def test_count_reopened():
 # --- count_with_pattern ---
 
 def test_count_with_story_ref():
-    """8 tasks have S-NNN or E-NNN in Story column."""
+    """Tasks with S-NNN in Story column."""
     text = (FIXTURES / "_project_tasks.md").read_text()
     rows = parse_table(text)
-    assert count_with_pattern(rows, "Story", r"[SE]-\d+") == 8
+    # S-001(x2), S-002(x2), S-003(x2), S-004(x1) = 7, plus E-001 doesn't match S-\d+
+    assert count_with_pattern(rows, "Story", r"S-\d+") == 7
 
 
 # --- count_overdue ---
@@ -130,10 +131,11 @@ def test_count_overdue_no_due_column():
 # --- count_checkboxes ---
 
 def test_count_checkboxes_done():
-    text = (FIXTURES / "_project_roadmap.md").read_text()
+    """count_checkboxes still works for any text with checkboxes."""
+    text = "- [x] Done\n- [ ] Not done\n- [x] Also done\n"
     done, total = count_checkboxes(text)
     assert done == 2
-    assert total == 5
+    assert total == 3
 
 
 def test_count_checkboxes_none():
@@ -144,9 +146,29 @@ def test_count_checkboxes_none():
 
 # --- get_builtin_vars ---
 
+def test_builtin_vars_epics(tmp_path):
+    """Epic vars from roadmap table."""
+    _copy_fixtures_to(tmp_path)
+    vars = get_builtin_vars(tmp_path, today=date(2026, 4, 5))
+
+    assert vars["epics_total"] == 2
+    assert vars["epics_open"] == 1
+    assert vars["epics_in_progress"] == 1
+    assert vars["epics_done"] == 0
+
+
+def test_builtin_vars_stories(tmp_path):
+    """Story vars from stories table."""
+    _copy_fixtures_to(tmp_path)
+    vars = get_builtin_vars(tmp_path, today=date(2026, 4, 5))
+
+    assert vars["stories_total"] == 5
+    assert vars["stories_done"] == 2
+    assert vars["stories_open"] == 3
+    assert vars["stories_with_epic"] == 5  # all have E-NNN ref
+
+
 def test_builtin_vars_tasks(tmp_path):
-    """Builtin vars computed from fixture docs."""
-    # Copy fixtures to tmp_path so get_builtin_vars can find them
     _copy_fixtures_to(tmp_path)
     vars = get_builtin_vars(tmp_path, today=date(2026, 4, 5))
 
@@ -157,16 +179,8 @@ def test_builtin_vars_tasks(tmp_path):
     assert vars["tasks_blocked"] == 1
     assert vars["tasks_reopened"] == 1
     assert vars["tasks_overdue"] == 2
-    assert vars["tasks_with_story"] == 8
-    assert vars["tasks_active"] == 7  # open + in_progress + reopened + blocked
-
-
-def test_builtin_vars_stories(tmp_path):
-    _copy_fixtures_to(tmp_path)
-    vars = get_builtin_vars(tmp_path, today=date(2026, 4, 5))
-
-    assert vars["stories_total"] == 5
-    assert vars["stories_done"] == 2
+    assert vars["tasks_with_story"] == 7  # S-NNN refs only
+    assert vars["tasks_active"] == 7  # total - done
 
 
 def test_builtin_vars_intake(tmp_path):
@@ -176,9 +190,6 @@ def test_builtin_vars_intake(tmp_path):
     assert vars["intake_open"] == 4
     assert vars["intake_closed"] == 2
     assert vars["intake_total"] == 6
-    assert vars["intake_bugs_open"] == 2
-    assert vars["intake_features_open"] == 1
-    assert vars["intake_gaps_open"] == 1
 
 
 def test_builtin_vars_convergence(tmp_path):
@@ -194,6 +205,7 @@ def test_builtin_vars_missing_files(tmp_path):
     vars = get_builtin_vars(tmp_path, today=date(2026, 4, 5))
     assert vars["tasks_open"] == 0
     assert vars["stories_total"] == 0
+    assert vars["epics_total"] == 0
     assert vars["intake_total"] == 0
     assert vars["convergence"] == 0
 

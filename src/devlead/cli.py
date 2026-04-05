@@ -14,7 +14,7 @@ COMMANDS = [
     "checklist",
     "kpis",
     "rollover",
-    "doctor",
+    "healthcheck",
     "portfolio",
     "collab",
 ]
@@ -33,7 +33,7 @@ Commands:
   checklist     Show/verify phase checklist
   kpis          Show project KPIs
   rollover      Roll incomplete work forward
-  doctor        Diagnose project health
+  healthcheck   Diagnose project health
   portfolio     Manage multi-project portfolio
   collab        Cross-repo collaboration
 
@@ -95,8 +95,8 @@ def main() -> None:
         _cmd_kpis(docs_dir)
     elif command == "rollover":
         _cmd_rollover(docs_dir)
-    elif command == "doctor":
-        _cmd_doctor()
+    elif command == "healthcheck":
+        _cmd_healthcheck()
     elif command == "portfolio":
         _cmd_portfolio(args[1:])
     elif command == "collab":
@@ -169,7 +169,7 @@ def _cmd_rollover(docs_dir: Path) -> None:
     print(f"Rollover complete. {len(files)} files processed.")
 
 
-def _cmd_doctor() -> None:
+def _cmd_healthcheck() -> None:
     """Run health check."""
     from devlead.doctor import do_doctor, format_doctor
 

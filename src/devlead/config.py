@@ -24,10 +24,8 @@ DEFAULT_CONFIG: dict = {
         "retain_months": 12,
         "files": [
             "_project_tasks.md",
-            "_intake_bugs.md",
+            "_intake_issues.md",
             "_intake_features.md",
-            "_intake_gaps.md",
-            "_intake_changes.md",
         ],
     },
     "hooks": {
