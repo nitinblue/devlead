@@ -1,0 +1,19 @@
+[build-system]
+requires = ["setuptools>=68.0", "wheel"]
+build-backend = "setuptools.build_meta"
+
+[project]
+name = "devlead"
+version = "0.1.0"
+description = "Lead your development. Don't let AI wander."
+requires-python = ">=3.11"
+license = "MIT"
+
+[project.scripts]
+devlead = "devlead.cli:main"
+
+[tool.setuptools.packages.find]
+where = ["src"]
+
+[tool.pytest.ini_options]
+testpaths = ["tests"]
