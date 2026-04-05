@@ -17,6 +17,14 @@ files = [
     "_intake_features.md",
 ]
 
+[scope]
+enforcement = "log"         # "log" = silent, "warn" = allow + warn, "block" = deny
+auto_clear = true           # clear scope when leaving EXECUTE
+
+[audit]
+enabled = true
+cross_project_policy = "log"    # "log" = silent, "warn" = allow + warn, "block" = deny
+
 [hooks]
 session_start = true
 gate_edits = true

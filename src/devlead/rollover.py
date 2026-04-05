@@ -8,10 +8,34 @@ from pathlib import Path
 from devlead.doc_parser import parse_table
 
 
+def should_rollover(
+    trigger: str,
+    day_of_month: int = 1,
+    max_lines: int = 500,
+    file_path: Path | None = None,
+    today: date | None = None,
+) -> bool:
+    """Check if rollover should fire based on trigger type."""
+    if today is None:
+        today = date.today()
+
+    if trigger == "date":
+        return today.day == day_of_month
+    elif trigger == "size":
+        if file_path is None or not file_path.exists():
+            return False
+        line_count = len(file_path.read_text().splitlines())
+        return line_count > max_lines
+
+    return False
+
+
 def do_rollover(
     docs_dir: Path,
     files: list[str],
     today: date | None = None,
+    trigger: str = "date",
+    max_lines: int = 500,
 ) -> None:
     """Roll over specified files: archive full copy, keep only open items.
 
@@ -19,6 +43,8 @@ def do_rollover(
         docs_dir: Path to claude_docs/
         files: List of filenames to roll over
         today: Override date for testing
+        trigger: "date" or "size" — determines rollover condition
+        max_lines: Line threshold for size-based trigger
     """
     if today is None:
         today = date.today()
@@ -31,6 +57,11 @@ def do_rollover(
         source = docs_dir / fname
         if not source.exists():
             continue
+
+        # Check trigger for size-based rollover
+        if trigger == "size":
+            if not should_rollover("size", max_lines=max_lines, file_path=source):
+                continue
 
         archive_name = f"{source.stem}_{month_suffix}{source.suffix}"
         archive_path = archive_dir / archive_name

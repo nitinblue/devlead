@@ -135,3 +135,18 @@ def test_get_hook_config(tmp_path):
     hooks = get_hook_config(config)
     assert hooks["session_start"] is True
     assert hooks["gate_edits"] is True
+
+
+def test_default_audit_config():
+    """Default config includes audit section."""
+    assert "audit" in DEFAULT_CONFIG
+    assert DEFAULT_CONFIG["audit"]["enabled"] is True
+    assert DEFAULT_CONFIG["audit"]["cross_project_policy"] == "log"
+
+
+def test_audit_config_from_toml(tmp_path):
+    """Audit config loaded from toml."""
+    toml = tmp_path / "devlead.toml"
+    toml.write_text('[audit]\nenabled = true\ncross_project_policy = "warn"\n')
+    config = load_config(tmp_path)
+    assert config["audit"]["cross_project_policy"] == "warn"

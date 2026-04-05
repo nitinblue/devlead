@@ -126,6 +126,66 @@ def check_gate(state_file: Path, gate: str) -> None:
         )
 
 
+def check_gate_with_audit(
+    state_file: Path,
+    gate: str,
+    stdin_text: str,
+    audit_log: Path,
+) -> None:
+    """Gate check with audit logging and scope enforcement.
+
+    1. Parse hook stdin for file_path
+    2. Log the write attempt to audit trail
+    3. Check scope (only in EXECUTE, configurable enforcement)
+    4. Check state gate
+    """
+    from devlead.audit import parse_hook_stdin, log_write
+    from devlead.scope import is_in_scope
+
+    # Parse stdin for audit context
+    entry = parse_hook_stdin(stdin_text) if stdin_text else None
+
+    # Load current state
+    current_state = ""
+    scope = []
+    scope_enforcement = "log"  # relaxed default
+    if state_file.exists():
+        state = load_state(state_file)
+        current_state = state.get("state", "")
+        scope = state.get("scope", [])
+        scope_enforcement = state.get("scope_enforcement", "log")
+
+    # Log the write attempt (whether allowed or blocked)
+    if entry and entry.file_path:
+        entry.state = current_state
+        log_write(entry, audit_log)
+
+    # Scope enforcement — only in EXECUTE state
+    if (
+        current_state == "EXECUTE"
+        and scope
+        and entry
+        and entry.file_path
+        and not is_in_scope(entry.file_path, scope, entry.cwd)
+    ):
+        if scope_enforcement == "block":
+            hook_block(
+                f"BLOCKED: File outside scope. "
+                f"'{entry.file_path}' is not in allowed scope. "
+                f"Use 'devlead scope show' to see allowed paths."
+            )
+        elif scope_enforcement == "warn":
+            # Allow but inject warning into conversation
+            hook_context(
+                f"WARNING: Editing file outside scope: {entry.file_path}. "
+                f"Scope allows: {', '.join(scope)}"
+            )
+        # "log" = silent allow (already logged above)
+
+    # Delegate to state gate check
+    check_gate(state_file, gate)
+
+
 # --- Transitions ---
 
 
@@ -159,6 +219,10 @@ def do_transition(state_file: Path, target: str) -> None:
                 f"BLOCKED: Exit criteria not met for {current}. "
                 f"Incomplete: {', '.join(incomplete)}."
             )
+
+    # Auto-clear scope when leaving EXECUTE
+    if current == "EXECUTE" and "scope" in state:
+        state["scope"] = []
 
     # Perform transition
     now = datetime.now(timezone.utc).isoformat()

@@ -17,6 +17,8 @@ COMMANDS = [
     "healthcheck",
     "portfolio",
     "collab",
+    "audit",
+    "scope",
 ]
 
 USAGE = f"""\
@@ -36,6 +38,8 @@ Commands:
   healthcheck   Diagnose project health
   portfolio     Manage multi-project portfolio
   collab        Cross-repo collaboration
+  audit         Show file write audit log
+  scope         Set/show/clear file scope lock
 
 Options:
   --help        Show this help message
@@ -75,8 +79,13 @@ def main() -> None:
         if len(args) < 2:
             print("Usage: devlead gate <EXECUTE|PLAN|SESSION_END>", file=sys.stderr)
             sys.exit(1)
-        from devlead.state_machine import check_gate
-        check_gate(state_file, args[1])
+        # Read hook stdin for audit context
+        stdin_text = ""
+        if not sys.stdin.isatty():
+            stdin_text = sys.stdin.read()
+        audit_log = docs_dir / "_audit_log.jsonl"
+        from devlead.state_machine import check_gate_with_audit
+        check_gate_with_audit(state_file, args[1], stdin_text, audit_log)
     elif command == "transition":
         if len(args) < 2:
             print("Usage: devlead transition <STATE>", file=sys.stderr)
@@ -101,6 +110,10 @@ def main() -> None:
         _cmd_portfolio(args[1:])
     elif command == "collab":
         _cmd_collab(args[1:])
+    elif command == "audit":
+        _cmd_audit(docs_dir)
+    elif command == "scope":
+        _cmd_scope(args[1:], state_file)
     else:
         print(f"devlead: '{command}' not yet implemented.")
 
@@ -242,6 +255,63 @@ def _cmd_collab(sub_args: list[str]) -> None:
             for item in items:
                 status_mark = "!!" if item.get("status", "").upper() == "OPEN" else "  "
                 print(f"  {status_mark} {item['filename']} — {item.get('type', '?')}: {item.get('title', '?')} [{item.get('status', '?')}]")
+    elif sub_args[0] == "sync":
+        from devlead.collab import sync_outbox_to_inbox
+        from devlead.portfolio import list_projects
+        workspace = Path.home() / ".devlead"
+        projects = list_projects(workspace)
+        project_map = {p["name"]: Path(p["path"]) for p in projects}
+        synced = sync_outbox_to_inbox(project_dir, project_map)
+        print(f"Synced {synced} message(s) to target project inboxes.")
     else:
         print(f"Unknown collab subcommand: {sub_args[0]}", file=sys.stderr)
+        sys.exit(1)
+
+
+def _cmd_audit(docs_dir: Path) -> None:
+    """Show audit log."""
+    from devlead.audit import read_audit_log
+
+    log_file = docs_dir / "_audit_log.jsonl"
+    records = read_audit_log(log_file)
+
+    if not records:
+        print("No audit entries.")
+        return
+
+    for r in records:
+        ts = r.get("timestamp", "?")[:19]
+        tool = r.get("tool_name", "?")
+        fp = r.get("file_path", "?")
+        state = r.get("state", "?")
+        cross = " [CROSS-PROJECT]" if r.get("cross_project") else ""
+        agent = f" (agent: {r['agent_type']})" if r.get("agent_type") else ""
+        print(f"  {ts} | {state:<10} | {tool:<6} | {fp}{cross}{agent}")
+
+
+def _cmd_scope(sub_args: list[str], state_file: Path) -> None:
+    """Manage scope lock."""
+    from devlead.scope import set_scope, get_scope, clear_scope
+
+    if not sub_args or sub_args[0] == "show":
+        scope = get_scope(state_file)
+        if not scope:
+            print("No scope set. All files are editable during EXECUTE.")
+        else:
+            print("Scope lock active. Allowed paths:")
+            for p in scope:
+                print(f"  {p}")
+    elif sub_args[0] == "set":
+        if len(sub_args) < 2:
+            print("Usage: devlead scope set <path1> [path2] ...", file=sys.stderr)
+            sys.exit(1)
+        set_scope(state_file, sub_args[1:])
+        print(f"Scope set: {len(sub_args) - 1} path(s) allowed.")
+        for p in sub_args[1:]:
+            print(f"  {p}")
+    elif sub_args[0] == "clear":
+        clear_scope(state_file)
+        print("Scope cleared. All files are editable during EXECUTE.")
+    else:
+        print(f"Unknown scope subcommand: {sub_args[0]}", file=sys.stderr)
         sys.exit(1)

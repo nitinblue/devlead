@@ -28,6 +28,14 @@ DEFAULT_CONFIG: dict = {
             "_intake_features.md",
         ],
     },
+    "scope": {
+        "enforcement": "log",  # "log", "warn", "block"
+        "auto_clear": True,
+    },
+    "audit": {
+        "enabled": True,
+        "cross_project_policy": "log",  # "log", "warn", "block"
+    },
     "hooks": {
         "session_start": True,
         "gate_edits": True,
