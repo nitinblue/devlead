@@ -36,6 +36,11 @@ DEFAULT_CONFIG: dict = {
         "memory_policy": "warn",   # "log", "warn", "block" — memory writes outside UPDATE
         "docs_policy": "warn",     # "log", "warn", "block" — claude_docs writes outside UPDATE
     },
+    "governance": {
+        "task_required": "block",      # "log", "warn", "block" — Edit/Write needs IN_PROGRESS task
+        "memory_from_docs": "block",   # "log", "warn", "block" — memory writes only in UPDATE
+        "intake_required": "warn",     # "log", "warn", "block" — intake files must exist
+    },
     "audit": {
         "enabled": True,
         "cross_project_policy": "log",  # "log", "warn", "block"

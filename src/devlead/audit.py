@@ -22,6 +22,8 @@ class AuditEntry:
     state: str = ""
     agent_id: str | None = None
     agent_type: str | None = None
+    token_count: int = 0
+    model_name: str = ""
 
 
 def parse_hook_stdin(stdin_text: str) -> AuditEntry | None:
@@ -37,6 +39,18 @@ def parse_hook_stdin(stdin_text: str) -> AuditEntry | None:
     tool_input = data.get("tool_input", {})
     file_path = tool_input.get("file_path")
 
+    # Extract token count: check "token_count" directly, or nested "usage"
+    token_count = data.get("token_count", 0)
+    if not token_count:
+        usage = data.get("usage", {})
+        if isinstance(usage, dict):
+            token_count = usage.get("total_tokens", 0) or (
+                usage.get("input_tokens", 0) + usage.get("output_tokens", 0)
+            )
+    token_count = int(token_count) if token_count else 0
+
+    model_name = data.get("model_name", "") or data.get("model", "")
+
     return AuditEntry(
         session_id=data.get("session_id", ""),
         cwd=data.get("cwd", ""),
@@ -44,6 +58,8 @@ def parse_hook_stdin(stdin_text: str) -> AuditEntry | None:
         file_path=file_path,
         agent_id=data.get("agent_id"),
         agent_type=data.get("agent_type"),
+        token_count=token_count,
+        model_name=model_name,
     )
 
 
@@ -74,6 +90,8 @@ def log_write(entry: AuditEntry, log_file: Path) -> None:
         "agent_id": entry.agent_id,
         "agent_type": entry.agent_type,
         "cross_project": cross_project,
+        "token_count": entry.token_count,
+        "model_name": entry.model_name,
     }
 
     log_file.parent.mkdir(parents=True, exist_ok=True)

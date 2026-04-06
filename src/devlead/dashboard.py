@@ -65,10 +65,10 @@ def generate_dashboard_html(
 
     tab_overview = _tab_overview(vars, state, kpis, tasks, file_metas)
     tab_business = _tab_business(epics, stories, tasks, vars, kpis, status_text, objectives, objectives_text)
-    tab_roadmap = _tab_roadmap(epics, stories, tasks)
+    tab_roadmap = _tab_roadmap(docs_dir)
     tab_kpis = _tab_kpis(kpis)
     tab_session = _tab_session(state, project_dir=project_dir)
-    tab_intake = _tab_intake(issues, features)
+    tab_backlog = _tab_backlog(docs_dir)
     tab_audit = _tab_audit(audit_entries)
 
     tab_distribution = _tab_distribution(docs_dir)
@@ -91,10 +91,10 @@ def generate_dashboard_html(
         ("roadmap", "Roadmap", tab_roadmap),
         ("kpis", "KPIs", tab_kpis),
         ("trends", "Trends", tab_trends),
-        ("intake", "Intake", tab_intake),
+        ("backlog", "Backlog", tab_backlog),
         ("session", "Session", tab_session),
         ("audit", "Audit", tab_audit),
-        ("distribution", "Distribution", tab_distribution),
+        ("distribution", "Productionize", tab_distribution),
     ])
 
     return _wrap_html(project_name, today, header + tabs)
@@ -215,7 +215,7 @@ def _section_header(project_name: str, today: date, state: dict) -> str:
     return f"""
     <div class="card header-card">
         <div class="header-top">
-            <h1>DevLead &mdash; Project Status</h1>
+            <h1>Project Status</h1>
             <span class="project-name">{_esc(project_name)}</span>
         </div>
         <div class="header-meta">
@@ -505,29 +505,120 @@ def _tab_business(epics: list[dict], stories: list[dict], tasks: list[dict], var
     else:
         html += '<div class="section"><h2>Tangible Business Outcomes</h2><p class="muted">No TBOs defined yet. Populate _living_business_objectives.md with user-facing outcomes.</p></div>'
 
-    # --- Success Criteria ---
-    if objectives_text:
-        section = _extract_section(objectives_text, "Success Criteria")
-        if section and section.strip() and not section.strip().startswith("_"):
-            html += f'<div class="section"><h2>Success Criteria</h2><div class="status-prose">{_render_prose(section)}</div></div>'
+    # --- Gantt-style timeline ---
+    if objectives:
+        has_dates = any(obj.get("Planned", "").strip() for obj in objectives)
+        if has_dates:
+            from datetime import date as _date
 
-    # --- Project Status ---
-    if status_text:
-        lines = status_text.splitlines()
-        content_lines = []
-        in_content = False
-        for line in lines:
-            if line.startswith("## "):
-                in_content = True
-                content_lines.append(f"<h3>{_esc(line[3:].strip())}</h3>")
-            elif in_content:
-                stripped = line.strip()
-                if stripped.startswith("- "):
-                    content_lines.append(f"<li>{_esc(stripped[2:])}</li>")
-                elif stripped:
-                    content_lines.append(f"<p>{_esc(stripped)}</p>")
-        if content_lines:
-            html += f'<div class="section"><h2>Project Status</h2><div class="status-prose">{"".join(content_lines)}</div></div>'
+            # Compute date range for the chart
+            today_str = str(_date.today())
+            all_dates = [today_str]
+            for obj in objectives:
+                p = obj.get("Planned", "").strip()
+                a = obj.get("Actual", "").strip()
+                if p and p != "\u2014":
+                    all_dates.append(p)
+                if a and a != "\u2014":
+                    all_dates.append(a)
+            all_dates.sort()
+            chart_start = all_dates[0]
+            chart_end = all_dates[-1]
+
+            # Days span for percentage calculation
+            try:
+                d_start = _date.fromisoformat(chart_start)
+                d_end = _date.fromisoformat(chart_end)
+                d_today = _date.today()
+                total_days = max((d_end - d_start).days, 1)
+            except (ValueError, TypeError):
+                d_start = d_end = d_today = _date.today()
+                total_days = 1
+
+            today_pct = min(100, max(0, int((d_today - d_start).days / total_days * 100)))
+
+            gantt_rows = ""
+            for obj in objectives:
+                tbo_id = obj.get("ID", "").strip()
+                tbo_name = obj.get("TBO", obj.get("Objective", "")).strip()[:35]
+                planned = obj.get("Planned", "").strip()
+                actual = obj.get("Actual", "").strip()
+                status = obj.get("Status", "").strip()
+                s_class = _status_class(status)
+
+                # Bar position: start at 0, end at planned date
+                try:
+                    d_planned = _date.fromisoformat(planned) if planned and planned != "\u2014" else d_end
+                    bar_end = min(100, max(5, int((d_planned - d_start).days / total_days * 100)))
+                except (ValueError, TypeError):
+                    bar_end = 50
+
+                # Determine bar color based on status
+                if "DONE" in status.upper():
+                    bar_color = "#22c55e"
+                elif "ACCEPT" in status.upper():
+                    bar_color = "#eab308"
+                elif "IN_PROGRESS" in status.upper():
+                    bar_color = "#3b82f6"
+                else:
+                    bar_color = "#64748b"
+
+                # Actual marker
+                actual_marker = ""
+                if actual and actual != "\u2014":
+                    try:
+                        d_actual = _date.fromisoformat(actual)
+                        actual_pos = min(100, max(0, int((d_actual - d_start).days / total_days * 100)))
+                        actual_marker = f'<div style="position:absolute;left:{actual_pos}%;top:0;bottom:0;width:3px;background:#22c55e;border-radius:2px;" title="Actual: {_esc(actual)}"></div>'
+                    except (ValueError, TypeError):
+                        pass
+
+                # Date labels on the bar
+                planned_label = ""
+                if planned and planned != "\u2014":
+                    planned_label = f'<div style="position:absolute;right:4px;top:3px;color:#fff;opacity:0.9;white-space:nowrap;">P: {_esc(planned)}</div>'
+                actual_label = ""
+                if actual and actual != "\u2014":
+                    actual_label = f'<div style="position:absolute;left:4px;top:3px;color:#fff;opacity:0.9;white-space:nowrap;">A: {_esc(actual)}</div>'
+
+                gantt_rows += f"""
+                <div style="display:flex;align-items:center;gap:0.5rem;margin-bottom:0.6rem;">
+                    <div style="width:80px;flex-shrink:0;" class="mono">{_esc(tbo_id)}</div>
+                    <div style="width:200px;flex-shrink:0;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;">{_esc(tbo_name)}</div>
+                    <div style="flex:1;position:relative;height:28px;background:#1e293b;border-radius:4px;overflow:hidden;">
+                        <div style="position:absolute;left:0;top:0;bottom:0;width:{bar_end}%;background:{bar_color};border-radius:4px;opacity:0.8;"></div>
+                        {actual_marker}
+                        {planned_label}
+                        {actual_label}
+                    </div>
+                    <div style="width:70px;flex-shrink:0;text-align:center;"><span class="badge-xs {s_class}">{_esc(status)}</span></div>
+                </div>
+                """
+
+            html += f"""
+            <div class="section">
+                <h2>Timeline</h2>
+                <div style="display:flex;gap:1.5rem;margin-bottom:0.75rem;flex-wrap:wrap;">
+                    <span style="display:flex;align-items:center;gap:0.3rem;"><span style="width:12px;height:12px;border-radius:2px;background:#22c55e;display:inline-block;"></span> Done</span>
+                    <span style="display:flex;align-items:center;gap:0.3rem;"><span style="width:12px;height:12px;border-radius:2px;background:#eab308;display:inline-block;"></span> Ready for Acceptance</span>
+                    <span style="display:flex;align-items:center;gap:0.3rem;"><span style="width:12px;height:12px;border-radius:2px;background:#3b82f6;display:inline-block;"></span> In Progress</span>
+                    <span style="display:flex;align-items:center;gap:0.3rem;"><span style="width:12px;height:12px;border-radius:2px;background:#64748b;display:inline-block;"></span> Not Started</span>
+                    <span style="display:flex;align-items:center;gap:0.3rem;"><span style="width:3px;height:12px;background:#eab308;display:inline-block;"></span> Today</span>
+                    <span style="display:flex;align-items:center;gap:0.3rem;"><span style="width:3px;height:12px;background:#22c55e;display:inline-block;"></span> Actual Completion</span>
+                </div>
+                <div style="position:relative;padding:0.5rem 0;">
+                    <div style="display:flex;justify-content:space-between;margin-bottom:0.5rem;margin-left:336px;">
+                        <span class="muted">{chart_start}</span>
+                        <span style="color:#eab308;font-weight:bold;">Today ({today_str})</span>
+                        <span class="muted">{chart_end}</span>
+                    </div>
+                    <div style="position:relative;">
+                        <div style="position:absolute;left:calc(336px + {today_pct}% * (100% - 336px) / 100);top:0;bottom:0;width:2px;background:#eab308;opacity:0.5;z-index:1;"></div>
+                        {gantt_rows}
+                    </div>
+                </div>
+            </div>
+            """
 
     return f'<div class="section">{html}</div>'
 
@@ -535,107 +626,118 @@ def _tab_business(epics: list[dict], stories: list[dict], tasks: list[dict], var
 # --- Tab: Roadmap ---
 
 
-def _tab_roadmap(epics: list[dict], stories: list[dict], tasks: list[dict]) -> str:
-    if not epics and not stories and not tasks:
-        return '<div class="section"><p class="muted">No roadmap data. Populate _project_roadmap.md, _project_stories.md, _project_tasks.md.</p></div>'
+def _tab_roadmap(docs_dir: Path) -> str:
+    """Roadmap tab — TBO→Story→Task workbook view with PM attributes.
+
+    Uses the shared workbook model. Shows full lineage, planned/actual dates,
+    DoD, task type (F/NF/SHADOW). This is the single place to see the full picture.
+    """
+    from devlead.workbook import load_workbook
+
+    wb = load_workbook(docs_dir)
+
+    if not wb.tbos:
+        return '<div class="section"><p class="muted">No TBOs defined. Populate _living_business_objectives.md.</p></div>'
 
     html = ""
 
-    # Organize: epic → stories → tasks
-    for epic in epics:
-        epic_id = epic.get("ID", "").strip()
-        epic_name = epic.get("Epic", "").strip()
-        epic_status = epic.get("Status", "").strip()
-        epic_priority = epic.get("Priority", "").strip()
-        epic_owner = epic.get("Owner", "").strip()
+    for tbo in wb.tbos:
+        s_class = _status_class(tbo.status)
+        s_done = tbo.stories_done
+        s_total = tbo.stories_total
+        t_done = tbo.tasks_done
+        t_total = tbo.tasks_total
+        s_pct = int(s_done / s_total * 100) if s_total > 0 else 0
 
-        status_class = _status_class(epic_status)
-
-        # Find stories for this epic
-        epic_stories = [s for s in stories if epic_id and epic_id in s.get("Epic", "")]
-
-        story_count = len(epic_stories)
-        done_stories = sum(1 for s in epic_stories if "DONE" in s.get("Status", "").upper())
+        planned = tbo.planned if tbo.planned and tbo.planned.strip() != "\u2014" else ""
+        actual = tbo.actual if tbo.actual and tbo.actual.strip() != "\u2014" else ""
+        dates_html = ""
+        if planned:
+            dates_html += f'<span class="muted">Planned: {_esc(planned)}</span> '
+        if actual:
+            dates_html += f'<span class="muted">Actual: {_esc(actual)}</span>'
 
         html += f"""
         <div class="roadmap-epic">
+            <div style="color: var(--muted); text-transform: uppercase; letter-spacing: 0.05em; margin-bottom: 4px;">Tangible Business Outcome</div>
             <div class="epic-header">
-                <span class="badge {status_class}">{_esc(epic_status)}</span>
-                <span class="epic-id">{_esc(epic_id)}</span>
-                <span class="epic-name">{_esc(epic_name)}</span>
-                <span class="muted">{_esc(epic_priority)}</span>
-                <span class="muted">{_esc(epic_owner)}</span>
-                <span class="muted">{done_stories}/{story_count} stories</span>
+                <span style="font-weight: 700; color: var(--accent);">{_esc(tbo.id)}</span>
+                <span class="epic-name">{_esc(tbo.objective)}</span>
+                <span class="badge {s_class}">{_esc(tbo.status)}</span>
+            </div>
+            <div style="padding: 0 1rem; display: flex; gap: 1.5rem; align-items: center;">
+                <span class="muted">{s_done}/{s_total} stories</span>
+                <span class="muted">{t_done}/{t_total} tasks</span>
+                {dates_html}
+                <div class="progress-bar" style="flex: 1; max-width: 200px;">
+                    <div class="progress-fill" style="width: {s_pct}%; background: {_pct_color(s_pct)}"></div>
+                </div>
             </div>
         """
 
-        for story in epic_stories:
-            s_id = story.get("ID", "").strip()
-            s_name = story.get("Story", "").strip()
-            s_status = story.get("Status", "").strip()
-            s_priority = story.get("Priority", "").strip()
-            s_class = _status_class(s_status)
+        if tbo.stories:
+            html += '<div style="margin: 0.5rem 1rem 1rem;">'
+            for story in tbo.stories:
+                st_class = _status_class(story.status)
+                s_tokens = f"{story.total_tokens:,}" if story.total_tokens else "&mdash;"
+                s_sessions = str(story.session_count) if story.session_count else "&mdash;"
+                task_done = sum(1 for t in story.tasks if "DONE" in t.status.upper())
+                task_total = len(story.tasks)
 
-            # Find tasks for this story
-            story_tasks = [t for t in tasks if s_id and s_id in t.get("Story", "")]
-            task_done = sum(1 for t in story_tasks if "DONE" in t.get("Status", "").upper())
+                html += f"""
+                <details style="margin-bottom: 4px; border-left: 2px solid var(--blue); padding-left: 12px;">
+                    <summary style="cursor: pointer; padding: 6px 0; display: flex; align-items: center; gap: 8px;">
+                        <span class="badge-xs {st_class}">{_esc(story.status)}</span>
+                        <span class="mono" style="color: var(--blue);">{_esc(story.id)}</span>
+                        <span>{_esc(story.description[:60])}</span>
+                        <span class="muted">{task_done}/{task_total} tasks</span>
+                        <span class="muted">Tokens: {s_tokens}</span>
+                        <span class="muted">{f'{story.duration_min} min' if story.duration_min else ''}</span>
+                    </summary>
+                """
+                if story.tasks:
+                    html += """<table class="data-table" style="margin: 4px 0 8px 0;">
+                        <thead><tr><th>Task</th><th>Description</th><th>Status</th><th>Req Type</th><th>Tokens</th><th>Sessions</th><th>Duration</th></tr></thead><tbody>"""
+                    for task in story.tasks:
+                        tt_class = _status_class(task.status)
+                        type_class = "st-done" if task.task_type == "F" else "st-progress" if task.task_type == "NF" else "st-block"
+                        t_tokens = f"{task.total_tokens:,}" if task.total_tokens else "&mdash;"
+                        t_sessions = str(task.session_count) if task.session_count else "&mdash;"
+                        html += f"""<tr>
+                            <td class="mono">{_esc(task.id)}</td>
+                            <td>{_esc(task.description[:50])}</td>
+                            <td><span class="badge-xs {tt_class}">{_esc(task.status)}</span></td>
+                            <td><span class="badge-xs {type_class}">{_esc(task.task_type)}</span></td>
+                            <td class="mono">{t_tokens}</td>
+                            <td class="mono">{t_sessions}</td>
+                            <td class="mono">{f'{task.duration_min} min' if task.duration_min else '&mdash;'}</td>
+                        </tr>"""
+                    html += "</tbody></table>"
+                html += "</details>"
+            html += "</div>"
 
-            html += f"""
-            <div class="roadmap-story">
-                <div class="story-header">
-                    <span class="badge-sm {s_class}">{_esc(s_status)}</span>
-                    <span class="story-id">{_esc(s_id)}</span>
-                    <span class="story-name">{_esc(s_name)}</span>
-                    <span class="muted">{_esc(s_priority)}</span>
-                    <span class="muted">{task_done}/{len(story_tasks)} tasks</span>
-                </div>
-            """
+        html += "</div>"
 
-            if story_tasks:
-                html += '<div class="task-list">'
-                for t in story_tasks:
-                    t_id = t.get("ID", "").strip()
-                    t_name = t.get("Task", "").strip()
-                    t_status = t.get("Status", "").strip()
-                    t_assignee = t.get("Assignee", "").strip()
-                    t_class = _status_class(t_status)
-                    html += f"""
-                    <div class="task-row">
-                        <span class="badge-xs {t_class}">{_esc(t_status)}</span>
-                        <span class="task-id">{_esc(t_id)}</span>
-                        <span class="task-name">{_esc(t_name)}</span>
-                        <span class="muted">{_esc(t_assignee)}</span>
-                    </div>
-                    """
-                html += '</div>'
-
-            html += '</div>'  # story
-
-        # Orphan tasks (linked to epic directly, not via story)
-        orphan_tasks = [t for t in tasks if epic_id and epic_id in t.get("Story", "") and not any(
-            s.get("ID", "").strip() in t.get("Story", "") for s in epic_stories
-        )]
-
-        html += '</div>'  # epic
-
-    # Unlinked stories
-    linked_epic_ids = {e.get("ID", "").strip() for e in epics}
-    orphan_stories = [s for s in stories if not any(eid in s.get("Epic", "") for eid in linked_epic_ids if eid)]
-    if orphan_stories:
-        html += '<div class="section"><h3 class="muted">Unlinked Stories</h3>'
-        for s in orphan_stories:
-            html += f'<div class="story-header"><span class="badge-sm">{_esc(s.get("Status", ""))}</span> {_esc(s.get("ID", ""))} — {_esc(s.get("Story", ""))}</div>'
-        html += '</div>'
-
-    # Unlinked tasks
-    linked_story_ids = {s.get("ID", "").strip() for s in stories}
-    orphan_tasks = [t for t in tasks if not any(sid in t.get("Story", "") for sid in linked_story_ids if sid)]
-    if orphan_tasks:
-        html += '<div class="section orphan-section"><h3>Unlinked Tasks <span class="muted">(no story reference)</span></h3>'
-        for t in orphan_tasks:
-            t_class = _status_class(t.get("Status", ""))
-            html += f'<div class="task-row"><span class="badge-xs {t_class}">{_esc(t.get("Status", ""))}</span> <span class="task-id">{_esc(t.get("ID", ""))}</span> <span class="task-name">{_esc(t.get("Task", ""))}</span></div>'
-        html += '</div>'
+    # Shadow work
+    if wb.shadow_tasks:
+        html += f"""
+        <div class="section orphan-section">
+            <h3>Shadow Work <span class="muted">({len(wb.shadow_tasks)} items — no TBO linkage)</span></h3>
+            <table class="data-table"><thead><tr>
+                <th>Task</th><th>Description</th><th>Status</th><th>Req Type</th><th>Linked To</th>
+            </tr></thead><tbody>
+        """
+        for t in wb.shadow_tasks:
+            tt_class = _status_class(t.status)
+            type_class = "st-progress" if t.task_type == "NF" else "st-block"
+            html += f"""<tr>
+                <td class="mono">{_esc(t.id)}</td>
+                <td>{_esc(t.description[:50])}</td>
+                <td><span class="badge-xs {tt_class}">{_esc(t.status)}</span></td>
+                <td><span class="badge-xs {type_class}">{_esc(t.task_type)}</span></td>
+                <td class="muted">{_esc(t.story_id)}</td>
+            </tr>"""
+        html += "</tbody></table></div>"
 
     return f'<div class="section">{html}</div>'
 
@@ -676,48 +778,85 @@ def _tab_kpis(kpis: list[KpiResult]) -> str:
 # --- Tab: Intake ---
 
 
-def _tab_intake(issues: list[dict], features: list[dict]) -> str:
+def _tab_backlog(docs_dir: Path) -> str:
+    """Backlog tab — scratchpad + all open FEAT/BUG/GAP items grouped by priority.
+
+    This is the pipeline BEFORE work becomes stories/tasks.
+    Scratchpad → Intake (FEAT/BUG/GAP) → Story → Task
+    """
     html = ""
 
-    if issues:
+    # --- Scratchpad (untriaged ideas) ---
+    scratchpad = _load_table(docs_dir / "_scratchpad.md")
+    pending = [s for s in scratchpad if s.get("Status", "").upper() == "PENDING"]
+    if pending:
         rows = ""
-        for item in issues:
-            s_class = _status_class(item.get("Status", ""))
+        for item in pending:
             rows += f"""<tr>
-                <td><span class="badge-xs {s_class}">{_esc(item.get("Status", ""))}</span></td>
-                <td>{_esc(item.get("Key", ""))}</td>
+                <td class="mono">{_esc(item.get("Key", ""))}</td>
                 <td>{_esc(item.get("Item", ""))}</td>
-                <td class="muted">{_esc(item.get("Priority", ""))}</td>
                 <td class="muted">{_esc(item.get("Source", ""))}</td>
                 <td class="muted">{_esc(item.get("Added", ""))}</td>
             </tr>"""
         html += f"""
         <div class="kpi-cat">
-            <h3>Issues <span class="count">({len(issues)})</span></h3>
-            <table class="data-table"><thead><tr><th>Status</th><th>Key</th><th>Item</th><th>Priority</th><th>Source</th><th>Added</th></tr></thead><tbody>{rows}</tbody></table>
+            <h3>Scratchpad <span class="count">({len(pending)} pending triage)</span></h3>
+            <table class="data-table"><thead><tr><th>Key</th><th>Item</th><th>Source</th><th>Added</th></tr></thead><tbody>{rows}</tbody></table>
         </div>
         """
 
-    if features:
-        rows = ""
-        for item in features:
-            s_class = _status_class(item.get("Status", ""))
-            rows += f"""<tr>
-                <td><span class="badge-xs {s_class}">{_esc(item.get("Status", ""))}</span></td>
-                <td>{_esc(item.get("Key", ""))}</td>
-                <td>{_esc(item.get("Item", ""))}</td>
-                <td class="muted">{_esc(item.get("Priority", ""))}</td>
-                <td class="muted">{_esc(item.get("Added", ""))}</td>
-            </tr>"""
-        html += f"""
-        <div class="kpi-cat">
-            <h3>Features <span class="count">({len(features)})</span></h3>
-            <table class="data-table"><thead><tr><th>Status</th><th>Key</th><th>Item</th><th>Priority</th><th>Added</th></tr></thead><tbody>{rows}</tbody></table>
-        </div>
-        """
+    # --- Collect all open intake items ---
+    all_items: list[dict] = []
+    for fname, label in [
+        ("_intake_features.md", "FEAT"),
+        ("_intake_bugs.md", "BUG"),
+        ("_intake_gaps.md", "GAP"),
+    ]:
+        items = _load_table(docs_dir / fname)
+        for item in items:
+            if item.get("Status", "").upper() == "OPEN":
+                item["_type"] = label
+                all_items.append(item)
 
-    if not html:
-        html = '<p class="muted">No intake items.</p>'
+    if all_items:
+        # Group by priority
+        by_priority: dict[str, list[dict]] = {}
+        for item in all_items:
+            p = item.get("Priority", "P3").strip()
+            by_priority.setdefault(p, []).append(item)
+
+        for priority in ["P1", "P2", "P3"]:
+            items = by_priority.get(priority, [])
+            if not items:
+                continue
+            rows = ""
+            for item in items:
+                type_label = item.get("_type", "?")
+                type_color = {"FEAT": "st-progress", "BUG": "st-block", "GAP": "warn-bg"}.get(type_label, "")
+                rows += f"""<tr>
+                    <td><span class="badge-xs {type_color}">{_esc(type_label)}</span></td>
+                    <td class="mono">{_esc(item.get("Key", ""))}</td>
+                    <td>{_esc(item.get("Item", "")[:80])}</td>
+                    <td class="muted">{_esc(item.get("Added", ""))}</td>
+                </tr>"""
+            html += f"""
+            <div class="kpi-cat">
+                <h3>{priority} <span class="count">({len(items)} items)</span></h3>
+                <table class="data-table"><thead><tr><th>Type</th><th>Key</th><th>Item</th><th>Added</th></tr></thead><tbody>{rows}</tbody></table>
+            </div>
+            """
+
+    # --- Summary ---
+    total_open = len(all_items)
+    total_scratch = len(pending)
+    html += f"""
+    <div class="section" style="margin-top:1rem;">
+        <div class="muted">{total_scratch} scratchpad items pending triage | {total_open} open backlog items</div>
+    </div>
+    """
+
+    if not all_items and not pending:
+        html = '<p class="muted">Backlog is empty. All items have been promoted to stories or archived.</p>'
 
     return f'<div class="section">{html}</div>'
 
@@ -820,11 +959,32 @@ def _memory_section(project_dir: Path | None) -> str:
 
 
 def _tab_audit(entries: list[dict]) -> str:
+    """Audit tab — governance actions, not raw file edits.
+
+    Filters out .py source file edits. Shows: claude_docs changes,
+    memory writes, cross-project detections, scope violations.
+    """
     if not entries:
-        return '<div class="section"><p class="muted">No file writes recorded.</p></div>'
+        return '<div class="section"><p class="muted">No governance actions recorded this session.</p></div>'
+
+    # Filter: only show governance-relevant entries
+    governance_entries = []
+    source_edits = 0
+    for e in entries:
+        fp = e.get("file_path", "")
+        cross = e.get("cross_project", False)
+        norm = fp.replace("\\", "/")
+
+        # Always show: cross-project, memory writes, claude_docs edits, config edits
+        if cross or "/claude_docs/" in norm or "/.claude/" in norm or "/memory/" in norm or "devlead.toml" in norm:
+            governance_entries.append(e)
+        elif norm.endswith(".py") or norm.endswith(".js") or norm.endswith(".ts"):
+            source_edits += 1  # count but don't show
+        else:
+            governance_entries.append(e)
 
     rows = ""
-    for e in entries:
+    for e in governance_entries:
         ts = e.get("timestamp", "?")[:19]
         tool = e.get("tool_name", "?")
         fp = e.get("file_path", "?")
@@ -838,9 +998,14 @@ def _tab_audit(entries: list[dict]) -> str:
 
         rows += f'<tr{warn}><td class="mono">{_esc(ts)}</td><td><span class="badge-xs {_status_class(st)}">{_esc(st)}</span></td><td>{_esc(tool)}</td><td class="fp">{_esc(fp)}{cross_badge}{agent_badge}</td></tr>'
 
+    summary = f"{len(governance_entries)} governance actions"
+    if source_edits:
+        summary += f" | {source_edits} source edits filtered"
+
     return f"""
     <div class="section">
-        <h2>Audit Log <span class="count">({len(entries)} writes)</span></h2>
+        <h2>Governance Audit <span class="count">({summary})</span></h2>
+        <p class="muted">Shows: doc updates, memory writes, config changes, cross-project detections. Source code edits (.py) filtered out.</p>
         <table class="data-table"><thead><tr><th>Time</th><th>State</th><th>Tool</th><th>File</th></tr></thead><tbody>{rows}</tbody></table>
     </div>
     """
@@ -1056,7 +1221,9 @@ def _prose_section(title: str, text: str) -> str:
 
 
 def _esc(s: str) -> str:
-    return str(s).replace("&", "&amp;").replace("<", "&lt;").replace(">", "&gt;").replace('"', "&quot;")
+    s = str(s).replace("&", "&amp;").replace("<", "&lt;").replace(">", "&gt;").replace('"', "&quot;")
+    s = s.replace("\u2014", "&mdash;").replace("\u2013", "&ndash;").replace("\u2192", "&rarr;")
+    return s
 
 
 def _pct_color(pct: float) -> str:
@@ -1101,6 +1268,7 @@ def _wrap_html(project_name: str, today: date, body: str) -> str:
 <html lang="en">
 <head>
 <meta charset="utf-8">
+<!-- auto-refresh disabled until devlead serve preserves tab state -->
 <meta name="viewport" content="width=device-width, initial-scale=1">
 <title>DevLead — {_esc(project_name)} — {today.isoformat()}</title>
 <style>
@@ -1153,7 +1321,7 @@ h3 {{ font-size: 1em; font-weight: 600; margin-bottom: 8px; color: var(--blue); 
 #tab-business:checked ~ .tab-bar label[for="tab-business"],
 #tab-roadmap:checked ~ .tab-bar label[for="tab-roadmap"],
 #tab-kpis:checked ~ .tab-bar label[for="tab-kpis"],
-#tab-intake:checked ~ .tab-bar label[for="tab-intake"],
+#tab-backlog:checked ~ .tab-bar label[for="tab-backlog"],
 #tab-session:checked ~ .tab-bar label[for="tab-session"],
 #tab-audit:checked ~ .tab-bar label[for="tab-audit"],
 #tab-trends:checked ~ .tab-bar label[for="tab-trends"],
@@ -1164,16 +1332,16 @@ h3 {{ font-size: 1em; font-weight: 600; margin-bottom: 8px; color: var(--blue); 
 #tab-business:checked ~ .tab-panels #panel-business,
 #tab-roadmap:checked ~ .tab-panels #panel-roadmap,
 #tab-kpis:checked ~ .tab-panels #panel-kpis,
-#tab-intake:checked ~ .tab-panels #panel-intake,
+#tab-backlog:checked ~ .tab-panels #panel-backlog,
 #tab-session:checked ~ .tab-panels #panel-session,
 #tab-audit:checked ~ .tab-panels #panel-audit,
 #tab-trends:checked ~ .tab-panels #panel-trends,
 #tab-distribution:checked ~ .tab-panels #panel-distribution {{ display: block; }}
 
 /* --- Badges --- */
-.badge {{ display: inline-block; padding: 4px 12px; border-radius: 20px; font-size: 0.8em; font-weight: 600; }}
-.badge-sm {{ display: inline-block; padding: 3px 10px; border-radius: 16px; font-size: 0.75em; font-weight: 600; }}
-.badge-xs {{ display: inline-block; padding: 2px 8px; border-radius: 12px; font-size: 0.7em; font-weight: 600; }}
+.badge {{ display: inline-block; padding: 4px 12px; border-radius: 20px; font-size: 0.9em; font-weight: 600; }}
+.badge-sm {{ display: inline-block; padding: 3px 10px; border-radius: 16px; font-size: 0.9em; font-weight: 600; }}
+.badge-xs {{ display: inline-block; padding: 2px 8px; border-radius: 12px; font-size: 0.85em; font-weight: 600; }}
 .state-badge {{ background: var(--accent); color: white; }}
 .st-done {{ background: var(--green); color: white; }}
 .st-prog {{ background: var(--blue); color: white; }}
@@ -1190,10 +1358,10 @@ h3 {{ font-size: 1em; font-weight: 600; margin-bottom: 8px; color: var(--blue); 
     background: var(--bg); border: 1px solid var(--border);
     border-radius: 8px; padding: 16px; text-align: center;
 }}
-.stat-value {{ font-size: 1.5em; font-weight: 700; }}
-.stat-of {{ font-size: 0.6em; color: var(--muted); }}
-.stat-label {{ color: var(--muted); font-size: 0.8em; margin-top: 4px; }}
-.stat-sub {{ color: var(--muted); font-size: 0.75em; margin-top: 4px; }}
+.stat-value {{ font-size: 1.4em; font-weight: 700; }}
+.stat-of {{ font-size: 0.9em; color: var(--muted); }}
+.stat-label {{ color: var(--muted); font-size: 0.9em; margin-top: 4px; }}
+.stat-sub {{ color: var(--muted); font-size: 0.9em; margin-top: 4px; }}
 .progress-bar {{ height: 4px; background: var(--border); border-radius: 2px; margin-top: 6px; overflow: hidden; }}
 .progress-fill {{ height: 100%; border-radius: 2px; }}
 
@@ -1201,19 +1369,19 @@ h3 {{ font-size: 1em; font-weight: 600; margin-bottom: 8px; color: var(--blue); 
 .data-table {{ width: 100%; border-collapse: collapse; }}
 .data-table th {{
     text-align: left; padding: 8px 12px; color: var(--muted); font-weight: 500;
-    font-size: 0.8em; text-transform: uppercase; letter-spacing: 0.05em;
+    font-size: 0.9em; text-transform: uppercase; letter-spacing: 0.05em;
     border-bottom: 1px solid var(--border);
 }}
-.data-table td {{ padding: 8px 12px; border-bottom: 1px solid var(--border); font-size: 0.9em; }}
+.data-table td {{ padding: 8px 12px; border-bottom: 1px solid var(--border); }}
 tr.warn {{ background: rgba(231, 76, 60, 0.08); }}
 .kpi-name {{ font-weight: 500; }}
 .kpi-value {{ font-weight: 700; font-variant-numeric: tabular-nums; }}
-.kpi-detail {{ color: var(--muted); font-size: 0.85em; }}
+.kpi-detail {{ color: var(--muted); }}
 .kpi-cat {{ margin-bottom: 24px; }}
-.cat-desc {{ color: var(--muted); font-size: 0.85em; margin-bottom: 12px; }}
-.fp {{ word-break: break-all; font-family: monospace; font-size: 0.8em; }}
-.mono {{ font-family: monospace; font-size: 0.85em; }}
-.count {{ color: var(--muted); font-weight: 400; font-size: 0.85em; }}
+.cat-desc {{ color: var(--muted); margin-bottom: 12px; }}
+.fp {{ word-break: break-all; font-family: monospace; }}
+.mono {{ font-family: monospace; }}
+.count {{ color: var(--muted); font-weight: 400; }}
 .muted {{ color: var(--muted); }}
 
 /* --- Roadmap --- */
@@ -1225,8 +1393,8 @@ tr.warn {{ background: rgba(231, 76, 60, 0.08); }}
 .epic-header {{
     display: flex; align-items: center; gap: 10px; flex-wrap: wrap; margin-bottom: 8px;
 }}
-.epic-id {{ font-family: monospace; color: var(--accent); font-weight: 600; font-size: 0.85em; }}
-.epic-name {{ font-weight: 600; font-size: 1.05em; }}
+.epic-id {{ font-family: monospace; color: var(--accent); font-weight: 600; }}
+.epic-name {{ font-weight: 600; }}
 .roadmap-story {{
     margin-left: 20px; padding: 10px 16px;
     border-left: 2px solid var(--blue); margin-bottom: 8px;
@@ -1234,14 +1402,14 @@ tr.warn {{ background: rgba(231, 76, 60, 0.08); }}
 .story-header {{
     display: flex; align-items: center; gap: 8px; flex-wrap: wrap;
 }}
-.story-id {{ font-family: monospace; color: var(--blue); font-size: 0.8em; }}
+.story-id {{ font-family: monospace; color: var(--blue); }}
 .story-name {{ font-weight: 500; }}
 .task-list {{ margin-left: 20px; margin-top: 6px; }}
 .task-row {{
     display: flex; align-items: center; gap: 8px; padding: 4px 0;
-    font-size: 0.9em; flex-wrap: wrap;
+    flex-wrap: wrap;
 }}
-.task-id {{ font-family: monospace; font-size: 0.8em; color: var(--muted); }}
+.task-id {{ font-family: monospace; color: var(--muted); }}
 .task-name {{ }}
 .orphan-section {{ background: rgba(231, 76, 60, 0.05); border-radius: 8px; padding: 16px; }}
 
@@ -1261,8 +1429,8 @@ tr.warn {{ background: rgba(231, 76, 60, 0.08); }}
     position: relative; z-index: 1;
 }}
 .tl-step.active .tl-dot {{ background: var(--accent); box-shadow: 0 0 10px var(--accent); }}
-.tl-label {{ font-size: 0.8em; font-weight: 600; margin-top: 8px; }}
-.tl-time {{ font-size: 0.7em; color: var(--muted); font-family: monospace; }}
+.tl-label {{ font-weight: 600; margin-top: 8px; }}
+.tl-time {{ color: var(--muted); font-family: monospace; }}
 
 /* --- Checklists --- */
 .ck-grid {{ display: grid; grid-template-columns: repeat(auto-fit, minmax(220px, 1fr)); gap: 12px; }}
@@ -1271,8 +1439,8 @@ tr.warn {{ background: rgba(231, 76, 60, 0.08); }}
     border-radius: 8px; padding: 14px;
 }}
 .ck-header {{ display: flex; justify-content: space-between; align-items: center; margin-bottom: 6px; }}
-.ck-count {{ color: var(--muted); font-size: 0.85em; }}
-.ck-item {{ padding: 3px 0; font-size: 0.85em; }}
+.ck-count {{ color: var(--muted); }}
+.ck-item {{ padding: 3px 0; }}
 
 /* --- Scope --- */
 .scope-list {{ list-style: none; }}
@@ -1292,9 +1460,9 @@ tr.warn {{ background: rgba(231, 76, 60, 0.08); }}
     border-radius: 8px; padding: 16px; border-left: 3px solid var(--accent);
 }}
 .biz-epic-header {{ display: flex; align-items: center; gap: 8px; margin-bottom: 8px; flex-wrap: wrap; }}
-.biz-epic-stats {{ display: flex; gap: 16px; color: var(--muted); font-size: 0.85em; margin-bottom: 6px; }}
-.epic-risk {{ color: var(--yellow); font-size: 0.85em; margin-top: 6px; }}
-.epic-block {{ color: var(--red); font-size: 0.85em; margin-top: 4px; }}
+.biz-epic-stats {{ display: flex; gap: 16px; color: var(--muted); margin-bottom: 6px; }}
+.epic-risk {{ color: var(--yellow); margin-top: 6px; }}
+.epic-block {{ color: var(--red); margin-top: 4px; }}
 .vision-box {{
     background: linear-gradient(135deg, rgba(108, 92, 231, 0.08), rgba(52, 152, 219, 0.08));
     border: 1px solid var(--border); border-radius: 8px;
@@ -1302,7 +1470,7 @@ tr.warn {{ background: rgba(231, 76, 60, 0.08); }}
 }}
 .tbo-table td {{ vertical-align: top; }}
 .tbo-name {{ font-weight: 600; margin-bottom: 4px; }}
-.tbo-meta {{ display: flex; gap: 12px; flex-wrap: wrap; font-size: 0.85em; }}
+.tbo-meta {{ display: flex; gap: 12px; flex-wrap: wrap; }}
 .nba-box {{
     background: linear-gradient(135deg, rgba(108, 92, 231, 0.1), rgba(52, 152, 219, 0.1));
     border: 1px solid var(--accent); border-radius: 8px;

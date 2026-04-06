@@ -1,6 +1,11 @@
 """State machine for DevLead session governance.
 
-7 states: SESSION_START → ORIENT → INTAKE → PLAN → EXECUTE → UPDATE → SESSION_END
+9 states: SESSION_START → ORIENT → TRIAGE → PRIORITIZE → PLAN → EXECUTE → UPDATE → SESSION_END
+
+TRIAGE: accept (create ticket) or reject (archive) scratchpad items.
+PRIORITIZE: assign priority to open tickets, pick session scope.
+Both are guide-with-override — user can skip, DevLead records the deviation.
+
 Enforced via Claude Code hooks. Gates block actions outside allowed states.
 """
 
@@ -15,7 +20,8 @@ from devlead.hooks import hook_allow, hook_block, hook_context
 STATES = [
     "SESSION_START",
     "ORIENT",
-    "INTAKE",
+    "TRIAGE",
+    "PRIORITIZE",
     "PLAN",
     "EXECUTE",
     "UPDATE",
@@ -24,18 +30,19 @@ STATES = [
 
 VALID_TRANSITIONS: dict[str, list[str]] = {
     "SESSION_START": ["ORIENT"],
-    "ORIENT": ["INTAKE"],
-    "INTAKE": ["PLAN", "ORIENT"],
+    "ORIENT": ["TRIAGE"],
+    "TRIAGE": ["PRIORITIZE", "ORIENT"],
+    "PRIORITIZE": ["PLAN", "TRIAGE"],
     "PLAN": ["EXECUTE"],
     "EXECUTE": ["UPDATE", "PLAN"],
-    "UPDATE": ["SESSION_END", "INTAKE"],
+    "UPDATE": ["SESSION_END", "TRIAGE"],
     "SESSION_END": [],
 }
 
 # Gate: which states allow the gated action
 GATE_ALLOWS: dict[str, list[str]] = {
     "EXECUTE": ["EXECUTE", "UPDATE"],  # Edit/Write allowed in EXECUTE and UPDATE
-    "PLAN": ["INTAKE", "EXECUTE"],  # EnterPlanMode allowed from INTAKE or EXECUTE
+    "PLAN": ["PRIORITIZE", "EXECUTE"],  # EnterPlanMode from PRIORITIZE or EXECUTE
     "SESSION_END": STATES,  # Warn only, never block
 }
 
@@ -47,9 +54,13 @@ EXIT_CRITERIA: dict[str, dict[str, bool]] = {
         "intake_scanned": False,
         "kpis_reported": False,
     },
-    "INTAKE": {
-        "requests_captured": False,
-        "triaged": False,
+    "TRIAGE": {
+        "scratchpad_reviewed": False,
+        "items_triaged": False,
+    },
+    "PRIORITIZE": {
+        "priorities_assigned": False,
+        "session_scope_set": False,
     },
     "UPDATE": {
         "intake_updated": False,
@@ -141,6 +152,7 @@ def check_gate_with_audit(
     """
     from devlead.audit import parse_hook_stdin, log_write
     from devlead.scope import is_in_scope
+    from devlead.governance import check_active_task
 
     # Parse stdin for audit context
     entry = parse_hook_stdin(stdin_text) if stdin_text else None
@@ -155,13 +167,21 @@ def check_gate_with_audit(
         scope = state.get("scope", [])
         scope_enforcement = state.get("scope_enforcement", "log")
 
-    # Load path policies
-    memory_policy = "warn"  # default: warn for memory writes outside UPDATE
-    docs_policy = "warn"    # default: warn for claude_docs writes outside UPDATE
-    if state_file.exists():
-        state_data = load_state(state_file)
-        memory_policy = state_data.get("memory_policy", "warn")
-        docs_policy = state_data.get("docs_policy", "warn")
+    # Load policies from config
+    memory_policy = "block"  # default: block memory writes outside UPDATE
+    docs_policy = "warn"
+    task_policy = "block"    # default: block work without active task
+    try:
+        from devlead.config import load_config
+        project_dir = state_file.parent.parent
+        config = load_config(project_dir)
+        governance = config.get("governance", {})
+        task_policy = governance.get("task_required", "block")
+        memory_policy = governance.get("memory_from_docs", "block")
+        path_cfg = config.get("paths", {})
+        docs_policy = path_cfg.get("docs_policy", "warn")
+    except Exception:
+        pass  # use defaults if config can't load
 
     # Log the write attempt (whether allowed or blocked)
     if entry and entry.file_path:
@@ -177,14 +197,15 @@ def check_gate_with_audit(
         if is_memory:
             if memory_policy == "block":
                 hook_block(
-                    f"BLOCKED: Memory writes only allowed in UPDATE state. "
+                    "Memory writes only allowed in UPDATE state. "
                     f"Current state: {current_state}. "
-                    f"Transition to UPDATE before writing to memory."
+                    "Memory must be derived from claude_docs/ files only. "
+                    "Transition to UPDATE before writing to memory."
                 )
             elif memory_policy == "warn":
                 hook_context(
-                    f"WARNING: Writing to memory outside UPDATE state. "
-                    f"Memory should be derived from claude_docs/ during UPDATE. "
+                    "WARNING: Writing to memory outside UPDATE state. "
+                    "Memory must be derived from claude_docs/ files only. "
                     f"Current state: {current_state}."
                 )
 
@@ -202,6 +223,25 @@ def check_gate_with_audit(
                     f"Project docs should be updated during UPDATE. "
                     f"Current state: {current_state}."
                 )
+
+    # --- Governance: no work without a task ---
+    if (
+        gate == "EXECUTE"
+        and current_state == "EXECUTE"
+        and task_policy != "log"
+    ):
+        docs_dir = state_file.parent
+        result = check_active_task(docs_dir)
+        if not result["has_active"]:
+            msg = (
+                "No IN_PROGRESS task in _project_tasks.md. "
+                "Pick a task from the book of work before writing code. "
+                "Use 'devlead report' to see open items."
+            )
+            if task_policy == "block":
+                hook_block(msg)
+            elif task_policy == "warn":
+                hook_context(f"WARNING: {msg}")
 
     # Scope enforcement — only in EXECUTE state
     if (
@@ -223,6 +263,18 @@ def check_gate_with_audit(
                 f"Scope allows: {', '.join(scope)}"
             )
         # "log" = silent allow (already logged above)
+
+    # Record effort for active tasks
+    try:
+        from devlead.effort import record_task_effort
+        docs_dir = state_file.parent
+        result = check_active_task(docs_dir)
+        for tid in result["active_tasks"]:
+            record_task_effort(
+                docs_dir, tid, tokens=entry.token_count if entry else 0
+            )
+    except Exception:
+        pass
 
     # Delegate to state gate check
     check_gate(state_file, gate)
@@ -282,6 +334,13 @@ def do_transition(state_file: Path, target: str) -> None:
         except Exception:
             pass  # Never block transition for history capture
 
+    # Auto-regenerate dashboard on transition
+    try:
+        from devlead.dashboard import write_dashboard
+        write_dashboard(state_file.parent.parent)
+    except Exception:
+        pass  # Never block transition for dashboard
+
     hook_allow(f"Transitioned from {current} to {target}.")
 
 
@@ -324,7 +383,7 @@ def do_start(state_file: Path, docs_dir: Path) -> None:
     # Build context with KPI summary
     context_parts = [
         "DevLead session started. State: ORIENT.",
-        "Read project docs, scan intake, report KPIs before transitioning to INTAKE.",
+        "Read project docs, scan intake, report KPIs before transitioning to TRIAGE.",
     ]
 
     try:
