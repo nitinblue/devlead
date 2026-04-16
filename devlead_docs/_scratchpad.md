@@ -372,3 +372,19 @@ Any user intent that resolves to one of DevLead's responsibilities triggers dete
 Nitin verbal dictation, 2026-04-16 session. Captured verbatim into scratchpad per DevLead discipline.
 
 ---
+
+## Entry - 2026-04-16 - File discipline rule - no file without DevLead framework approval (Nitin dictation 2026-04-16)
+
+Any new file Claude wants to create must be proposed through DevLead first.
+
+Claude cannot invent files. DevLead's framework defines what files exist, their naming convention, their category (_intake_*, _living_*, _aware_*, _project_*, _scratchpad.md, _resume.md), and their purpose.
+
+If a new file is needed, it goes through scratchpad -> intake -> DevLead approval. Not Claude deciding on its own.
+
+This includes memory files. The ~/.claude/projects/ memory directory is a Claude Code feature, but the CONTENT stored there should originate from devlead_docs/ (per CLAUDE.md rule: LLM memory is a derived view of devlead_docs/).
+
+Violation today: Claude created feedback_ground_truth.md, feedback_forward_motion.md, feedback_honesty_over_completeness.md as standalone memory files without routing them through DevLead. The content is valid but the process was wrong.
+
+Source: Nitin verbal correction, 2026-04-16.
+
+---
