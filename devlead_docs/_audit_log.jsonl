@@ -31,3 +31,7 @@
 {"ts": "2026-04-16T02:25:51Z", "event": "gate_pass", "tool": "Write", "file": "C:\\Users\\nitin\\.claude\\projects\\C--Users-nitin-plugin-development-devlead\\memory\\project_devlead_product_definition.md", "rule": "intake_trace", "result": "exempt"}
 {"ts": "2026-04-16T02:26:03Z", "event": "gate_pass", "tool": "Write", "file": "C:\\Users\\nitin\\.claude\\projects\\C--Users-nitin-plugin-development-devlead\\memory\\MEMORY.md", "rule": "intake_trace", "result": "exempt"}
 {"ts": "2026-04-16T02:32:32Z", "event": "gate_pass", "tool": "Write", "file": "C:\\Users\\nitin\\.claude\\projects\\C--Users-nitin-plugin-development-devlead\\memory\\feedback_ground_truth.md", "rule": "intake_trace", "result": "exempt"}
+{"ts": "2026-04-16T02:42:03Z", "event": "gate_pass", "tool": "Write", "file": "C:\\Users\\nitin\\.claude\\plans\\glittery-dancing-pike.md", "rule": "intake_trace", "result": "exempt"}
+{"ts": "2026-04-16T02:43:18Z", "event": "gate_pass", "tool": "Write", "file": "C:\\Users\\nitin\\plugin-development\\devlead\\devlead_docs\\_routing_table.md", "rule": "intake_trace", "result": "exempt"}
+{"ts": "2026-04-16T02:43:39Z", "event": "gate_warn", "tool": "Edit", "file": "C:\\Users\\nitin\\plugin-development\\devlead\\src\\devlead\\install.py", "cwi": [], "rule": "intake_trace", "result": "warn", "message": "no_cwi"}
+{"ts": "2026-04-16T02:44:13Z", "event": "gate_pass", "tool": "Write", "file": "C:\\Users\\nitin\\plugin-development\\devlead\\devlead_docs\\_project_hierarchy.md", "rule": "intake_trace", "result": "exempt"}

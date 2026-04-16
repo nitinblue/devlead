@@ -35,6 +35,7 @@ SCAFFOLD_FILES: list[tuple[str, str]] = [
     ("_intake_templates/default.md.tmpl",       "_intake_templates/default.md"),
     ("_aware_features.md.tmpl",                 "_aware_features.md"),
     ("_aware_design.md.tmpl",                   "_aware_design.md"),
+    ("_routing_table.md.tmpl",                  "_routing_table.md"),
 ]
 
 # On-demand living files. Slug -> (scaffold template, target filename).
