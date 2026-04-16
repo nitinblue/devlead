@@ -388,3 +388,20 @@ Violation today: Claude created feedback_ground_truth.md, feedback_forward_motio
 Source: Nitin verbal correction, 2026-04-16.
 
 ---
+
+## Entry - 2026-04-16 - V1 DoD and exit criteria port + report line counts (Nitin 2026-04-16)
+
+Two items from session:
+
+1. V1 had DoD at TBO level and exit criteria per state machine state. Port to v2:
+   - TBO gets a dod: field (human-readable acceptance)
+   - Routing table steps get exit criteria (what must be true before moving to next step)
+   - Functional TTOs: only DevLead marks done via verify command
+   - Non-functional TTOs: Claude can mark done
+
+2. Report should show line counts for MD files, not byte counts. Nitin said:
+   "MD files i do not care about bytes, i may care about number of lines"
+
+Source: Nitin verbal, 2026-04-16 late session.
+
+---
