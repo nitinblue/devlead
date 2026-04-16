@@ -1,0 +1,48 @@
+# Living Decisions
+
+<!-- devlead:sot
+  purpose: "Canonical append-only archive of all locked decisions"
+  owner: "user+claude"
+  canonical_for: ["locked_decisions"]
+  lineage:
+    receives_from: ["_scratchpad.md (via /devlead promote --to decision)"]
+    migrates_to: []
+  lifetime: "permanent"
+  last_audit: "2026-04-15"
+-->
+
+
+> **Purpose.** A running log of LOCKED decisions on this project - architecture,
+> scope, pricing, tooling, design, anything. Each decision is a dated entry.
+> Entries are append-only; if a decision is reversed or superseded, add a NEW
+> entry that supersedes the old one - do not delete history.
+>
+> Decisions that are still OPEN belong in `_resume.md` Section 13 (open threads),
+> not here. This file holds only decisions that have been locked.
+>
+> **Contrast with other living files:**
+> - `_living_project.md` - what the project IS
+> - `_living_goals.md` - what the project aims for
+> - `_living_design.md` - HOW the system is shaped
+> - `_living_decisions.md` - choices that got made, and why (this file)
+
+---
+
+## Log
+
+*(No decisions logged yet.)*
+
+<!--
+Example entry (remove the HTML comment wrapper when logging a real decision):
+
+## 2026-04-14 - Plugin bridge pattern
+- **Decision:** Other Claude Code plugins run unchanged; DevLead ingests their
+  outputs downstream into `_intake_*.md`. Zero disruption to existing flows.
+- **Rationale:** Keep DevLead as single source of truth for the backlog WITHOUT
+  changing muscle memory for plugin users.
+- **Alternatives considered:**
+  - (a) Wrap/fork plugins - rejected: fragile, high maintenance burden.
+  - (b) Modify plugin output paths - rejected: breaks existing plugin users.
+- **Status:** locked
+- **Supersedes:** (none)
+-->

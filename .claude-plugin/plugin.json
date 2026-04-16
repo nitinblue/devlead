@@ -1,0 +1,10 @@
+{
+  "name": "devlead",
+  "description": "Governance layer for AI-assisted software development. Convert business objectives into technical deliverables with least wasted time, effort, and tokens.",
+  "version": "0.2.0-dev",
+  "author": {
+    "name": "Nitin Jain"
+  },
+  "license": "MIT",
+  "keywords": ["governance", "ai-development", "project-management", "convergence", "claude-code"]
+}

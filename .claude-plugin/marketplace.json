@@ -1,0 +1,18 @@
+{
+  "name": "devlead-dev",
+  "description": "Development marketplace for DevLead — governance layer for AI-assisted software development.",
+  "owner": {
+    "name": "Nitin Jain"
+  },
+  "plugins": [
+    {
+      "name": "devlead",
+      "description": "Governance layer for AI-assisted software development. Convert business objectives into technical deliverables with least wasted time, effort, and tokens.",
+      "version": "0.2.0-dev",
+      "source": "./",
+      "author": {
+        "name": "Nitin Jain"
+      }
+    }
+  ]
+}

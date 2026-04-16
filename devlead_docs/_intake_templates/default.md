@@ -1,0 +1,66 @@
+# Default Intake Template
+
+> **Schema contract** for entries in any `_intake_*.md` file in this project.
+> Claude reads this template at ingest time and fills each field accordingly.
+> Edit this file to change the schema; DevLead adapts on the next ingest.
+>
+> **v1 ships ONE template (this one). All intake files use it.** As the project
+> grows, add more templates to this directory (`_intake_templates/`) and users
+> can pick which template an intake file uses. v1.1 wires the picker + a
+> behavior-driven auto-update loop (watches fields you always leave blank,
+> fields you add manually, wording changes).
+
+**Template slug:** `default`
+**Template version:** 1
+
+## Fields
+
+| Field | Owner | Required | Default | Purpose |
+|---|---|---|---|---|
+| id | system | yes | auto | Generated from intake filename slug: SLUG-NNNN |
+| title | llm | yes | extracted | Short title from the plugin plan H1 |
+| source | system | yes | path | Absolute path to the plugin plan/spec file |
+| captured | system | yes | utc | ISO-8601 UTC timestamp at ingest time |
+| summary | llm | yes | "" | One-line distillation of the plan |
+| actionable_items | llm | no | [] | Checklist extracted from the plan |
+| proposed_bo | llm-hint | no | (needs BO) | Claude's best-guess BO (correct at triage) |
+| proposed_sprint | llm-hint | no | (needs sprint) | Claude's best-guess Sprint |
+| proposed_weight | llm-hint | no | (needs weight) | Rough weight hint, 1-100 |
+| status | system | yes | pending | pending | triaged | promoted | rejected |
+| origin | system | yes | normal | normal or forced (--forced flag tags bypass entries for K_BYPASS KPI) |
+| promoted_to | system | yes | (pending) | BO-X / TBO-Y path after promotion |
+| promoted_at | system | no | (pending) | ISO-8601 UTC timestamp of promotion |
+| derived_from | system | no | (none) | Comma-separated IDs of parent entries this was derived from |
+| descendants | system | no | (none) | Comma-separated IDs of child entries derived from this |
+| supersedes | system | no | (none) | ID of the entry this one replaces |
+
+## Field owners
+
+- **system** - DevLead code fills automatically at ingest or promotion time.
+- **llm** - Claude MUST extract or compute this from the plugin plan.
+- **llm-hint** - Claude proposes a best-guess value; user confirms or corrects
+  at triage. Defaults to `(needs ...)` if Claude cannot guess confidently.
+
+## Render shape
+
+Each entry is a level-2 heading followed by bullet fields in the order above.
+`actionable_items` renders as a nested checklist under its bullet.
+
+```
+## FEATURES-0001 - Short title
+- **Source:** path
+- **Captured:** 2026-04-14T14:32:00Z
+- **Summary:** one-liner
+- **Actionable items:**
+  - [ ] item one
+  - [ ] item two
+- **Proposed BO:** (needs BO)
+- **Proposed Sprint:** (needs sprint)
+- **Proposed weight:** (needs weight)
+- **Status:** pending
+- **Promoted to:** (pending)
+- **Promoted at:** (pending)
+- **Derived from:** (none)
+- **Descendants:** (none)
+- **Supersedes:** (none)
+```

@@ -1,0 +1,2384 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<!-- auto-refresh disabled until devlead serve preserves tab state -->
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>DevLead — devlead — 2026-04-12</title>
+<style>
+:root {
+    --bg: #0f1117; --card: #1a1d27; --border: #2a2d3a; --text: #e0e0e0;
+    --muted: #888; --accent: #6c5ce7; --green: #27ae60; --yellow: #f39c12;
+    --red: #e74c3c; --blue: #3498db;
+}
+* { margin: 0; padding: 0; box-sizing: border-box; }
+body {
+    font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+    background: var(--bg); color: var(--text);
+    padding: 24px; max-width: 1280px; margin: 0 auto; line-height: 1.6;
+}
+h1 { font-size: 1.8em; font-weight: 700; }
+h2 { font-size: 1.2em; font-weight: 600; margin-bottom: 16px; color: var(--accent); }
+h3 { font-size: 1em; font-weight: 600; margin-bottom: 8px; color: var(--blue); }
+.card {
+    background: var(--card); border: 1px solid var(--border);
+    border-radius: 12px; padding: 24px; margin-bottom: 20px;
+}
+.header-card {
+    background: linear-gradient(135deg, #1a1d27 0%, #2a1d3a 100%);
+    border-color: var(--accent);
+}
+.header-top { display: flex; align-items: baseline; gap: 12px; margin-bottom: 8px; }
+.project-name { color: var(--muted); font-size: 1.2em; }
+.header-meta {
+    display: flex; gap: 16px; flex-wrap: wrap; align-items: center;
+    color: var(--muted); font-size: 0.9em;
+}
+.section { margin-bottom: 28px; }
+
+/* --- Tabs --- */
+.tab-input { display: none; }
+.tab-bar {
+    display: flex; gap: 4px; border-bottom: 2px solid var(--border);
+    margin-bottom: 24px; padding: 0 4px;
+}
+.tab-label {
+    padding: 10px 20px; cursor: pointer; color: var(--muted);
+    font-weight: 500; font-size: 0.95em; border-bottom: 2px solid transparent;
+    margin-bottom: -2px; transition: all 0.2s;
+}
+.tab-label:hover { color: var(--text); }
+.tab-panel { display: none; }
+
+/* Radio button tab switching — one rule per tab */
+#tab-overview:checked ~ .tab-bar label[for="tab-overview"],
+#tab-business:checked ~ .tab-bar label[for="tab-business"],
+#tab-roadmap:checked ~ .tab-bar label[for="tab-roadmap"],
+#tab-kpis:checked ~ .tab-bar label[for="tab-kpis"],
+#tab-backlog:checked ~ .tab-bar label[for="tab-backlog"],
+#tab-session:checked ~ .tab-bar label[for="tab-session"],
+#tab-audit:checked ~ .tab-bar label[for="tab-audit"],
+#tab-trends:checked ~ .tab-bar label[for="tab-trends"],
+#tab-distribution:checked ~ .tab-bar label[for="tab-distribution"] {
+    color: var(--accent); border-bottom-color: var(--accent);
+}
+#tab-overview:checked ~ .tab-panels #panel-overview,
+#tab-business:checked ~ .tab-panels #panel-business,
+#tab-roadmap:checked ~ .tab-panels #panel-roadmap,
+#tab-kpis:checked ~ .tab-panels #panel-kpis,
+#tab-backlog:checked ~ .tab-panels #panel-backlog,
+#tab-session:checked ~ .tab-panels #panel-session,
+#tab-audit:checked ~ .tab-panels #panel-audit,
+#tab-trends:checked ~ .tab-panels #panel-trends,
+#tab-distribution:checked ~ .tab-panels #panel-distribution { display: block; }
+
+/* --- Badges --- */
+.badge { display: inline-block; padding: 4px 12px; border-radius: 20px; font-size: 0.9em; font-weight: 600; }
+.badge-sm { display: inline-block; padding: 3px 10px; border-radius: 16px; font-size: 0.9em; font-weight: 600; }
+.badge-xs { display: inline-block; padding: 2px 8px; border-radius: 12px; font-size: 0.85em; font-weight: 600; }
+.state-badge { background: var(--accent); color: white; }
+.st-done { background: var(--green); color: white; }
+.st-prog { background: var(--blue); color: white; }
+.st-open { background: #3a3d4a; color: var(--text); }
+.st-block { background: var(--red); color: white; }
+.st-reopen { background: var(--yellow); color: #222; }
+.st-default { background: var(--border); color: var(--text); }
+.warn-bg { background: var(--red); color: white; }
+.blue-bg { background: var(--blue); color: white; }
+
+/* --- Stats --- */
+.stat-grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(140px, 1fr)); gap: 12px; }
+.stat-card {
+    background: var(--bg); border: 1px solid var(--border);
+    border-radius: 8px; padding: 16px; text-align: center;
+}
+.stat-value { font-size: 1.4em; font-weight: 700; }
+.stat-of { font-size: 0.9em; color: var(--muted); }
+.stat-label { color: var(--muted); font-size: 0.9em; margin-top: 4px; }
+.stat-sub { color: var(--muted); font-size: 0.9em; margin-top: 4px; }
+.progress-bar { height: 4px; background: var(--border); border-radius: 2px; margin-top: 6px; overflow: hidden; }
+.progress-fill { height: 100%; border-radius: 2px; }
+
+/* --- Tables --- */
+.data-table { width: 100%; border-collapse: collapse; }
+.data-table th {
+    text-align: left; padding: 8px 12px; color: var(--muted); font-weight: 500;
+    font-size: 0.9em; text-transform: uppercase; letter-spacing: 0.05em;
+    border-bottom: 1px solid var(--border);
+}
+.data-table td { padding: 8px 12px; border-bottom: 1px solid var(--border); }
+tr.warn { background: rgba(231, 76, 60, 0.08); }
+.kpi-name { font-weight: 500; }
+.kpi-value { font-weight: 700; font-variant-numeric: tabular-nums; }
+.kpi-detail { color: var(--muted); }
+.kpi-cat { margin-bottom: 24px; }
+.cat-desc { color: var(--muted); margin-bottom: 12px; }
+.fp { word-break: break-all; font-family: monospace; }
+.mono { font-family: monospace; }
+.count { color: var(--muted); font-weight: 400; }
+.muted { color: var(--muted); }
+
+/* --- Roadmap --- */
+.roadmap-epic {
+    background: var(--card); border: 1px solid var(--border);
+    border-radius: 10px; padding: 16px; margin-bottom: 16px;
+    border-left: 3px solid var(--accent);
+}
+.epic-header {
+    display: flex; align-items: center; gap: 10px; flex-wrap: wrap; margin-bottom: 8px;
+}
+.epic-id { font-family: monospace; color: var(--accent); font-weight: 600; }
+.epic-name { font-weight: 600; }
+.roadmap-story {
+    margin-left: 20px; padding: 10px 16px;
+    border-left: 2px solid var(--blue); margin-bottom: 8px;
+}
+.story-header {
+    display: flex; align-items: center; gap: 8px; flex-wrap: wrap;
+}
+.story-id { font-family: monospace; color: var(--blue); }
+.story-name { font-weight: 500; }
+.task-list { margin-left: 20px; margin-top: 6px; }
+.task-row {
+    display: flex; align-items: center; gap: 8px; padding: 4px 0;
+    flex-wrap: wrap;
+}
+.task-id { font-family: monospace; color: var(--muted); }
+.task-name { }
+.orphan-section { background: rgba(231, 76, 60, 0.05); border-radius: 8px; padding: 16px; }
+
+/* --- Timeline (horizontal) --- */
+.timeline-h { display: flex; gap: 0; overflow-x: auto; padding: 16px 0; }
+.tl-step {
+    display: flex; flex-direction: column; align-items: center; min-width: 100px;
+    position: relative; flex: 1;
+}
+.tl-step:not(:last-child)::after {
+    content: ''; position: absolute; top: 10px; left: 50%; right: -50%;
+    height: 2px; background: var(--border);
+}
+.tl-dot {
+    width: 14px; height: 14px; border-radius: 50%;
+    background: var(--border); border: 2px solid var(--card);
+    position: relative; z-index: 1;
+}
+.tl-step.active .tl-dot { background: var(--accent); box-shadow: 0 0 10px var(--accent); }
+.tl-label { font-weight: 600; margin-top: 8px; }
+.tl-time { color: var(--muted); font-family: monospace; }
+
+/* --- Checklists --- */
+.ck-grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(220px, 1fr)); gap: 12px; }
+.ck-group {
+    background: var(--bg); border: 1px solid var(--border);
+    border-radius: 8px; padding: 14px;
+}
+.ck-header { display: flex; justify-content: space-between; align-items: center; margin-bottom: 6px; }
+.ck-count { color: var(--muted); }
+.ck-item { padding: 3px 0; }
+
+/* --- Scope --- */
+.scope-list { list-style: none; }
+.scope-list li {
+    font-family: monospace; padding: 6px 12px;
+    background: var(--bg); border: 1px solid var(--border);
+    border-radius: 6px; margin-bottom: 4px; font-size: 0.85em;
+}
+
+/* --- Business --- */
+.convergence-hero { text-align: center; padding: 20px; }
+.conv-number { font-size: 3em; font-weight: 800; }
+.conv-label { color: var(--muted); margin-top: 4px; }
+.biz-grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(280px, 1fr)); gap: 12px; }
+.biz-epic-card {
+    background: var(--bg); border: 1px solid var(--border);
+    border-radius: 8px; padding: 16px; border-left: 3px solid var(--accent);
+}
+.biz-epic-header { display: flex; align-items: center; gap: 8px; margin-bottom: 8px; flex-wrap: wrap; }
+.biz-epic-stats { display: flex; gap: 16px; color: var(--muted); margin-bottom: 6px; }
+.epic-risk { color: var(--yellow); margin-top: 6px; }
+.epic-block { color: var(--red); margin-top: 4px; }
+.vision-box {
+    background: linear-gradient(135deg, rgba(108, 92, 231, 0.08), rgba(52, 152, 219, 0.08));
+    border: 1px solid var(--border); border-radius: 8px;
+    padding: 20px; font-size: 1.05em; line-height: 1.8;
+}
+.tbo-table td { vertical-align: top; }
+.tbo-name { font-weight: 600; margin-bottom: 4px; }
+.tbo-meta { display: flex; gap: 12px; flex-wrap: wrap; }
+.nba-box {
+    background: linear-gradient(135deg, rgba(108, 92, 231, 0.1), rgba(52, 152, 219, 0.1));
+    border: 1px solid var(--accent); border-radius: 8px;
+    padding: 16px; font-weight: 500; font-size: 1.05em;
+}
+.status-prose { line-height: 1.8; }
+.status-prose h3 { margin-top: 12px; color: var(--blue); }
+.status-prose li { margin-left: 20px; list-style: disc; }
+
+/* --- Footer --- */
+.footer { text-align: center; color: var(--muted); font-size: 0.8em; padding: 24px 0; }
+</style>
+</head>
+<body>
+
+    <div class="card header-card">
+        <div class="header-top">
+            <h1>Project Status</h1>
+            <span class="project-name">devlead</span>
+        </div>
+        <div class="header-meta">
+            <span class="badge state-badge">ORIENT</span>
+            <span>2026-04-12</span>
+            <span>Started: 2026-04-13 00:56:55</span>
+            <span>Duration: 0m</span>
+            <span>1 transitions</span>
+        </div>
+    </div>
+    
+    <div class="tabs">
+        <input type="radio" name="tabs" id="tab-business" checked class="tab-input">
+<input type="radio" name="tabs" id="tab-overview" class="tab-input">
+<input type="radio" name="tabs" id="tab-roadmap" class="tab-input">
+<input type="radio" name="tabs" id="tab-kpis" class="tab-input">
+<input type="radio" name="tabs" id="tab-trends" class="tab-input">
+<input type="radio" name="tabs" id="tab-backlog" class="tab-input">
+<input type="radio" name="tabs" id="tab-session" class="tab-input">
+<input type="radio" name="tabs" id="tab-audit" class="tab-input">
+<input type="radio" name="tabs" id="tab-distribution" class="tab-input">
+
+        <div class="tab-bar"><label for="tab-business" class="tab-label">Business</label>
+<label for="tab-overview" class="tab-label">Overview</label>
+<label for="tab-roadmap" class="tab-label">Roadmap</label>
+<label for="tab-kpis" class="tab-label">KPIs</label>
+<label for="tab-trends" class="tab-label">Trends</label>
+<label for="tab-backlog" class="tab-label">Backlog</label>
+<label for="tab-session" class="tab-label">Session</label>
+<label for="tab-audit" class="tab-label">Audit</label>
+<label for="tab-distribution" class="tab-label">Productionize</label>
+</div>
+        <div class="tab-panels"><div class="tab-panel" id="panel-business"><div class="section">
+    <div class="section">
+        <div class="convergence-hero">
+            <div class="conv-number" style="color: #e74c3c">0%</div>
+            <div class="conv-label">Phase Convergence — Phase 1</div>
+            <div style="width:80%;max-width:400px;height:12px;background:#1e293b;border-radius:6px;margin:0.5rem auto 0;overflow:hidden;">
+                <div style="height:100%;width:0%;background:#e74c3c;border-radius:6px;transition:width 0.3s;"></div>
+            </div>
+            <div class="conv-label" style="margin-top:0.3rem;font-size:0.85rem;">2 of 4 business outcomes delivered</div>
+        </div>
+    </div>
+    
+        <div class="section">
+            <h2>Business Objective Convergence</h2>
+            
+            <div style="background:#0f172a;border:1px solid #334155;border-radius:8px;padding:1rem;margin-bottom:1rem;">
+                <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:0.75rem;">
+                    <div>
+                        <span class="mono" style="color:var(--accent);font-weight:700;">BO-1</span>
+                        <span style="margin-left:0.5rem;">Phase 1 (auto-generated)</span>
+                        <span class="muted" style="margin-left:0.5rem;">wt:100</span>
+                    </div>
+                    <span style="font-size:1.3rem;font-weight:700;color:#e74c3c;">0%</span>
+                </div>
+                <div style="height:8px;background:#1e293b;border-radius:4px;overflow:hidden;margin-bottom:0.75rem;">
+                    <div style="height:100%;width:0%;background:#e74c3c;border-radius:4px;"></div>
+                </div>
+                
+                <div style="display:flex;align-items:center;gap:0.5rem;padding:0.3rem 0;border-bottom:1px solid #1e293b;">
+                    <span class="mono" style="width:60px;flex-shrink:0;color:var(--accent);">TBO-1</span>
+                    <span style="flex:1;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;">Single-project governance works E2E</span>
+                    <span class="muted" style="width:40px;text-align:right;">wt:25</span>
+                    <span style="width:45px;text-align:right;font-weight:600;color:#e74c3c;">0%</span>
+                    <div style="width:80px;height:8px;background:#1e293b;border-radius:4px;overflow:hidden;">
+                        <div style="height:100%;width:0%;background:#e74c3c;border-radius:4px;"></div>
+                    </div>
+                </div>
+                <div style="display:flex;align-items:center;gap:0.5rem;padding:0.3rem 0;border-bottom:1px solid #1e293b;">
+                    <span class="mono" style="width:60px;flex-shrink:0;color:var(--accent);">TBO-2</span>
+                    <span style="flex:1;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;">Multi-project portfolio governance</span>
+                    <span class="muted" style="width:40px;text-align:right;">wt:25</span>
+                    <span style="width:45px;text-align:right;font-weight:600;color:#e74c3c;">0%</span>
+                    <div style="width:80px;height:8px;background:#1e293b;border-radius:4px;overflow:hidden;">
+                        <div style="height:100%;width:0%;background:#e74c3c;border-radius:4px;"></div>
+                    </div>
+                </div>
+                <div style="display:flex;align-items:center;gap:0.5rem;padding:0.3rem 0;border-bottom:1px solid #1e293b;">
+                    <span class="mono" style="width:60px;flex-shrink:0;color:var(--accent);">TBO-3</span>
+                    <span style="flex:1;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;">Available on PyPI</span>
+                    <span class="muted" style="width:40px;text-align:right;">wt:25</span>
+                    <span style="width:45px;text-align:right;font-weight:600;color:#e74c3c;">0%</span>
+                    <div style="width:80px;height:8px;background:#1e293b;border-radius:4px;overflow:hidden;">
+                        <div style="height:100%;width:0%;background:#e74c3c;border-radius:4px;"></div>
+                    </div>
+                </div>
+                <div style="display:flex;align-items:center;gap:0.5rem;padding:0.3rem 0;border-bottom:1px solid #1e293b;">
+                    <span class="mono" style="width:60px;flex-shrink:0;color:var(--accent);">TBO-4</span>
+                    <span style="flex:1;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;">First paying customer</span>
+                    <span class="muted" style="width:40px;text-align:right;">wt:25</span>
+                    <span style="width:45px;text-align:right;font-weight:600;color:#e74c3c;">0%</span>
+                    <div style="width:80px;height:8px;background:#1e293b;border-radius:4px;overflow:hidden;">
+                        <div style="height:100%;width:0%;background:#e74c3c;border-radius:4px;"></div>
+                    </div>
+                </div>
+            </div>
+        </div>
+        
+        <div class="section">
+            <h2>Tangible Business Outcomes</h2>
+            <table class="data-table tbo-table">
+                <thead><tr><th>Status</th><th>ID</th><th>Business Outcome</th><th>Story Progress</th></tr></thead>
+                <tbody><tr>
+                <td><span class="badge-xs st-done">DONE</span></td>
+                <td class="mono">TBO-1</td>
+                <td>
+                    <div class="tbo-name">Single-project governance works E2E</div>
+                    <div class="tbo-meta">
+                        <span class="muted"></span>
+                        <span class="muted"></span>
+                        <span class="muted">Due: </span>
+                        
+                    </div>
+                </td>
+                <td>
+                    <div>0/0 stories</div>
+                    <div class="progress-bar"><div class="progress-fill" style="width: 0%; background: #e74c3c"></div></div>
+                </td>
+            </tr><tr>
+                <td><span class="badge-xs st-default">ACCEPTANCE</span></td>
+                <td class="mono">TBO-2</td>
+                <td>
+                    <div class="tbo-name">Multi-project portfolio governance</div>
+                    <div class="tbo-meta">
+                        <span class="muted"></span>
+                        <span class="muted"></span>
+                        <span class="muted">Due: </span>
+                        
+                    </div>
+                </td>
+                <td>
+                    <div>0/0 stories</div>
+                    <div class="progress-bar"><div class="progress-fill" style="width: 0%; background: #e74c3c"></div></div>
+                </td>
+            </tr><tr>
+                <td><span class="badge-xs st-done">DONE</span></td>
+                <td class="mono">TBO-3</td>
+                <td>
+                    <div class="tbo-name">Available on PyPI</div>
+                    <div class="tbo-meta">
+                        <span class="muted"></span>
+                        <span class="muted"></span>
+                        <span class="muted">Due: </span>
+                        
+                    </div>
+                </td>
+                <td>
+                    <div>0/0 stories</div>
+                    <div class="progress-bar"><div class="progress-fill" style="width: 0%; background: #e74c3c"></div></div>
+                </td>
+            </tr><tr>
+                <td><span class="badge-xs st-default">NOT_STARTED</span></td>
+                <td class="mono">TBO-4</td>
+                <td>
+                    <div class="tbo-name">First paying customer</div>
+                    <div class="tbo-meta">
+                        <span class="muted"></span>
+                        <span class="muted"></span>
+                        <span class="muted">Due: </span>
+                        
+                    </div>
+                </td>
+                <td>
+                    <div>0/0 stories</div>
+                    <div class="progress-bar"><div class="progress-fill" style="width: 0%; background: #e74c3c"></div></div>
+                </td>
+            </tr></tbody>
+            </table>
+        </div>
+        
+            <div class="section">
+                <h2>Timeline</h2>
+                <div style="display:flex;gap:1.5rem;margin-bottom:0.75rem;flex-wrap:wrap;">
+                    <span style="display:flex;align-items:center;gap:0.3rem;"><span style="width:12px;height:12px;border-radius:2px;background:#22c55e;display:inline-block;"></span> Done</span>
+                    <span style="display:flex;align-items:center;gap:0.3rem;"><span style="width:12px;height:12px;border-radius:2px;background:#eab308;display:inline-block;"></span> Ready for Acceptance</span>
+                    <span style="display:flex;align-items:center;gap:0.3rem;"><span style="width:12px;height:12px;border-radius:2px;background:#3b82f6;display:inline-block;"></span> In Progress</span>
+                    <span style="display:flex;align-items:center;gap:0.3rem;"><span style="width:12px;height:12px;border-radius:2px;background:#64748b;display:inline-block;"></span> Not Started</span>
+                    <span style="display:flex;align-items:center;gap:0.3rem;"><span style="width:3px;height:12px;background:#eab308;display:inline-block;"></span> Today</span>
+                    <span style="display:flex;align-items:center;gap:0.3rem;"><span style="width:3px;height:12px;background:#22c55e;display:inline-block;"></span> Actual Completion</span>
+                </div>
+                <div style="position:relative;padding:0.5rem 0;">
+                    <div style="display:flex;justify-content:space-between;margin-bottom:0.5rem;margin-left:336px;">
+                        <span class="muted">--</span>
+                        <span style="color:#eab308;font-weight:bold;">Today (2026-04-12)</span>
+                        <span class="muted">2026-04-12</span>
+                    </div>
+                    <div style="position:relative;">
+                        <div style="position:absolute;left:calc(336px + 0% * (100% - 336px) / 100);top:0;bottom:0;width:2px;background:#eab308;opacity:0.5;z-index:1;"></div>
+                        
+                <div style="display:flex;align-items:center;gap:0.5rem;margin-bottom:0.6rem;">
+                    <div style="width:80px;flex-shrink:0;" class="mono">TBO-1</div>
+                    <div style="width:200px;flex-shrink:0;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;">Single-project governance works E2E</div>
+                    <div style="flex:1;position:relative;height:28px;background:#1e293b;border-radius:4px;overflow:hidden;">
+                        <div style="position:absolute;left:0;top:0;bottom:0;width:5%;background:#22c55e;border-radius:4px;opacity:0.8;"></div>
+                        <div style="position:absolute;left:0%;top:0;bottom:0;width:3px;background:#22c55e;border-radius:2px;" title="Actual: 2026-04-05"></div>
+                        <div style="position:absolute;right:4px;top:3px;color:#fff;opacity:0.9;white-space:nowrap;">P: 2026-04-05</div>
+                        <div style="position:absolute;left:4px;top:3px;color:#fff;opacity:0.9;white-space:nowrap;">A: 2026-04-05</div>
+                    </div>
+                    <div style="width:70px;flex-shrink:0;text-align:center;"><span class="badge-xs st-done">DONE</span></div>
+                </div>
+                
+                <div style="display:flex;align-items:center;gap:0.5rem;margin-bottom:0.6rem;">
+                    <div style="width:80px;flex-shrink:0;" class="mono">TBO-2</div>
+                    <div style="width:200px;flex-shrink:0;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;">Multi-project portfolio governance</div>
+                    <div style="flex:1;position:relative;height:28px;background:#1e293b;border-radius:4px;overflow:hidden;">
+                        <div style="position:absolute;left:0;top:0;bottom:0;width:5%;background:#eab308;border-radius:4px;opacity:0.8;"></div>
+                        
+                        <div style="position:absolute;right:4px;top:3px;color:#fff;opacity:0.9;white-space:nowrap;">P: 2026-04-06</div>
+                        <div style="position:absolute;left:4px;top:3px;color:#fff;opacity:0.9;white-space:nowrap;">A: --</div>
+                    </div>
+                    <div style="width:70px;flex-shrink:0;text-align:center;"><span class="badge-xs st-default">ACCEPTANCE</span></div>
+                </div>
+                
+                <div style="display:flex;align-items:center;gap:0.5rem;margin-bottom:0.6rem;">
+                    <div style="width:80px;flex-shrink:0;" class="mono">TBO-3</div>
+                    <div style="width:200px;flex-shrink:0;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;">Available on PyPI</div>
+                    <div style="flex:1;position:relative;height:28px;background:#1e293b;border-radius:4px;overflow:hidden;">
+                        <div style="position:absolute;left:0;top:0;bottom:0;width:5%;background:#22c55e;border-radius:4px;opacity:0.8;"></div>
+                        <div style="position:absolute;left:0%;top:0;bottom:0;width:3px;background:#22c55e;border-radius:2px;" title="Actual: 2026-04-05"></div>
+                        <div style="position:absolute;right:4px;top:3px;color:#fff;opacity:0.9;white-space:nowrap;">P: 2026-04-05</div>
+                        <div style="position:absolute;left:4px;top:3px;color:#fff;opacity:0.9;white-space:nowrap;">A: 2026-04-05</div>
+                    </div>
+                    <div style="width:70px;flex-shrink:0;text-align:center;"><span class="badge-xs st-done">DONE</span></div>
+                </div>
+                
+                <div style="display:flex;align-items:center;gap:0.5rem;margin-bottom:0.6rem;">
+                    <div style="width:80px;flex-shrink:0;" class="mono">TBO-4</div>
+                    <div style="width:200px;flex-shrink:0;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;">First paying customer</div>
+                    <div style="flex:1;position:relative;height:28px;background:#1e293b;border-radius:4px;overflow:hidden;">
+                        <div style="position:absolute;left:0;top:0;bottom:0;width:5%;background:#64748b;border-radius:4px;opacity:0.8;"></div>
+                        
+                        <div style="position:absolute;right:4px;top:3px;color:#fff;opacity:0.9;white-space:nowrap;">P: 2026-04-12</div>
+                        <div style="position:absolute;left:4px;top:3px;color:#fff;opacity:0.9;white-space:nowrap;">A: --</div>
+                    </div>
+                    <div style="width:70px;flex-shrink:0;text-align:center;"><span class="badge-xs st-default">NOT_STARTED</span></div>
+                </div>
+                
+                    </div>
+                </div>
+            </div>
+            </div></div>
+<div class="tab-panel" id="panel-overview"><div class="section"><h2>Pipeline</h2><div class="stat-grid">
+        <div class="stat-card">
+            <div class="stat-value" style="color: #27ae60">4<span class="stat-of">/4</span></div>
+            <div class="stat-label">Epics</div>
+            <div class="progress-bar"><div class="progress-fill" style="width: 100%; background: #27ae60"></div></div>
+            <div class="stat-sub">0 in progress</div>
+        </div>
+        
+        <div class="stat-card">
+            <div class="stat-value" style="color: #27ae60">17<span class="stat-of">/17</span></div>
+            <div class="stat-label">Stories</div>
+            <div class="progress-bar"><div class="progress-fill" style="width: 100%; background: #27ae60"></div></div>
+            <div class="stat-sub">0 in progress</div>
+        </div>
+        
+        <div class="stat-card">
+            <div class="stat-value" style="color: #27ae60">70<span class="stat-of">/79</span></div>
+            <div class="stat-label">Tasks</div>
+            <div class="progress-bar"><div class="progress-fill" style="width: 88%; background: #27ae60"></div></div>
+            <div class="stat-sub">0 in progress</div>
+        </div>
+        
+        <div class="stat-card">
+            <div class="stat-value" style="color: #e74c3c">0<span class="stat-of">/70</span></div>
+            <div class="stat-label">Intake</div>
+            <div class="progress-bar"><div class="progress-fill" style="width: 0%; background: #e74c3c"></div></div>
+            <div class="stat-sub">0 in progress</div>
+        </div>
+        
+    <div class="stat-card">
+        <div class="stat-value" style="color: #27ae60">0</div>
+        <div class="stat-label">Blocked</div>
+    </div>
+    <div class="stat-card">
+        <div class="stat-value" style="color: #27ae60">0</div>
+        <div class="stat-label">Overdue</div>
+    </div>
+    <div class="stat-card">
+        <div class="stat-value" style="color: #27ae60">100<span class="stat-of">%</span></div>
+        <div class="stat-label">Convergence</div>
+    </div>
+    </div></div><div class="section"><h2>What to Work On Next</h2><div class="nba-box">Triage backlog &mdash; 70 intake items open</div><table class="data-table"><thead><tr><th>Status</th><th>ID</th><th>Task</th><th>Priority</th><th>Story</th></tr></thead><tbody><tr>
+                <td><span class="badge-xs st-default">ON_HOLD</span></td>
+                <td>TASK-040</td>
+                <td>devlead serve -- local HTTP server for interactive dashboard edits</td>
+                <td class="muted">P1</td>
+                <td class="muted">S-001</td>
+            </tr><tr>
+                <td><span class="badge-xs st-open">OPEN</span></td>
+                <td>TASK-059</td>
+                <td>Create PyPI account at pypi.org and generate API token</td>
+                <td class="muted">P1</td>
+                <td class="muted">S-018</td>
+            </tr><tr>
+                <td><span class="badge-xs st-open">OPEN</span></td>
+                <td>TASK-060</td>
+                <td>Create TestPyPI account at test.pypi.org and generate API token</td>
+                <td class="muted">P1</td>
+                <td class="muted">S-018</td>
+            </tr><tr>
+                <td><span class="badge-xs st-open">OPEN</span></td>
+                <td>TASK-061</td>
+                <td>Upload to TestPyPI -- twine upload --repository testpypi dist/*</td>
+                <td class="muted">P1</td>
+                <td class="muted">S-018</td>
+            </tr><tr>
+                <td><span class="badge-xs st-open">OPEN</span></td>
+                <td>TASK-062</td>
+                <td>Verify TestPyPI install -- pip install --index-url https://test.pypi.org/simple/ devlead</td>
+                <td class="muted">P1</td>
+                <td class="muted">S-018</td>
+            </tr></tbody></table></div>
+    <div class="section">
+        <h2>Project Files <span class="count">(8)</span></h2>
+        <table class="data-table"><thead><tr><th>Type</th><th>File</th><th>Title</th><th>Updated</th></tr></thead><tbody><tr>
+            <td><span class="badge-xs st-open">INTAKE</span></td>
+            <td class="mono">_intake_bugs.md</td>
+            <td>Bug Intake</td>
+            <td class="muted">2026-04-05</td>
+        </tr><tr>
+            <td><span class="badge-xs st-open">INTAKE</span></td>
+            <td class="mono">_intake_changes.md</td>
+            <td>Change Intake</td>
+            <td class="muted">2026-04-05</td>
+        </tr><tr>
+            <td><span class="badge-xs st-open">INTAKE</span></td>
+            <td class="mono">_intake_features.md</td>
+            <td>Feature Intake</td>
+            <td class="muted">2026-04-05</td>
+        </tr><tr>
+            <td><span class="badge-xs st-open">INTAKE</span></td>
+            <td class="mono">_intake_gaps.md</td>
+            <td>Gap Intake</td>
+            <td class="muted">2026-04-05</td>
+        </tr><tr>
+            <td><span class="badge-xs st-prog">PROJECT</span></td>
+            <td class="mono">_project_roadmap.md</td>
+            <td>Project Roadmap</td>
+            <td class="muted">2026-04-05</td>
+        </tr><tr>
+            <td><span class="badge-xs st-prog">PROJECT</span></td>
+            <td class="mono">_project_status.md</td>
+            <td>Project Status</td>
+            <td class="muted">2026-04-08 (Session 5)</td>
+        </tr><tr>
+            <td><span class="badge-xs st-prog">PROJECT</span></td>
+            <td class="mono">_project_stories.md</td>
+            <td>Project Stories</td>
+            <td class="muted">2026-04-05</td>
+        </tr><tr>
+            <td><span class="badge-xs st-prog">PROJECT</span></td>
+            <td class="mono">_project_tasks.md</td>
+            <td>Project Tasks</td>
+            <td class="muted">2026-04-08</td>
+        </tr></tbody></table>
+    </div>
+    <div class="section"><h2>State Timeline</h2><div class="timeline-h"><div class="tl-step active"><div class="tl-dot"></div><div class="tl-label">ORIENT</div><div class="tl-time">2026-04-13 00:56:55</div></div></div></div><div class="section"><h2>Checklists</h2><div class="ck-grid">
+        <div class="ck-group">
+            <div class="ck-header">
+                <h3>ORIENT</h3>
+                <span class="ck-count">0/4</span>
+            </div>
+            <div class="progress-bar"><div class="progress-fill" style="width: 0%; background: #e74c3c"></div></div>
+            <div class="ck-item">&#x26AA; status_read</div><div class="ck-item">&#x26AA; tasks_read</div><div class="ck-item">&#x26AA; intake_scanned</div><div class="ck-item">&#x26AA; kpis_reported</div>
+        </div>
+        
+        <div class="ck-group">
+            <div class="ck-header">
+                <h3>TRIAGE</h3>
+                <span class="ck-count">0/2</span>
+            </div>
+            <div class="progress-bar"><div class="progress-fill" style="width: 0%; background: #e74c3c"></div></div>
+            <div class="ck-item">&#x26AA; scratchpad_reviewed</div><div class="ck-item">&#x26AA; items_triaged</div>
+        </div>
+        
+        <div class="ck-group">
+            <div class="ck-header">
+                <h3>PRIORITIZE</h3>
+                <span class="ck-count">0/2</span>
+            </div>
+            <div class="progress-bar"><div class="progress-fill" style="width: 0%; background: #e74c3c"></div></div>
+            <div class="ck-item">&#x26AA; priorities_assigned</div><div class="ck-item">&#x26AA; session_scope_set</div>
+        </div>
+        
+        <div class="ck-group">
+            <div class="ck-header">
+                <h3>UPDATE</h3>
+                <span class="ck-count">0/5</span>
+            </div>
+            <div class="progress-bar"><div class="progress-fill" style="width: 0%; background: #e74c3c"></div></div>
+            <div class="ck-item">&#x26AA; intake_updated</div><div class="ck-item">&#x26AA; tasks_updated</div><div class="ck-item">&#x26AA; status_updated</div><div class="ck-item">&#x26AA; living_reviewed</div><div class="ck-item">&#x26AA; memory_derived</div>
+        </div>
+        </div></div></div>
+<div class="tab-panel" id="panel-roadmap"><div class="section">
+        <div class="roadmap-epic">
+            <div style="color: var(--muted); text-transform: uppercase; letter-spacing: 0.05em; margin-bottom: 4px;">Tangible Business Outcome</div>
+            <div class="epic-header">
+                <span style="font-weight: 700; color: var(--accent);">TBO-1</span>
+                <span class="epic-name">Single-project governance works E2E</span>
+                <span class="badge st-done">DONE</span>
+            </div>
+            <div style="padding: 0 1rem; display: flex; gap: 1.5rem; align-items: center;">
+                <span class="muted">14/14 stories</span>
+                <span class="muted">66/67 tasks</span>
+                <span class="muted">Planned: 2026-04-05</span> <span class="muted">Actual: 2026-04-05</span>
+                <div class="progress-bar" style="flex: 1; max-width: 200px;">
+                    <div class="progress-fill" style="width: 100%; background: #27ae60"></div>
+                </div>
+            </div>
+        <div style="margin: 0.5rem 1rem 1rem;">
+                <details style="margin-bottom: 4px; border-left: 2px solid var(--blue); padding-left: 12px;">
+                    <summary style="cursor: pointer; padding: 6px 0; display: flex; align-items: center; gap: 8px;">
+                        <span class="badge-xs st-done">DONE</span>
+                        <span class="mono" style="color: var(--blue);">S-001</span>
+                        <span>Project skeleton with pip-installable CLI</span>
+                        <span class="muted">39/40 tasks</span>
+                        <span class="muted">Tokens: &mdash;</span>
+                        <span class="muted">1 min</span>
+                    </summary>
+                <table class="data-table" style="margin: 4px 0 8px 0;">
+                        <thead><tr><th>Task</th><th>Description</th><th>Status</th><th>Req Type</th><th>Tokens</th><th>Sessions</th><th>Duration</th></tr></thead><tbody><tr>
+                            <td class="mono">TASK-000</td>
+                            <td>Project skeleton -- pyproject.toml, src layout, CL</td>
+                            <td><span class="badge-xs st-done">DONE</span></td>
+                            <td><span class="badge-xs st-done">F</span></td>
+                            <td class="mono">&mdash;</td>
+                            <td class="mono">&mdash;</td>
+                            <td class="mono">&mdash;</td>
+                        </tr><tr>
+                            <td class="mono">TASK-014</td>
+                            <td>Scratchpad capture mechanism</td>
+                            <td><span class="badge-xs st-done">DONE</span></td>
+                            <td><span class="badge-xs st-done">F</span></td>
+                            <td class="mono">&mdash;</td>
+                            <td class="mono">&mdash;</td>
+                            <td class="mono">&mdash;</td>
+                        </tr><tr>
+                            <td class="mono">TASK-015</td>
+                            <td>LICENSE file -- create MIT license</td>
+                            <td><span class="badge-xs st-done">DONE</span></td>
+                            <td><span class="badge-xs st-done">F</span></td>
+                            <td class="mono">&mdash;</td>
+                            <td class="mono">&mdash;</td>
+                            <td class="mono">&mdash;</td>
+                        </tr><tr>
+                            <td class="mono">TASK-016</td>
+                            <td>README.md -- proper project description, install, </td>
+                            <td><span class="badge-xs st-done">DONE</span></td>
+                            <td><span class="badge-xs st-done">F</span></td>
+                            <td class="mono">&mdash;</td>
+                            <td class="mono">&mdash;</td>
+                            <td class="mono">&mdash;</td>
+                        </tr><tr>
+                            <td class="mono">TASK-017</td>
+                            <td>pyproject.toml -- authors, urls, classifiers, keyw</td>
+                            <td><span class="badge-xs st-done">DONE</span></td>
+                            <td><span class="badge-xs st-done">F</span></td>
+                            <td class="mono">&mdash;</td>
+                            <td class="mono">&mdash;</td>
+                            <td class="mono">&mdash;</td>
+                        </tr><tr>
+                            <td class="mono">TASK-018</td>
+                            <td>MANIFEST.in / package_data -- ensure scaffold file</td>
+                            <td><span class="badge-xs st-done">DONE</span></td>
+                            <td><span class="badge-xs st-done">F</span></td>
+                            <td class="mono">&mdash;</td>
+                            <td class="mono">&mdash;</td>
+                            <td class="mono">&mdash;</td>
+                        </tr><tr>
+                            <td class="mono">TASK-019</td>
+                            <td>Create _living_business_objectives.md</td>
+                            <td><span class="badge-xs st-done">DONE</span></td>
+                            <td><span class="badge-xs st-done">F</span></td>
+                            <td class="mono">&mdash;</td>
+                            <td class="mono">&mdash;</td>
+                            <td class="mono">&mdash;</td>
+                        </tr><tr>
+                            <td class="mono">TASK-020</td>
+                            <td>Create _living_distribution.md</td>
+                            <td><span class="badge-xs st-done">DONE</span></td>
+                            <td><span class="badge-xs st-done">F</span></td>
+                            <td class="mono">&mdash;</td>
+                            <td class="mono">&mdash;</td>
+                            <td class="mono">&mdash;</td>
+                        </tr><tr>
+                            <td class="mono">TASK-021</td>
+                            <td>Create _project_stories.md with TBO linkage</td>
+                            <td><span class="badge-xs st-done">DONE</span></td>
+                            <td><span class="badge-xs st-done">F</span></td>
+                            <td class="mono">&mdash;</td>
+                            <td class="mono">&mdash;</td>
+                            <td class="mono">&mdash;</td>
+                        </tr><tr>
+                            <td class="mono">TASK-022</td>
+                            <td>Mark TASK-012, TASK-013 DONE, close session 3 work</td>
+                            <td><span class="badge-xs st-done">DONE</span></td>
+                            <td><span class="badge-xs st-done">F</span></td>
+                            <td class="mono">&mdash;</td>
+                            <td class="mono">&mdash;</td>
+                            <td class="mono">&mdash;</td>
+                        </tr><tr>
+                            <td class="mono">TASK-023</td>
+                            <td>Fix roadmap -- check completed stories</td>
+                            <td><span class="badge-xs st-done">DONE</span></td>
+                            <td><span class="badge-xs st-done">F</span></td>
+                            <td class="mono">&mdash;</td>
+                            <td class="mono">&mdash;</td>
+                            <td class="mono">&mdash;</td>
+                        </tr><tr>
+                            <td class="mono">TASK-024</td>
+                            <td>devlead gap command -- automated governance gap de</td>
+                            <td><span class="badge-xs st-done">DONE</span></td>
+                            <td><span class="badge-xs st-done">F</span></td>
+                            <td class="mono">&mdash;</td>
+                            <td class="mono">&mdash;</td>
+                            <td class="mono">&mdash;</td>
+                        </tr><tr>
+                            <td class="mono">TASK-025</td>
+                            <td>Polish scratchpad + triage CLI</td>
+                            <td><span class="badge-xs st-done">DONE</span></td>
+                            <td><span class="badge-xs st-done">F</span></td>
+                            <td class="mono">&mdash;</td>
+                            <td class="mono">&mdash;</td>
+                            <td class="mono">&mdash;</td>
+                        </tr><tr>
+                            <td class="mono">TASK-026</td>
+                            <td>TBO hierarchy view -- devlead view command showing</td>
+                            <td><span class="badge-xs st-done">DONE</span></td>
+                            <td><span class="badge-xs st-done">F</span></td>
+                            <td class="mono">&mdash;</td>
+                            <td class="mono">&mdash;</td>
+                            <td class="mono">&mdash;</td>
+                        </tr><tr>
+                            <td class="mono">TASK-027</td>
+                            <td>Smart analysis -- devlead analyze command for open</td>
+                            <td><span class="badge-xs st-done">DONE</span></td>
+                            <td><span class="badge-xs st-done">F</span></td>
+                            <td class="mono">&mdash;</td>
+                            <td class="mono">&mdash;</td>
+                            <td class="mono">&mdash;</td>
+                        </tr><tr>
+                            <td class="mono">TASK-028</td>
+                            <td>Update stale distribution doc -- compliance milest</td>
+                            <td><span class="badge-xs st-done">DONE</span></td>
+                            <td><span class="badge-xs st-done">F</span></td>
+                            <td class="mono">&mdash;</td>
+                            <td class="mono">&mdash;</td>
+                            <td class="mono">&mdash;</td>
+                        </tr><tr>
+                            <td class="mono">TASK-029</td>
+                            <td>Tests for view and analyze commands</td>
+                            <td><span class="badge-xs st-done">DONE</span></td>
+                            <td><span class="badge-xs st-done">F</span></td>
+                            <td class="mono">&mdash;</td>
+                            <td class="mono">&mdash;</td>
+                            <td class="mono">&mdash;</td>
+                        </tr><tr>
+                            <td class="mono">TASK-030</td>
+                            <td>Interactive triage -- devlead triage command for s</td>
+                            <td><span class="badge-xs st-done">DONE</span></td>
+                            <td><span class="badge-xs st-done">F</span></td>
+                            <td class="mono">&mdash;</td>
+                            <td class="mono">&mdash;</td>
+                            <td class="mono">&mdash;</td>
+                        </tr><tr>
+                            <td class="mono">TASK-031</td>
+                            <td>Migration bootstrap -- devlead migrate for existin</td>
+                            <td><span class="badge-xs st-done">DONE</span></td>
+                            <td><span class="badge-xs st-done">F</span></td>
+                            <td class="mono">&mdash;</td>
+                            <td class="mono">&mdash;</td>
+                            <td class="mono">&mdash;</td>
+                        </tr><tr>
+                            <td class="mono">TASK-032</td>
+                            <td>Workbook data model -- shared TBOâ†’Storyâ†’Task s</td>
+                            <td><span class="badge-xs st-done">DONE</span></td>
+                            <td><span class="badge-xs st-done">F</span></td>
+                            <td class="mono">&mdash;</td>
+                            <td class="mono">&mdash;</td>
+                            <td class="mono">&mdash;</td>
+                        </tr><tr>
+                            <td class="mono">TASK-033</td>
+                            <td>Rewrite view.py to use workbook model with Option </td>
+                            <td><span class="badge-xs st-done">DONE</span></td>
+                            <td><span class="badge-xs st-done">F</span></td>
+                            <td class="mono">&mdash;</td>
+                            <td class="mono">&mdash;</td>
+                            <td class="mono">&mdash;</td>
+                        </tr><tr>
+                            <td class="mono">TASK-034</td>
+                            <td>Auto-regenerate HTML on transitions and report com</td>
+                            <td><span class="badge-xs st-done">DONE</span></td>
+                            <td><span class="badge-xs st-done">F</span></td>
+                            <td class="mono">&mdash;</td>
+                            <td class="mono">&mdash;</td>
+                            <td class="mono">&mdash;</td>
+                        </tr><tr>
+                            <td class="mono">TASK-035</td>
+                            <td>Formalize TBO list with planned/actual dates</td>
+                            <td><span class="badge-xs st-done">DONE</span></td>
+                            <td><span class="badge-xs st-done">F</span></td>
+                            <td class="mono">&mdash;</td>
+                            <td class="mono">&mdash;</td>
+                            <td class="mono">&mdash;</td>
+                        </tr><tr>
+                            <td class="mono">TASK-036</td>
+                            <td>Fix Business tab -- remove raw dump, show only TBO</td>
+                            <td><span class="badge-xs st-done">DONE</span></td>
+                            <td><span class="badge-xs st-done">F</span></td>
+                            <td class="mono">&mdash;</td>
+                            <td class="mono">&mdash;</td>
+                            <td class="mono">&mdash;</td>
+                        </tr><tr>
+                            <td class="mono">TASK-037</td>
+                            <td>Rewrite Roadmap tab as workbook view -- TBOâ†’Stor</td>
+                            <td><span class="badge-xs st-done">DONE</span></td>
+                            <td><span class="badge-xs st-done">F</span></td>
+                            <td class="mono">&mdash;</td>
+                            <td class="mono">&mdash;</td>
+                            <td class="mono">&mdash;</td>
+                        </tr><tr>
+                            <td class="mono">TASK-038</td>
+                            <td>Business tab Gantt chart -- visual timeline of TBO</td>
+                            <td><span class="badge-xs st-done">DONE</span></td>
+                            <td><span class="badge-xs st-done">F</span></td>
+                            <td class="mono">&mdash;</td>
+                            <td class="mono">&mdash;</td>
+                            <td class="mono">&mdash;</td>
+                        </tr><tr>
+                            <td class="mono">TASK-039</td>
+                            <td>Add Gantt chart legend for color coding</td>
+                            <td><span class="badge-xs st-done">DONE</span></td>
+                            <td><span class="badge-xs st-done">F</span></td>
+                            <td class="mono">&mdash;</td>
+                            <td class="mono">&mdash;</td>
+                            <td class="mono">&mdash;</td>
+                        </tr><tr>
+                            <td class="mono">TASK-040</td>
+                            <td>devlead serve -- local HTTP server for interactive</td>
+                            <td><span class="badge-xs st-default">ON_HOLD</span></td>
+                            <td><span class="badge-xs st-done">F</span></td>
+                            <td class="mono">&mdash;</td>
+                            <td class="mono">&mdash;</td>
+                            <td class="mono">&mdash;</td>
+                        </tr><tr>
+                            <td class="mono">TASK-042</td>
+                            <td>Fix Gantt timeline -- show planned/actual dates on</td>
+                            <td><span class="badge-xs st-done">DONE</span></td>
+                            <td><span class="badge-xs st-done">F</span></td>
+                            <td class="mono">&mdash;</td>
+                            <td class="mono">&mdash;</td>
+                            <td class="mono">&mdash;</td>
+                        </tr><tr>
+                            <td class="mono">TASK-043</td>
+                            <td>Replace Intake tab with Backlog tab -- show FEAT/B</td>
+                            <td><span class="badge-xs st-done">DONE</span></td>
+                            <td><span class="badge-xs st-done">F</span></td>
+                            <td class="mono">&mdash;</td>
+                            <td class="mono">&mdash;</td>
+                            <td class="mono">&mdash;</td>
+                        </tr><tr>
+                            <td class="mono">TASK-044</td>
+                            <td>Dashboard typography -- consistent font sizes, use</td>
+                            <td><span class="badge-xs st-done">DONE</span></td>
+                            <td><span class="badge-xs st-done">F</span></td>
+                            <td class="mono">&mdash;</td>
+                            <td class="mono">&mdash;</td>
+                            <td class="mono">&mdash;</td>
+                        </tr><tr>
+                            <td class="mono">TASK-049</td>
+                            <td>Fix dashboard -- Requirement Type label, header du</td>
+                            <td><span class="badge-xs st-done">DONE</span></td>
+                            <td><span class="badge-xs st-done">F</span></td>
+                            <td class="mono">&mdash;</td>
+                            <td class="mono">&mdash;</td>
+                            <td class="mono">1 min</td>
+                        </tr><tr>
+                            <td class="mono">TASK-050</td>
+                            <td>Dashboard fixes -- rename Distribution to Producti</td>
+                            <td><span class="badge-xs st-done">DONE</span></td>
+                            <td><span class="badge-xs st-done">F</span></td>
+                            <td class="mono">&mdash;</td>
+                            <td class="mono">&mdash;</td>
+                            <td class="mono">&mdash;</td>
+                        </tr><tr>
+                            <td class="mono">TASK-051</td>
+                            <td>Audit tab -- filter out .py files, show only gover</td>
+                            <td><span class="badge-xs st-done">DONE</span></td>
+                            <td><span class="badge-xs st-done">F</span></td>
+                            <td class="mono">&mdash;</td>
+                            <td class="mono">&mdash;</td>
+                            <td class="mono">&mdash;</td>
+                        </tr><tr>
+                            <td class="mono">TASK-054</td>
+                            <td>Package build and PyPI readiness test</td>
+                            <td><span class="badge-xs st-done">DONE</span></td>
+                            <td><span class="badge-xs st-done">F</span></td>
+                            <td class="mono">&mdash;</td>
+                            <td class="mono">&mdash;</td>
+                            <td class="mono">&mdash;</td>
+                        </tr><tr>
+                            <td class="mono">TASK-055</td>
+                            <td>Roadmap tab -- collapsible stories with details/su</td>
+                            <td><span class="badge-xs st-done">DONE</span></td>
+                            <td><span class="badge-xs st-done">F</span></td>
+                            <td class="mono">&mdash;</td>
+                            <td class="mono">&mdash;</td>
+                            <td class="mono">&mdash;</td>
+                        </tr><tr>
+                            <td class="mono">TASK-056</td>
+                            <td>Roadmap tab -- show full form Tangible Business Ou</td>
+                            <td><span class="badge-xs st-done">DONE</span></td>
+                            <td><span class="badge-xs st-done">F</span></td>
+                            <td class="mono">&mdash;</td>
+                            <td class="mono">&mdash;</td>
+                            <td class="mono">&mdash;</td>
+                        </tr><tr>
+                            <td class="mono">TASK-057</td>
+                            <td>Roadmap TBO card -- status after description, TBO </td>
+                            <td><span class="badge-xs st-done">DONE</span></td>
+                            <td><span class="badge-xs st-done">F</span></td>
+                            <td class="mono">&mdash;</td>
+                            <td class="mono">&mdash;</td>
+                            <td class="mono">&mdash;</td>
+                        </tr><tr>
+                            <td class="mono">TASK-069</td>
+                            <td>Fix GAP-011/012/013 -- migrate should setup CLAUDE</td>
+                            <td><span class="badge-xs st-done">DONE</span></td>
+                            <td><span class="badge-xs st-done">F</span></td>
+                            <td class="mono">&mdash;</td>
+                            <td class="mono">&mdash;</td>
+                            <td class="mono">&mdash;</td>
+                        </tr><tr>
+                            <td class="mono">TASK-070</td>
+                            <td>Fix GAP-014 -- audit log captures migration action</td>
+                            <td><span class="badge-xs st-done">DONE</span></td>
+                            <td><span class="badge-xs st-done">F</span></td>
+                            <td class="mono">&mdash;</td>
+                            <td class="mono">&mdash;</td>
+                            <td class="mono">&mdash;</td>
+                        </tr></tbody></table></details>
+                <details style="margin-bottom: 4px; border-left: 2px solid var(--blue); padding-left: 12px;">
+                    <summary style="cursor: pointer; padding: 6px 0; display: flex; align-items: center; gap: 8px;">
+                        <span class="badge-xs st-done">DONE</span>
+                        <span class="mono" style="color: var(--blue);">S-002</span>
+                        <span>Hook output helpers -- exit 0/2 protocol</span>
+                        <span class="muted">1/1 tasks</span>
+                        <span class="muted">Tokens: &mdash;</span>
+                        <span class="muted"></span>
+                    </summary>
+                <table class="data-table" style="margin: 4px 0 8px 0;">
+                        <thead><tr><th>Task</th><th>Description</th><th>Status</th><th>Req Type</th><th>Tokens</th><th>Sessions</th><th>Duration</th></tr></thead><tbody><tr>
+                            <td class="mono">TASK-001</td>
+                            <td>hooks.py -- hook_allow, hook_block, hook_context</td>
+                            <td><span class="badge-xs st-done">DONE</span></td>
+                            <td><span class="badge-xs st-done">F</span></td>
+                            <td class="mono">&mdash;</td>
+                            <td class="mono">&mdash;</td>
+                            <td class="mono">&mdash;</td>
+                        </tr></tbody></table></details>
+                <details style="margin-bottom: 4px; border-left: 2px solid var(--blue); padding-left: 12px;">
+                    <summary style="cursor: pointer; padding: 6px 0; display: flex; align-items: center; gap: 8px;">
+                        <span class="badge-xs st-done">DONE</span>
+                        <span class="mono" style="color: var(--blue);">S-003</span>
+                        <span>State machine -- 7 states, transitions, gates</span>
+                        <span class="muted">12/12 tasks</span>
+                        <span class="muted">Tokens: &mdash;</span>
+                        <span class="muted">50 min</span>
+                    </summary>
+                <table class="data-table" style="margin: 4px 0 8px 0;">
+                        <thead><tr><th>Task</th><th>Description</th><th>Status</th><th>Req Type</th><th>Tokens</th><th>Sessions</th><th>Duration</th></tr></thead><tbody><tr>
+                            <td class="mono">TASK-002</td>
+                            <td>state_machine.py -- 7 states, transitions, gates, </td>
+                            <td><span class="badge-xs st-done">DONE</span></td>
+                            <td><span class="badge-xs st-done">F</span></td>
+                            <td class="mono">&mdash;</td>
+                            <td class="mono">&mdash;</td>
+                            <td class="mono">&mdash;</td>
+                        </tr><tr>
+                            <td class="mono">TASK-012</td>
+                            <td>Governance enforcement -- no-work-without-task gat</td>
+                            <td><span class="badge-xs st-done">DONE</span></td>
+                            <td><span class="badge-xs st-done">F</span></td>
+                            <td class="mono">&mdash;</td>
+                            <td class="mono">&mdash;</td>
+                            <td class="mono">&mdash;</td>
+                        </tr><tr>
+                            <td class="mono">TASK-013</td>
+                            <td>Memory-from-docs-only enforcement</td>
+                            <td><span class="badge-xs st-done">DONE</span></td>
+                            <td><span class="badge-xs st-done">F</span></td>
+                            <td class="mono">&mdash;</td>
+                            <td class="mono">&mdash;</td>
+                            <td class="mono">&mdash;</td>
+                        </tr><tr>
+                            <td class="mono">TASK-041</td>
+                            <td>Update state machine -- add TRIAGE and PRIORITIZE </td>
+                            <td><span class="badge-xs st-done">DONE</span></td>
+                            <td><span class="badge-xs st-done">F</span></td>
+                            <td class="mono">&mdash;</td>
+                            <td class="mono">&mdash;</td>
+                            <td class="mono">&mdash;</td>
+                        </tr><tr>
+                            <td class="mono">TASK-068</td>
+                            <td>Fix BUG-004/005/006/007/008 -- gate bypass, checkl</td>
+                            <td><span class="badge-xs st-done">DONE</span></td>
+                            <td><span class="badge-xs st-done">F</span></td>
+                            <td class="mono">&mdash;</td>
+                            <td class="mono">&mdash;</td>
+                            <td class="mono">5 min</td>
+                        </tr><tr>
+                            <td class="mono">TASK-071</td>
+                            <td>Refresh intake headers and verify all fixes</td>
+                            <td><span class="badge-xs st-done">DONE</span></td>
+                            <td><span class="badge-xs st-done">F</span></td>
+                            <td class="mono">&mdash;</td>
+                            <td class="mono">&mdash;</td>
+                            <td class="mono">1 min</td>
+                        </tr><tr>
+                            <td class="mono">TASK-072</td>
+                            <td>Remove overbroad Bash gate and update scaffold</td>
+                            <td><span class="badge-xs st-done">DONE</span></td>
+                            <td><span class="badge-xs st-done">F</span></td>
+                            <td class="mono">&mdash;</td>
+                            <td class="mono">&mdash;</td>
+                            <td class="mono">1 min</td>
+                        </tr><tr>
+                            <td class="mono">TASK-074</td>
+                            <td>Business Convergence Engine -- design spec and gat</td>
+                            <td><span class="badge-xs st-done">DONE</span></td>
+                            <td><span class="badge-xs st-done">F</span></td>
+                            <td class="mono">&mdash;</td>
+                            <td class="mono">&mdash;</td>
+                            <td class="mono">24 min</td>
+                        </tr><tr>
+                            <td class="mono">TASK-075</td>
+                            <td>Convergence Engine -- data model (BO, weighted TBO</td>
+                            <td><span class="badge-xs st-done">DONE</span></td>
+                            <td><span class="badge-xs st-done">F</span></td>
+                            <td class="mono">&mdash;</td>
+                            <td class="mono">&mdash;</td>
+                            <td class="mono">19 min</td>
+                        </tr><tr>
+                            <td class="mono">TASK-076</td>
+                            <td>Convergence Engine -- 6 KPI instruments</td>
+                            <td><span class="badge-xs st-done">DONE</span></td>
+                            <td><span class="badge-xs st-done">F</span></td>
+                            <td class="mono">&mdash;</td>
+                            <td class="mono">&mdash;</td>
+                            <td class="mono">&mdash;</td>
+                        </tr><tr>
+                            <td class="mono">TASK-077</td>
+                            <td>Convergence Engine -- dashboard, CLI status, migra</td>
+                            <td><span class="badge-xs st-done">DONE</span></td>
+                            <td><span class="badge-xs st-done">F</span></td>
+                            <td class="mono">&mdash;</td>
+                            <td class="mono">&mdash;</td>
+                            <td class="mono">&mdash;</td>
+                        </tr><tr>
+                            <td class="mono">TASK-078</td>
+                            <td>Convergence Engine -- CLAUDE.md scaffold for model</td>
+                            <td><span class="badge-xs st-done">DONE</span></td>
+                            <td><span class="badge-xs st-done">F</span></td>
+                            <td class="mono">&mdash;</td>
+                            <td class="mono">&mdash;</td>
+                            <td class="mono">&mdash;</td>
+                        </tr></tbody></table></details>
+                <details style="margin-bottom: 4px; border-left: 2px solid var(--blue); padding-left: 12px;">
+                    <summary style="cursor: pointer; padding: 6px 0; display: flex; align-items: center; gap: 8px;">
+                        <span class="badge-xs st-done">DONE</span>
+                        <span class="mono" style="color: var(--blue);">S-004</span>
+                        <span>TOML configuration with defaults</span>
+                        <span class="muted">1/1 tasks</span>
+                        <span class="muted">Tokens: &mdash;</span>
+                        <span class="muted"></span>
+                    </summary>
+                <table class="data-table" style="margin: 4px 0 8px 0;">
+                        <thead><tr><th>Task</th><th>Description</th><th>Status</th><th>Req Type</th><th>Tokens</th><th>Sessions</th><th>Duration</th></tr></thead><tbody><tr>
+                            <td class="mono">TASK-003</td>
+                            <td>config.py -- devlead.toml parsing, defaults</td>
+                            <td><span class="badge-xs st-done">DONE</span></td>
+                            <td><span class="badge-xs st-done">F</span></td>
+                            <td class="mono">&mdash;</td>
+                            <td class="mono">&mdash;</td>
+                            <td class="mono">&mdash;</td>
+                        </tr></tbody></table></details>
+                <details style="margin-bottom: 4px; border-left: 2px solid var(--blue); padding-left: 12px;">
+                    <summary style="cursor: pointer; padding: 6px 0; display: flex; align-items: center; gap: 8px;">
+                        <span class="badge-xs st-done">DONE</span>
+                        <span class="mono" style="color: var(--blue);">S-005</span>
+                        <span>Markdown doc parser -- tables, status, builtins</span>
+                        <span class="muted">1/1 tasks</span>
+                        <span class="muted">Tokens: &mdash;</span>
+                        <span class="muted"></span>
+                    </summary>
+                <table class="data-table" style="margin: 4px 0 8px 0;">
+                        <thead><tr><th>Task</th><th>Description</th><th>Status</th><th>Req Type</th><th>Tokens</th><th>Sessions</th><th>Duration</th></tr></thead><tbody><tr>
+                            <td class="mono">TASK-004</td>
+                            <td>doc_parser.py -- markdown table parsing, builtin v</td>
+                            <td><span class="badge-xs st-done">DONE</span></td>
+                            <td><span class="badge-xs st-done">F</span></td>
+                            <td class="mono">&mdash;</td>
+                            <td class="mono">&mdash;</td>
+                            <td class="mono">&mdash;</td>
+                        </tr></tbody></table></details>
+                <details style="margin-bottom: 4px; border-left: 2px solid var(--blue); padding-left: 12px;">
+                    <summary style="cursor: pointer; padding: 6px 0; display: flex; align-items: center; gap: 8px;">
+                        <span class="badge-xs st-done">DONE</span>
+                        <span class="mono" style="color: var(--blue);">S-006</span>
+                        <span>Safe formula evaluator -- no eval()</span>
+                        <span class="muted">0/0 tasks</span>
+                        <span class="muted">Tokens: &mdash;</span>
+                        <span class="muted"></span>
+                    </summary>
+                </details>
+                <details style="margin-bottom: 4px; border-left: 2px solid var(--blue); padding-left: 12px;">
+                    <summary style="cursor: pointer; padding: 6px 0; display: flex; align-items: center; gap: 8px;">
+                        <span class="badge-xs st-done">DONE</span>
+                        <span class="mono" style="color: var(--blue);">S-007</span>
+                        <span>30 built-in KPIs across 3 categories</span>
+                        <span class="muted">1/1 tasks</span>
+                        <span class="muted">Tokens: &mdash;</span>
+                        <span class="muted"></span>
+                    </summary>
+                <table class="data-table" style="margin: 4px 0 8px 0;">
+                        <thead><tr><th>Task</th><th>Description</th><th>Status</th><th>Req Type</th><th>Tokens</th><th>Sessions</th><th>Duration</th></tr></thead><tbody><tr>
+                            <td class="mono">TASK-005</td>
+                            <td>kpi_engine.py -- 30 built-in KPIs, formula evaluat</td>
+                            <td><span class="badge-xs st-done">DONE</span></td>
+                            <td><span class="badge-xs st-done">F</span></td>
+                            <td class="mono">&mdash;</td>
+                            <td class="mono">&mdash;</td>
+                            <td class="mono">&mdash;</td>
+                        </tr></tbody></table></details>
+                <details style="margin-bottom: 4px; border-left: 2px solid var(--blue); padding-left: 12px;">
+                    <summary style="cursor: pointer; padding: 6px 0; display: flex; align-items: center; gap: 8px;">
+                        <span class="badge-xs st-done">DONE</span>
+                        <span class="mono" style="color: var(--blue);">S-008</span>
+                        <span>Custom TOML KPIs and Python plugin KPIs</span>
+                        <span class="muted">0/0 tasks</span>
+                        <span class="muted">Tokens: &mdash;</span>
+                        <span class="muted"></span>
+                    </summary>
+                </details>
+                <details style="margin-bottom: 4px; border-left: 2px solid var(--blue); padding-left: 12px;">
+                    <summary style="cursor: pointer; padding: 6px 0; display: flex; align-items: center; gap: 8px;">
+                        <span class="badge-xs st-done">DONE</span>
+                        <span class="mono" style="color: var(--blue);">S-009</span>
+                        <span>KPI dashboard terminal output</span>
+                        <span class="muted">1/1 tasks</span>
+                        <span class="muted">Tokens: &mdash;</span>
+                        <span class="muted"></span>
+                    </summary>
+                <table class="data-table" style="margin: 4px 0 8px 0;">
+                        <thead><tr><th>Task</th><th>Description</th><th>Status</th><th>Req Type</th><th>Tokens</th><th>Sessions</th><th>Duration</th></tr></thead><tbody><tr>
+                            <td class="mono">TASK-006</td>
+                            <td>Wire KPIs into CLI -- devlead status, devlead kpis</td>
+                            <td><span class="badge-xs st-done">DONE</span></td>
+                            <td><span class="badge-xs st-done">F</span></td>
+                            <td class="mono">&mdash;</td>
+                            <td class="mono">&mdash;</td>
+                            <td class="mono">&mdash;</td>
+                        </tr></tbody></table></details>
+                <details style="margin-bottom: 4px; border-left: 2px solid var(--blue); padding-left: 12px;">
+                    <summary style="cursor: pointer; padding: 6px 0; display: flex; align-items: center; gap: 8px;">
+                        <span class="badge-xs st-done">DONE</span>
+                        <span class="mono" style="color: var(--blue);">S-010</span>
+                        <span>devlead init -- scaffold, hook merge, gitignore</span>
+                        <span class="muted">1/1 tasks</span>
+                        <span class="muted">Tokens: &mdash;</span>
+                        <span class="muted"></span>
+                    </summary>
+                <table class="data-table" style="margin: 4px 0 8px 0;">
+                        <thead><tr><th>Task</th><th>Description</th><th>Status</th><th>Req Type</th><th>Tokens</th><th>Sessions</th><th>Duration</th></tr></thead><tbody><tr>
+                            <td class="mono">TASK-007</td>
+                            <td>scaffold/ + devlead init -- templates, hook merge,</td>
+                            <td><span class="badge-xs st-done">DONE</span></td>
+                            <td><span class="badge-xs st-done">F</span></td>
+                            <td class="mono">&mdash;</td>
+                            <td class="mono">&mdash;</td>
+                            <td class="mono">&mdash;</td>
+                        </tr></tbody></table></details>
+                <details style="margin-bottom: 4px; border-left: 2px solid var(--blue); padding-left: 12px;">
+                    <summary style="cursor: pointer; padding: 6px 0; display: flex; align-items: center; gap: 8px;">
+                        <span class="badge-xs st-done">DONE</span>
+                        <span class="mono" style="color: var(--blue);">S-011</span>
+                        <span>Monthly rollover with configurable policy</span>
+                        <span class="muted">1/1 tasks</span>
+                        <span class="muted">Tokens: &mdash;</span>
+                        <span class="muted"></span>
+                    </summary>
+                <table class="data-table" style="margin: 4px 0 8px 0;">
+                        <thead><tr><th>Task</th><th>Description</th><th>Status</th><th>Req Type</th><th>Tokens</th><th>Sessions</th><th>Duration</th></tr></thead><tbody><tr>
+                            <td class="mono">TASK-008</td>
+                            <td>rollover.py -- monthly archival, open item carry-f</td>
+                            <td><span class="badge-xs st-done">DONE</span></td>
+                            <td><span class="badge-xs st-done">F</span></td>
+                            <td class="mono">&mdash;</td>
+                            <td class="mono">&mdash;</td>
+                            <td class="mono">&mdash;</td>
+                        </tr></tbody></table></details>
+                <details style="margin-bottom: 4px; border-left: 2px solid var(--blue); padding-left: 12px;">
+                    <summary style="cursor: pointer; padding: 6px 0; display: flex; align-items: center; gap: 8px;">
+                        <span class="badge-xs st-done">DONE</span>
+                        <span class="mono" style="color: var(--blue);">S-012</span>
+                        <span>devlead doctor (healthcheck)</span>
+                        <span class="muted">1/1 tasks</span>
+                        <span class="muted">Tokens: &mdash;</span>
+                        <span class="muted"></span>
+                    </summary>
+                <table class="data-table" style="margin: 4px 0 8px 0;">
+                        <thead><tr><th>Task</th><th>Description</th><th>Status</th><th>Req Type</th><th>Tokens</th><th>Sessions</th><th>Duration</th></tr></thead><tbody><tr>
+                            <td class="mono">TASK-009</td>
+                            <td>doctor + session history -- health check, LLM Lear</td>
+                            <td><span class="badge-xs st-done">DONE</span></td>
+                            <td><span class="badge-xs st-done">F</span></td>
+                            <td class="mono">&mdash;</td>
+                            <td class="mono">&mdash;</td>
+                            <td class="mono">&mdash;</td>
+                        </tr></tbody></table></details>
+                <details style="margin-bottom: 4px; border-left: 2px solid var(--blue); padding-left: 12px;">
+                    <summary style="cursor: pointer; padding: 6px 0; display: flex; align-items: center; gap: 8px;">
+                        <span class="badge-xs st-done">DONE</span>
+                        <span class="mono" style="color: var(--blue);">S-013</span>
+                        <span>Session history + LLM Learning Curve KPI</span>
+                        <span class="muted">0/0 tasks</span>
+                        <span class="muted">Tokens: &mdash;</span>
+                        <span class="muted"></span>
+                    </summary>
+                </details>
+                <details style="margin-bottom: 4px; border-left: 2px solid var(--blue); padding-left: 12px;">
+                    <summary style="cursor: pointer; padding: 6px 0; display: flex; align-items: center; gap: 8px;">
+                        <span class="badge-xs st-done">DONE</span>
+                        <span class="mono" style="color: var(--blue);">S-017</span>
+                        <span>Token and effort tracking per task</span>
+                        <span class="muted">7/7 tasks</span>
+                        <span class="muted">Tokens: 7,100</span>
+                        <span class="muted">17 min</span>
+                    </summary>
+                <table class="data-table" style="margin: 4px 0 8px 0;">
+                        <thead><tr><th>Task</th><th>Description</th><th>Status</th><th>Req Type</th><th>Tokens</th><th>Sessions</th><th>Duration</th></tr></thead><tbody><tr>
+                            <td class="mono">TASK-045</td>
+                            <td>Parse hook stdin for token count and model name</td>
+                            <td><span class="badge-xs st-done">DONE</span></td>
+                            <td><span class="badge-xs st-done">F</span></td>
+                            <td class="mono">&mdash;</td>
+                            <td class="mono">&mdash;</td>
+                            <td class="mono">1 min</td>
+                        </tr><tr>
+                            <td class="mono">TASK-046</td>
+                            <td>Track session time per active task in session_stat</td>
+                            <td><span class="badge-xs st-done">DONE</span></td>
+                            <td><span class="badge-xs st-done">F</span></td>
+                            <td class="mono">&mdash;</td>
+                            <td class="mono">&mdash;</td>
+                            <td class="mono">1 min</td>
+                        </tr><tr>
+                            <td class="mono">TASK-047</td>
+                            <td>Aggregate effort to story level in workbook model</td>
+                            <td><span class="badge-xs st-done">DONE</span></td>
+                            <td><span class="badge-xs st-done">F</span></td>
+                            <td class="mono">&mdash;</td>
+                            <td class="mono">&mdash;</td>
+                            <td class="mono">1 min</td>
+                        </tr><tr>
+                            <td class="mono">TASK-048</td>
+                            <td>Tests for token and effort tracking</td>
+                            <td><span class="badge-xs st-done">DONE</span></td>
+                            <td><span class="badge-xs st-done">F</span></td>
+                            <td class="mono">&mdash;</td>
+                            <td class="mono">&mdash;</td>
+                            <td class="mono">1 min</td>
+                        </tr><tr>
+                            <td class="mono">TASK-052</td>
+                            <td>Fix audit test after .py filter change</td>
+                            <td><span class="badge-xs st-done">DONE</span></td>
+                            <td><span class="badge-xs st-done">F</span></td>
+                            <td class="mono">&mdash;</td>
+                            <td class="mono">&mdash;</td>
+                            <td class="mono">&mdash;</td>
+                        </tr><tr>
+                            <td class="mono">TASK-053</td>
+                            <td>Add token/effort columns to Roadmap tab table</td>
+                            <td><span class="badge-xs st-done">DONE</span></td>
+                            <td><span class="badge-xs st-done">F</span></td>
+                            <td class="mono">&mdash;</td>
+                            <td class="mono">&mdash;</td>
+                            <td class="mono">&mdash;</td>
+                        </tr><tr>
+                            <td class="mono">TASK-058</td>
+                            <td>Demo -- show token and duration tracking on a real</td>
+                            <td><span class="badge-xs st-done">DONE</span></td>
+                            <td><span class="badge-xs st-done">F</span></td>
+                            <td class="mono">7,100</td>
+                            <td class="mono">1</td>
+                            <td class="mono">13 min</td>
+                        </tr></tbody></table></details></div></div>
+        <div class="roadmap-epic">
+            <div style="color: var(--muted); text-transform: uppercase; letter-spacing: 0.05em; margin-bottom: 4px;">Tangible Business Outcome</div>
+            <div class="epic-header">
+                <span style="font-weight: 700; color: var(--accent);">TBO-2</span>
+                <span class="epic-name">Multi-project portfolio governance</span>
+                <span class="badge st-default">ACCEPTANCE</span>
+            </div>
+            <div style="padding: 0 1rem; display: flex; gap: 1.5rem; align-items: center;">
+                <span class="muted">3/3 stories</span>
+                <span class="muted">2/2 tasks</span>
+                <span class="muted">Planned: 2026-04-06</span> <span class="muted">Actual: --</span>
+                <div class="progress-bar" style="flex: 1; max-width: 200px;">
+                    <div class="progress-fill" style="width: 100%; background: #27ae60"></div>
+                </div>
+            </div>
+        <div style="margin: 0.5rem 1rem 1rem;">
+                <details style="margin-bottom: 4px; border-left: 2px solid var(--blue); padding-left: 12px;">
+                    <summary style="cursor: pointer; padding: 6px 0; display: flex; align-items: center; gap: 8px;">
+                        <span class="badge-xs st-done">DONE</span>
+                        <span class="mono" style="color: var(--blue);">S-014</span>
+                        <span>Portfolio workspace -- register, list, remove</span>
+                        <span class="muted">1/1 tasks</span>
+                        <span class="muted">Tokens: &mdash;</span>
+                        <span class="muted"></span>
+                    </summary>
+                <table class="data-table" style="margin: 4px 0 8px 0;">
+                        <thead><tr><th>Task</th><th>Description</th><th>Status</th><th>Req Type</th><th>Tokens</th><th>Sessions</th><th>Duration</th></tr></thead><tbody><tr>
+                            <td class="mono">TASK-010</td>
+                            <td>portfolio.py -- multi-project workspace, cross-pro</td>
+                            <td><span class="badge-xs st-done">DONE</span></td>
+                            <td><span class="badge-xs st-done">F</span></td>
+                            <td class="mono">&mdash;</td>
+                            <td class="mono">&mdash;</td>
+                            <td class="mono">&mdash;</td>
+                        </tr></tbody></table></details>
+                <details style="margin-bottom: 4px; border-left: 2px solid var(--blue); padding-left: 12px;">
+                    <summary style="cursor: pointer; padding: 6px 0; display: flex; align-items: center; gap: 8px;">
+                        <span class="badge-xs st-done">DONE</span>
+                        <span class="mono" style="color: var(--blue);">S-015</span>
+                        <span>Cross-project KPIs -- 7 portfolio metrics</span>
+                        <span class="muted">0/0 tasks</span>
+                        <span class="muted">Tokens: &mdash;</span>
+                        <span class="muted"></span>
+                    </summary>
+                </details>
+                <details style="margin-bottom: 4px; border-left: 2px solid var(--blue); padding-left: 12px;">
+                    <summary style="cursor: pointer; padding: 6px 0; display: flex; align-items: center; gap: 8px;">
+                        <span class="badge-xs st-done">DONE</span>
+                        <span class="mono" style="color: var(--blue);">S-016</span>
+                        <span>Collab channel -- .collab/ inbox/outbox, sync</span>
+                        <span class="muted">1/1 tasks</span>
+                        <span class="muted">Tokens: &mdash;</span>
+                        <span class="muted"></span>
+                    </summary>
+                <table class="data-table" style="margin: 4px 0 8px 0;">
+                        <thead><tr><th>Task</th><th>Description</th><th>Status</th><th>Req Type</th><th>Tokens</th><th>Sessions</th><th>Duration</th></tr></thead><tbody><tr>
+                            <td class="mono">TASK-011</td>
+                            <td>collab.py -- cross-project channel, inbox scanning</td>
+                            <td><span class="badge-xs st-done">DONE</span></td>
+                            <td><span class="badge-xs st-done">F</span></td>
+                            <td class="mono">&mdash;</td>
+                            <td class="mono">&mdash;</td>
+                            <td class="mono">&mdash;</td>
+                        </tr></tbody></table></details></div></div>
+        <div class="roadmap-epic">
+            <div style="color: var(--muted); text-transform: uppercase; letter-spacing: 0.05em; margin-bottom: 4px;">Tangible Business Outcome</div>
+            <div class="epic-header">
+                <span style="font-weight: 700; color: var(--accent);">TBO-3</span>
+                <span class="epic-name">Available on PyPI</span>
+                <span class="badge st-done">DONE</span>
+            </div>
+            <div style="padding: 0 1rem; display: flex; gap: 1.5rem; align-items: center;">
+                <span class="muted">1/1 stories</span>
+                <span class="muted">39/40 tasks</span>
+                <span class="muted">Planned: 2026-04-05</span> <span class="muted">Actual: 2026-04-05</span>
+                <div class="progress-bar" style="flex: 1; max-width: 200px;">
+                    <div class="progress-fill" style="width: 100%; background: #27ae60"></div>
+                </div>
+            </div>
+        <div style="margin: 0.5rem 1rem 1rem;">
+                <details style="margin-bottom: 4px; border-left: 2px solid var(--blue); padding-left: 12px;">
+                    <summary style="cursor: pointer; padding: 6px 0; display: flex; align-items: center; gap: 8px;">
+                        <span class="badge-xs st-done">DONE</span>
+                        <span class="mono" style="color: var(--blue);">S-001</span>
+                        <span>Project skeleton with pip-installable CLI</span>
+                        <span class="muted">39/40 tasks</span>
+                        <span class="muted">Tokens: &mdash;</span>
+                        <span class="muted">1 min</span>
+                    </summary>
+                <table class="data-table" style="margin: 4px 0 8px 0;">
+                        <thead><tr><th>Task</th><th>Description</th><th>Status</th><th>Req Type</th><th>Tokens</th><th>Sessions</th><th>Duration</th></tr></thead><tbody><tr>
+                            <td class="mono">TASK-000</td>
+                            <td>Project skeleton -- pyproject.toml, src layout, CL</td>
+                            <td><span class="badge-xs st-done">DONE</span></td>
+                            <td><span class="badge-xs st-done">F</span></td>
+                            <td class="mono">&mdash;</td>
+                            <td class="mono">&mdash;</td>
+                            <td class="mono">&mdash;</td>
+                        </tr><tr>
+                            <td class="mono">TASK-014</td>
+                            <td>Scratchpad capture mechanism</td>
+                            <td><span class="badge-xs st-done">DONE</span></td>
+                            <td><span class="badge-xs st-done">F</span></td>
+                            <td class="mono">&mdash;</td>
+                            <td class="mono">&mdash;</td>
+                            <td class="mono">&mdash;</td>
+                        </tr><tr>
+                            <td class="mono">TASK-015</td>
+                            <td>LICENSE file -- create MIT license</td>
+                            <td><span class="badge-xs st-done">DONE</span></td>
+                            <td><span class="badge-xs st-done">F</span></td>
+                            <td class="mono">&mdash;</td>
+                            <td class="mono">&mdash;</td>
+                            <td class="mono">&mdash;</td>
+                        </tr><tr>
+                            <td class="mono">TASK-016</td>
+                            <td>README.md -- proper project description, install, </td>
+                            <td><span class="badge-xs st-done">DONE</span></td>
+                            <td><span class="badge-xs st-done">F</span></td>
+                            <td class="mono">&mdash;</td>
+                            <td class="mono">&mdash;</td>
+                            <td class="mono">&mdash;</td>
+                        </tr><tr>
+                            <td class="mono">TASK-017</td>
+                            <td>pyproject.toml -- authors, urls, classifiers, keyw</td>
+                            <td><span class="badge-xs st-done">DONE</span></td>
+                            <td><span class="badge-xs st-done">F</span></td>
+                            <td class="mono">&mdash;</td>
+                            <td class="mono">&mdash;</td>
+                            <td class="mono">&mdash;</td>
+                        </tr><tr>
+                            <td class="mono">TASK-018</td>
+                            <td>MANIFEST.in / package_data -- ensure scaffold file</td>
+                            <td><span class="badge-xs st-done">DONE</span></td>
+                            <td><span class="badge-xs st-done">F</span></td>
+                            <td class="mono">&mdash;</td>
+                            <td class="mono">&mdash;</td>
+                            <td class="mono">&mdash;</td>
+                        </tr><tr>
+                            <td class="mono">TASK-019</td>
+                            <td>Create _living_business_objectives.md</td>
+                            <td><span class="badge-xs st-done">DONE</span></td>
+                            <td><span class="badge-xs st-done">F</span></td>
+                            <td class="mono">&mdash;</td>
+                            <td class="mono">&mdash;</td>
+                            <td class="mono">&mdash;</td>
+                        </tr><tr>
+                            <td class="mono">TASK-020</td>
+                            <td>Create _living_distribution.md</td>
+                            <td><span class="badge-xs st-done">DONE</span></td>
+                            <td><span class="badge-xs st-done">F</span></td>
+                            <td class="mono">&mdash;</td>
+                            <td class="mono">&mdash;</td>
+                            <td class="mono">&mdash;</td>
+                        </tr><tr>
+                            <td class="mono">TASK-021</td>
+                            <td>Create _project_stories.md with TBO linkage</td>
+                            <td><span class="badge-xs st-done">DONE</span></td>
+                            <td><span class="badge-xs st-done">F</span></td>
+                            <td class="mono">&mdash;</td>
+                            <td class="mono">&mdash;</td>
+                            <td class="mono">&mdash;</td>
+                        </tr><tr>
+                            <td class="mono">TASK-022</td>
+                            <td>Mark TASK-012, TASK-013 DONE, close session 3 work</td>
+                            <td><span class="badge-xs st-done">DONE</span></td>
+                            <td><span class="badge-xs st-done">F</span></td>
+                            <td class="mono">&mdash;</td>
+                            <td class="mono">&mdash;</td>
+                            <td class="mono">&mdash;</td>
+                        </tr><tr>
+                            <td class="mono">TASK-023</td>
+                            <td>Fix roadmap -- check completed stories</td>
+                            <td><span class="badge-xs st-done">DONE</span></td>
+                            <td><span class="badge-xs st-done">F</span></td>
+                            <td class="mono">&mdash;</td>
+                            <td class="mono">&mdash;</td>
+                            <td class="mono">&mdash;</td>
+                        </tr><tr>
+                            <td class="mono">TASK-024</td>
+                            <td>devlead gap command -- automated governance gap de</td>
+                            <td><span class="badge-xs st-done">DONE</span></td>
+                            <td><span class="badge-xs st-done">F</span></td>
+                            <td class="mono">&mdash;</td>
+                            <td class="mono">&mdash;</td>
+                            <td class="mono">&mdash;</td>
+                        </tr><tr>
+                            <td class="mono">TASK-025</td>
+                            <td>Polish scratchpad + triage CLI</td>
+                            <td><span class="badge-xs st-done">DONE</span></td>
+                            <td><span class="badge-xs st-done">F</span></td>
+                            <td class="mono">&mdash;</td>
+                            <td class="mono">&mdash;</td>
+                            <td class="mono">&mdash;</td>
+                        </tr><tr>
+                            <td class="mono">TASK-026</td>
+                            <td>TBO hierarchy view -- devlead view command showing</td>
+                            <td><span class="badge-xs st-done">DONE</span></td>
+                            <td><span class="badge-xs st-done">F</span></td>
+                            <td class="mono">&mdash;</td>
+                            <td class="mono">&mdash;</td>
+                            <td class="mono">&mdash;</td>
+                        </tr><tr>
+                            <td class="mono">TASK-027</td>
+                            <td>Smart analysis -- devlead analyze command for open</td>
+                            <td><span class="badge-xs st-done">DONE</span></td>
+                            <td><span class="badge-xs st-done">F</span></td>
+                            <td class="mono">&mdash;</td>
+                            <td class="mono">&mdash;</td>
+                            <td class="mono">&mdash;</td>
+                        </tr><tr>
+                            <td class="mono">TASK-028</td>
+                            <td>Update stale distribution doc -- compliance milest</td>
+                            <td><span class="badge-xs st-done">DONE</span></td>
+                            <td><span class="badge-xs st-done">F</span></td>
+                            <td class="mono">&mdash;</td>
+                            <td class="mono">&mdash;</td>
+                            <td class="mono">&mdash;</td>
+                        </tr><tr>
+                            <td class="mono">TASK-029</td>
+                            <td>Tests for view and analyze commands</td>
+                            <td><span class="badge-xs st-done">DONE</span></td>
+                            <td><span class="badge-xs st-done">F</span></td>
+                            <td class="mono">&mdash;</td>
+                            <td class="mono">&mdash;</td>
+                            <td class="mono">&mdash;</td>
+                        </tr><tr>
+                            <td class="mono">TASK-030</td>
+                            <td>Interactive triage -- devlead triage command for s</td>
+                            <td><span class="badge-xs st-done">DONE</span></td>
+                            <td><span class="badge-xs st-done">F</span></td>
+                            <td class="mono">&mdash;</td>
+                            <td class="mono">&mdash;</td>
+                            <td class="mono">&mdash;</td>
+                        </tr><tr>
+                            <td class="mono">TASK-031</td>
+                            <td>Migration bootstrap -- devlead migrate for existin</td>
+                            <td><span class="badge-xs st-done">DONE</span></td>
+                            <td><span class="badge-xs st-done">F</span></td>
+                            <td class="mono">&mdash;</td>
+                            <td class="mono">&mdash;</td>
+                            <td class="mono">&mdash;</td>
+                        </tr><tr>
+                            <td class="mono">TASK-032</td>
+                            <td>Workbook data model -- shared TBOâ†’Storyâ†’Task s</td>
+                            <td><span class="badge-xs st-done">DONE</span></td>
+                            <td><span class="badge-xs st-done">F</span></td>
+                            <td class="mono">&mdash;</td>
+                            <td class="mono">&mdash;</td>
+                            <td class="mono">&mdash;</td>
+                        </tr><tr>
+                            <td class="mono">TASK-033</td>
+                            <td>Rewrite view.py to use workbook model with Option </td>
+                            <td><span class="badge-xs st-done">DONE</span></td>
+                            <td><span class="badge-xs st-done">F</span></td>
+                            <td class="mono">&mdash;</td>
+                            <td class="mono">&mdash;</td>
+                            <td class="mono">&mdash;</td>
+                        </tr><tr>
+                            <td class="mono">TASK-034</td>
+                            <td>Auto-regenerate HTML on transitions and report com</td>
+                            <td><span class="badge-xs st-done">DONE</span></td>
+                            <td><span class="badge-xs st-done">F</span></td>
+                            <td class="mono">&mdash;</td>
+                            <td class="mono">&mdash;</td>
+                            <td class="mono">&mdash;</td>
+                        </tr><tr>
+                            <td class="mono">TASK-035</td>
+                            <td>Formalize TBO list with planned/actual dates</td>
+                            <td><span class="badge-xs st-done">DONE</span></td>
+                            <td><span class="badge-xs st-done">F</span></td>
+                            <td class="mono">&mdash;</td>
+                            <td class="mono">&mdash;</td>
+                            <td class="mono">&mdash;</td>
+                        </tr><tr>
+                            <td class="mono">TASK-036</td>
+                            <td>Fix Business tab -- remove raw dump, show only TBO</td>
+                            <td><span class="badge-xs st-done">DONE</span></td>
+                            <td><span class="badge-xs st-done">F</span></td>
+                            <td class="mono">&mdash;</td>
+                            <td class="mono">&mdash;</td>
+                            <td class="mono">&mdash;</td>
+                        </tr><tr>
+                            <td class="mono">TASK-037</td>
+                            <td>Rewrite Roadmap tab as workbook view -- TBOâ†’Stor</td>
+                            <td><span class="badge-xs st-done">DONE</span></td>
+                            <td><span class="badge-xs st-done">F</span></td>
+                            <td class="mono">&mdash;</td>
+                            <td class="mono">&mdash;</td>
+                            <td class="mono">&mdash;</td>
+                        </tr><tr>
+                            <td class="mono">TASK-038</td>
+                            <td>Business tab Gantt chart -- visual timeline of TBO</td>
+                            <td><span class="badge-xs st-done">DONE</span></td>
+                            <td><span class="badge-xs st-done">F</span></td>
+                            <td class="mono">&mdash;</td>
+                            <td class="mono">&mdash;</td>
+                            <td class="mono">&mdash;</td>
+                        </tr><tr>
+                            <td class="mono">TASK-039</td>
+                            <td>Add Gantt chart legend for color coding</td>
+                            <td><span class="badge-xs st-done">DONE</span></td>
+                            <td><span class="badge-xs st-done">F</span></td>
+                            <td class="mono">&mdash;</td>
+                            <td class="mono">&mdash;</td>
+                            <td class="mono">&mdash;</td>
+                        </tr><tr>
+                            <td class="mono">TASK-040</td>
+                            <td>devlead serve -- local HTTP server for interactive</td>
+                            <td><span class="badge-xs st-default">ON_HOLD</span></td>
+                            <td><span class="badge-xs st-done">F</span></td>
+                            <td class="mono">&mdash;</td>
+                            <td class="mono">&mdash;</td>
+                            <td class="mono">&mdash;</td>
+                        </tr><tr>
+                            <td class="mono">TASK-042</td>
+                            <td>Fix Gantt timeline -- show planned/actual dates on</td>
+                            <td><span class="badge-xs st-done">DONE</span></td>
+                            <td><span class="badge-xs st-done">F</span></td>
+                            <td class="mono">&mdash;</td>
+                            <td class="mono">&mdash;</td>
+                            <td class="mono">&mdash;</td>
+                        </tr><tr>
+                            <td class="mono">TASK-043</td>
+                            <td>Replace Intake tab with Backlog tab -- show FEAT/B</td>
+                            <td><span class="badge-xs st-done">DONE</span></td>
+                            <td><span class="badge-xs st-done">F</span></td>
+                            <td class="mono">&mdash;</td>
+                            <td class="mono">&mdash;</td>
+                            <td class="mono">&mdash;</td>
+                        </tr><tr>
+                            <td class="mono">TASK-044</td>
+                            <td>Dashboard typography -- consistent font sizes, use</td>
+                            <td><span class="badge-xs st-done">DONE</span></td>
+                            <td><span class="badge-xs st-done">F</span></td>
+                            <td class="mono">&mdash;</td>
+                            <td class="mono">&mdash;</td>
+                            <td class="mono">&mdash;</td>
+                        </tr><tr>
+                            <td class="mono">TASK-049</td>
+                            <td>Fix dashboard -- Requirement Type label, header du</td>
+                            <td><span class="badge-xs st-done">DONE</span></td>
+                            <td><span class="badge-xs st-done">F</span></td>
+                            <td class="mono">&mdash;</td>
+                            <td class="mono">&mdash;</td>
+                            <td class="mono">1 min</td>
+                        </tr><tr>
+                            <td class="mono">TASK-050</td>
+                            <td>Dashboard fixes -- rename Distribution to Producti</td>
+                            <td><span class="badge-xs st-done">DONE</span></td>
+                            <td><span class="badge-xs st-done">F</span></td>
+                            <td class="mono">&mdash;</td>
+                            <td class="mono">&mdash;</td>
+                            <td class="mono">&mdash;</td>
+                        </tr><tr>
+                            <td class="mono">TASK-051</td>
+                            <td>Audit tab -- filter out .py files, show only gover</td>
+                            <td><span class="badge-xs st-done">DONE</span></td>
+                            <td><span class="badge-xs st-done">F</span></td>
+                            <td class="mono">&mdash;</td>
+                            <td class="mono">&mdash;</td>
+                            <td class="mono">&mdash;</td>
+                        </tr><tr>
+                            <td class="mono">TASK-054</td>
+                            <td>Package build and PyPI readiness test</td>
+                            <td><span class="badge-xs st-done">DONE</span></td>
+                            <td><span class="badge-xs st-done">F</span></td>
+                            <td class="mono">&mdash;</td>
+                            <td class="mono">&mdash;</td>
+                            <td class="mono">&mdash;</td>
+                        </tr><tr>
+                            <td class="mono">TASK-055</td>
+                            <td>Roadmap tab -- collapsible stories with details/su</td>
+                            <td><span class="badge-xs st-done">DONE</span></td>
+                            <td><span class="badge-xs st-done">F</span></td>
+                            <td class="mono">&mdash;</td>
+                            <td class="mono">&mdash;</td>
+                            <td class="mono">&mdash;</td>
+                        </tr><tr>
+                            <td class="mono">TASK-056</td>
+                            <td>Roadmap tab -- show full form Tangible Business Ou</td>
+                            <td><span class="badge-xs st-done">DONE</span></td>
+                            <td><span class="badge-xs st-done">F</span></td>
+                            <td class="mono">&mdash;</td>
+                            <td class="mono">&mdash;</td>
+                            <td class="mono">&mdash;</td>
+                        </tr><tr>
+                            <td class="mono">TASK-057</td>
+                            <td>Roadmap TBO card -- status after description, TBO </td>
+                            <td><span class="badge-xs st-done">DONE</span></td>
+                            <td><span class="badge-xs st-done">F</span></td>
+                            <td class="mono">&mdash;</td>
+                            <td class="mono">&mdash;</td>
+                            <td class="mono">&mdash;</td>
+                        </tr><tr>
+                            <td class="mono">TASK-069</td>
+                            <td>Fix GAP-011/012/013 -- migrate should setup CLAUDE</td>
+                            <td><span class="badge-xs st-done">DONE</span></td>
+                            <td><span class="badge-xs st-done">F</span></td>
+                            <td class="mono">&mdash;</td>
+                            <td class="mono">&mdash;</td>
+                            <td class="mono">&mdash;</td>
+                        </tr><tr>
+                            <td class="mono">TASK-070</td>
+                            <td>Fix GAP-014 -- audit log captures migration action</td>
+                            <td><span class="badge-xs st-done">DONE</span></td>
+                            <td><span class="badge-xs st-done">F</span></td>
+                            <td class="mono">&mdash;</td>
+                            <td class="mono">&mdash;</td>
+                            <td class="mono">&mdash;</td>
+                        </tr></tbody></table></details></div></div>
+        <div class="roadmap-epic">
+            <div style="color: var(--muted); text-transform: uppercase; letter-spacing: 0.05em; margin-bottom: 4px;">Tangible Business Outcome</div>
+            <div class="epic-header">
+                <span style="font-weight: 700; color: var(--accent);">TBO-4</span>
+                <span class="epic-name">First paying customer</span>
+                <span class="badge st-default">NOT_STARTED</span>
+            </div>
+            <div style="padding: 0 1rem; display: flex; gap: 1.5rem; align-items: center;">
+                <span class="muted">0/0 stories</span>
+                <span class="muted">0/0 tasks</span>
+                <span class="muted">Planned: 2026-04-12</span> <span class="muted">Actual: --</span>
+                <div class="progress-bar" style="flex: 1; max-width: 200px;">
+                    <div class="progress-fill" style="width: 0%; background: #e74c3c"></div>
+                </div>
+            </div>
+        </div>
+        <div class="section orphan-section">
+            <h3>Shadow Work <span class="muted">(10 items — no TBO linkage)</span></h3>
+            <table class="data-table"><thead><tr>
+                <th>Task</th><th>Description</th><th>Status</th><th>Req Type</th><th>Linked To</th>
+            </tr></thead><tbody>
+        <tr>
+                <td class="mono">TASK-059</td>
+                <td>Create PyPI account at pypi.org and generate API t</td>
+                <td><span class="badge-xs st-open">OPEN</span></td>
+                <td><span class="badge-xs st-block">F</span></td>
+                <td class="muted">S-018</td>
+            </tr><tr>
+                <td class="mono">TASK-060</td>
+                <td>Create TestPyPI account at test.pypi.org and gener</td>
+                <td><span class="badge-xs st-open">OPEN</span></td>
+                <td><span class="badge-xs st-block">F</span></td>
+                <td class="muted">S-018</td>
+            </tr><tr>
+                <td class="mono">TASK-061</td>
+                <td>Upload to TestPyPI -- twine upload --repository te</td>
+                <td><span class="badge-xs st-open">OPEN</span></td>
+                <td><span class="badge-xs st-block">F</span></td>
+                <td class="muted">S-018</td>
+            </tr><tr>
+                <td class="mono">TASK-062</td>
+                <td>Verify TestPyPI install -- pip install --index-url</td>
+                <td><span class="badge-xs st-open">OPEN</span></td>
+                <td><span class="badge-xs st-block">F</span></td>
+                <td class="muted">S-018</td>
+            </tr><tr>
+                <td class="mono">TASK-063</td>
+                <td>Upload to PyPI production -- twine upload dist/*</td>
+                <td><span class="badge-xs st-open">OPEN</span></td>
+                <td><span class="badge-xs st-block">F</span></td>
+                <td class="muted">S-018</td>
+            </tr><tr>
+                <td class="mono">TASK-064</td>
+                <td>Verify PyPI install -- pip install devlead (from f</td>
+                <td><span class="badge-xs st-open">OPEN</span></td>
+                <td><span class="badge-xs st-block">F</span></td>
+                <td class="muted">S-018</td>
+            </tr><tr>
+                <td class="mono">TASK-065</td>
+                <td>Create GitHub repo at github.com, push code, make </td>
+                <td><span class="badge-xs st-open">OPEN</span></td>
+                <td><span class="badge-xs st-block">F</span></td>
+                <td class="muted">S-018</td>
+            </tr><tr>
+                <td class="mono">TASK-066</td>
+                <td>Update pyproject.toml URLs with real GitHub repo U</td>
+                <td><span class="badge-xs st-open">OPEN</span></td>
+                <td><span class="badge-xs st-block">F</span></td>
+                <td class="muted">S-018</td>
+            </tr><tr>
+                <td class="mono">TASK-067</td>
+                <td>Create user setup guide -- getting started with De</td>
+                <td><span class="badge-xs st-done">DONE</span></td>
+                <td><span class="badge-xs st-block">F</span></td>
+                <td class="muted">S-018</td>
+            </tr><tr>
+                <td class="mono">TASK-073</td>
+                <td>Update setup guide with all fixes and install inst</td>
+                <td><span class="badge-xs st-done">DONE</span></td>
+                <td><span class="badge-xs st-block">F</span></td>
+                <td class="muted">S-018</td>
+            </tr></tbody></table></div></div></div>
+<div class="tab-panel" id="panel-kpis"><div class="section">
+        <div class="kpi-cat">
+            <h3>LLM Effectiveness</h3>
+            <p class="cat-desc">Is the AI getting better?</p>
+            <table class="data-table"><thead><tr><th>KPI</th><th>Value</th><th>Detail</th></tr></thead><tbody><tr><td class="kpi-name">LLM Learning Curve</td><td class="kpi-value">0/100</td><td class="kpi-detail">Requires session history</td></tr><tr><td class="kpi-name">Going in Circles</td><td class="kpi-value">0/100</td><td class="kpi-detail">0 reopened, 0 blocked</td></tr><tr><td class="kpi-name">Skin in the Game</td><td class="kpi-value">100/100</td><td class="kpi-detail">79/9 tasks have story ref</td></tr><tr><td class="kpi-name">Definition of Done</td><td class="kpi-value">100/100</td><td class="kpi-detail">0 reopened</td></tr><tr><td class="kpi-name">Plan Adherence</td><td class="kpi-value">0/100</td><td class="kpi-detail">Requires session history</td></tr><tr><td class="kpi-name">State Discipline</td><td class="kpi-value">0/100</td><td class="kpi-detail">Requires session history</td></tr><tr><td class="kpi-name">Session Completeness</td><td class="kpi-value">0/100</td><td class="kpi-detail">Requires session history</td></tr><tr><td class="kpi-name">First-Time-Right</td><td class="kpi-value">100%</td><td class="kpi-detail">70/70 stayed done</td></tr><tr><td class="kpi-name">Bug Introduction Rate</td><td class="kpi-value">70</td><td class="kpi-detail">70 open issues</td></tr><tr><td class="kpi-name">Scope Creep</td><td class="kpi-value">0</td><td class="kpi-detail">Requires session tracking</td></tr></tbody></table>
+        </div>
+        
+        <div class="kpi-cat">
+            <h3>Delivery &amp; Project Management</h3>
+            <p class="cat-desc">Is business value being produced?</p>
+            <table class="data-table"><thead><tr><th>KPI</th><th>Value</th><th>Detail</th></tr></thead><tbody><tr><td class="kpi-name">Code-Domain Convergence</td><td class="kpi-value">100/100</td><td class="kpi-detail">79/9 tasks have story ref</td></tr><tr><td class="kpi-name">Roadmap Velocity</td><td class="kpi-value">17</td><td class="kpi-detail">17 stories completed</td></tr><tr><td class="kpi-name">Intake Throughput</td><td class="kpi-value">0%</td><td class="kpi-detail">0/70 closed</td></tr><tr><td class="kpi-name">Blocker Resolution</td><td class="kpi-value">0</td><td class="kpi-detail">0 currently blocked</td></tr><tr><td class="kpi-name">Value per Session</td><td class="kpi-value">0</td><td class="kpi-detail">Requires session tracking</td></tr><tr><td class="kpi-name">Bug-to-Feature Ratio</td><td class="kpi-value">1.00</td><td class="kpi-detail">70 issues / 70 done</td></tr><tr><td class="kpi-name">Risk Concentration</td><td class="kpi-value">0/100</td><td class="kpi-detail">0 blocked of 9 active</td></tr><tr><td class="kpi-name">Next Best Action</td><td class="kpi-value">—</td><td class="kpi-detail">Triage backlog &mdash; 70 intake items open</td></tr></tbody></table>
+        </div>
+        
+        <div class="kpi-cat">
+            <h3>Project Health</h3>
+            <p class="cat-desc">Is the system of record healthy?</p>
+            <table class="data-table"><thead><tr><th>KPI</th><th>Value</th><th>Detail</th></tr></thead><tbody><tr><td class="kpi-name">Doc Freshness</td><td class="kpi-value">0/100</td><td class="kpi-detail">Requires file timestamps</td></tr><tr><td class="kpi-name">Traceability</td><td class="kpi-value">100/100</td><td class="kpi-detail">79/79 tasks traced to stories</td></tr><tr class="warn"><td class="kpi-name">Intake Staleness</td><td class="kpi-value">70</td><td class="kpi-detail">70 items open</td></tr><tr><td class="kpi-name">Archive Health</td><td class="kpi-value">0/100</td><td class="kpi-detail">Requires rollover history</td></tr><tr class="warn"><td class="kpi-name">Coverage Gap</td><td class="kpi-value">1</td><td class="kpi-detail">1 missing files</td></tr></tbody></table>
+        </div>
+        </div></div>
+<div class="tab-panel" id="panel-trends"><div class="section"><div class="section"><h2>Changes Since Last Session</h2><div class="stat-grid">
+            <div class="stat-card">
+                <div class="stat-value" style="color: var(--muted)">―</div>
+                <div class="stat-label">Convergence</div>
+            </div>
+            
+            <div class="stat-card">
+                <div class="stat-value" style="color: var(--green)">+1</div>
+                <div class="stat-label">Tasks Done</div>
+            </div>
+            
+            <div class="stat-card">
+                <div class="stat-value" style="color: var(--muted)">+4</div>
+                <div class="stat-label">Total Tasks</div>
+            </div>
+            
+            <div class="stat-card">
+                <div class="stat-value" style="color: var(--muted)">―</div>
+                <div class="stat-label">Open Intake</div>
+            </div>
+            
+            <div class="stat-card">
+                <div class="stat-value" style="color: var(--muted)">―</div>
+                <div class="stat-label">Stories Done</div>
+            </div>
+            
+            <div class="stat-card">
+                <div class="stat-value" style="color: var(--muted)">―</div>
+                <div class="stat-label">Blocked</div>
+            </div>
+            
+            <div class="stat-card">
+                <div class="stat-value" style="color: var(--muted)">―</div>
+                <div class="stat-label">Overdue</div>
+            </div>
+            </div></div>
+        <div class="section">
+            <h2>Session History <span class="count">(last 2)</span></h2>
+            <table class="data-table">
+                <thead><tr><th>Date</th><th>Convergence</th><th>Tasks</th><th>Stories Done</th><th>Open Intake</th><th>Transitions</th></tr></thead>
+                <tbody><tr>
+                <td class="mono">2026-04-08</td>
+                <td style="color: #27ae60">100%</td>
+                <td>66/79</td>
+                <td>17</td>
+                <td style="color: var(--red)">70</td>
+                <td>11</td>
+            </tr><tr>
+                <td class="mono">2026-04-08</td>
+                <td style="color: #27ae60">100%</td>
+                <td>65/75</td>
+                <td>17</td>
+                <td style="color: var(--red)">70</td>
+                <td>6</td>
+            </tr></tbody>
+            </table>
+        </div>
+        </div></div>
+<div class="tab-panel" id="panel-backlog"><div class="section">
+        <div class="kpi-cat">
+            <h3>Scratchpad <span class="count">(2 pending triage)</span></h3>
+            <table class="data-table"><thead><tr><th>Key</th><th>Item</th><th>Source</th><th>Added</th></tr></thead><tbody><tr>
+                <td class="mono">SCRATCH-001</td>
+                <td>Migration should be interactive Claude session, not silent script. DevLead scans, Claude presents findings to user, user classifies each existing file. Then guided TBO creation. Needs MIGRATE state in state machine or a special migrate flow.</td>
+                <td class="muted">model</td>
+                <td class="muted">2026-04-05</td>
+            </tr><tr>
+                <td class="mono">SCRATCH-002</td>
+                <td>Token tracking blocked: Claude Code hooks dont pass token_count in stdin. Two options: (1) request Anthropic add it to hook payload, (2) parse transcript_path JSONL if available. Check if transcript_path is passed in any hook type.</td>
+                <td class="muted">model</td>
+                <td class="muted">2026-04-05</td>
+            </tr></tbody></table>
+        </div>
+        
+            <div class="kpi-cat">
+                <h3>P1 <span class="count">(50 items)</span></h3>
+                <table class="data-table"><thead><tr><th>Type</th><th>Key</th><th>Item</th><th>Added</th></tr></thead><tbody><tr>
+                    <td><span class="badge-xs st-progress">FEAT</span></td>
+                    <td class="mono">FEAT-004</td>
+                    <td>Cross-project guard -- user-level hook protects all DevLead projects</td>
+                    <td class="muted">2026-04-05</td>
+                </tr><tr>
+                    <td><span class="badge-xs st-progress">FEAT</span></td>
+                    <td class="mono">FEAT-005</td>
+                    <td>File path enforcement in gate -- inspect stdin JSON for target path</td>
+                    <td class="muted">2026-04-05</td>
+                </tr><tr>
+                    <td><span class="badge-xs st-progress">FEAT</span></td>
+                    <td class="mono">FEAT-006</td>
+                    <td>Session-end HTML dashboard -- beautiful local report with all KPIs, project upda</td>
+                    <td class="muted">2026-04-05</td>
+                </tr><tr>
+                    <td><span class="badge-xs st-progress">FEAT</span></td>
+                    <td class="mono">FEAT-007</td>
+                    <td>Token usage auditing -- full capability for tracking, waste detection, best prac</td>
+                    <td class="muted">2026-04-05</td>
+                </tr><tr>
+                    <td><span class="badge-xs st-progress">FEAT</span></td>
+                    <td class="mono">FEAT-008</td>
+                    <td>Scope lock -- user defines surgical focus for what LLM must work on</td>
+                    <td class="muted">2026-04-05</td>
+                </tr><tr>
+                    <td><span class="badge-xs st-progress">FEAT</span></td>
+                    <td class="mono">FEAT-010</td>
+                    <td>API key / license management -- free vs Pro tier gating</td>
+                    <td class="muted">2026-04-05</td>
+                </tr><tr>
+                    <td><span class="badge-xs st-progress">FEAT</span></td>
+                    <td class="mono">FEAT-012</td>
+                    <td>GitHub open-source packaging -- LICENSE, proper README, PyPI distribution</td>
+                    <td class="muted">2026-04-05</td>
+                </tr><tr>
+                    <td><span class="badge-xs st-progress">FEAT</span></td>
+                    <td class="mono">FEAT-014</td>
+                    <td>Progress timeline -- only TBO milestones and productionization</td>
+                    <td class="muted">2026-04-05</td>
+                </tr><tr>
+                    <td><span class="badge-xs st-progress">FEAT</span></td>
+                    <td class="mono">FEAT-017</td>
+                    <td>`devlead gap` command -- automated governance gap detection</td>
+                    <td class="muted">2026-04-05</td>
+                </tr><tr>
+                    <td><span class="badge-xs st-progress">FEAT</span></td>
+                    <td class="mono">FEAT-018</td>
+                    <td>Revenue model -- Free/$29 Pro (5 projects)/$49 Unlimited tiers</td>
+                    <td class="muted">2026-04-05</td>
+                </tr><tr>
+                    <td><span class="badge-xs st-progress">FEAT</span></td>
+                    <td class="mono">FEAT-020</td>
+                    <td>Enforce &quot;update docs before proposing work&quot; -- gate that prevents stale snapshot</td>
+                    <td class="muted">2026-04-05</td>
+                </tr><tr>
+                    <td><span class="badge-xs st-progress">FEAT</span></td>
+                    <td class="mono">FEAT-021</td>
+                    <td>Scratchpad -- temporary capture space before triage</td>
+                    <td class="muted">2026-04-05</td>
+                </tr><tr>
+                    <td><span class="badge-xs st-progress">FEAT</span></td>
+                    <td class="mono">FEAT-022</td>
+                    <td>Intake triage workflow -- scratchpad â†’ backlog via triage</td>
+                    <td class="muted">2026-04-05</td>
+                </tr><tr>
+                    <td><span class="badge-xs st-progress">FEAT</span></td>
+                    <td class="mono">FEAT-023</td>
+                    <td>Surveillance -- enforce Taskâ†’Storyâ†’TBO linkage</td>
+                    <td class="muted">2026-04-05</td>
+                </tr><tr>
+                    <td><span class="badge-xs st-progress">FEAT</span></td>
+                    <td class="mono">FEAT-024</td>
+                    <td>Definition of Done gate -- require DoD before implementation</td>
+                    <td class="muted">2026-04-05</td>
+                </tr><tr>
+                    <td><span class="badge-xs st-progress">FEAT</span></td>
+                    <td class="mono">FEAT-025</td>
+                    <td>Custom state machine steps -- user-defined states and gates</td>
+                    <td class="muted">2026-04-05</td>
+                </tr><tr>
+                    <td><span class="badge-xs st-progress">FEAT</span></td>
+                    <td class="mono">FEAT-026</td>
+                    <td>Intake-to-Story promotion -- FEAT items become stories when triaged to backlog</td>
+                    <td class="muted">2026-04-05</td>
+                </tr><tr>
+                    <td><span class="badge-xs st-progress">FEAT</span></td>
+                    <td class="mono">FEAT-027</td>
+                    <td>No-work-without-task gate -- block Edit/Write if no IN_PROGRESS task exists</td>
+                    <td class="muted">2026-04-05</td>
+                </tr><tr>
+                    <td><span class="badge-xs st-progress">FEAT</span></td>
+                    <td class="mono">FEAT-028</td>
+                    <td>Mandatory ID chain -- every task must have Story + TBO IDs, unlinked = shadow wo</td>
+                    <td class="muted">2026-04-05</td>
+                </tr><tr>
+                    <td><span class="badge-xs st-progress">FEAT</span></td>
+                    <td class="mono">FEAT-029</td>
+                    <td>ON_HOLD task status -- user decision to pause work for reprioritization</td>
+                    <td class="muted">2026-04-05</td>
+                </tr><tr>
+                    <td><span class="badge-xs st-progress">FEAT</span></td>
+                    <td class="mono">FEAT-030</td>
+                    <td>Story acceptance -- story done when user accepts, not when tasks complete</td>
+                    <td class="muted">2026-04-05</td>
+                </tr><tr>
+                    <td><span class="badge-xs st-progress">FEAT</span></td>
+                    <td class="mono">FEAT-031</td>
+                    <td>MVP phases -- enforce scope boundaries to prevent goalpost shifting</td>
+                    <td class="muted">2026-04-05</td>
+                </tr><tr>
+                    <td><span class="badge-xs st-progress">FEAT</span></td>
+                    <td class="mono">FEAT-032</td>
+                    <td>Task-level effort tracking -- hours, sessions, tokens captured per task and aggr</td>
+                    <td class="muted">2026-04-05</td>
+                </tr><tr>
+                    <td><span class="badge-xs st-progress">FEAT</span></td>
+                    <td class="mono">FEAT-033</td>
+                    <td>Auto-generate non-functional tasks -- tests, docs, refactoring created by DevLea</td>
+                    <td class="muted">2026-04-05</td>
+                </tr><tr>
+                    <td><span class="badge-xs st-progress">FEAT</span></td>
+                    <td class="mono">FEAT-034</td>
+                    <td>User-facing enforcement -- all DevLead decisions surface to user, not consumed b</td>
+                    <td class="muted">2026-04-05</td>
+                </tr><tr>
+                    <td><span class="badge-xs st-progress">FEAT</span></td>
+                    <td class="mono">FEAT-035</td>
+                    <td>Wholesome project view -- TBOâ†’Storyâ†’Task hierarchy in tabular format</td>
+                    <td class="muted">2026-04-05</td>
+                </tr><tr>
+                    <td><span class="badge-xs st-progress">FEAT</span></td>
+                    <td class="mono">FEAT-036</td>
+                    <td>Visual lineage feedback -- every task shows its business outcome contribution</td>
+                    <td class="muted">2026-04-05</td>
+                </tr><tr>
+                    <td><span class="badge-xs st-progress">FEAT</span></td>
+                    <td class="mono">FEAT-037</td>
+                    <td>Smart project analysis -- open-ended questions trigger full project scan</td>
+                    <td class="muted">2026-04-05</td>
+                </tr><tr>
+                    <td><span class="badge-xs st-progress">FEAT</span></td>
+                    <td class="mono">FEAT-039</td>
+                    <td>Auto-publish HTML dashboard during session for visual feedback loop -- user shou</td>
+                    <td class="muted">2026-04-05</td>
+                </tr><tr>
+                    <td><span class="badge-xs st-progress">FEAT</span></td>
+                    <td class="mono">FEAT-041</td>
+                    <td>KPIs tab is all wrong - need to review what KPIs make sense, which are broken, w</td>
+                    <td class="muted">2026-04-05</td>
+                </tr><tr>
+                    <td><span class="badge-xs st-progress">FEAT</span></td>
+                    <td class="mono">FEAT-043</td>
+                    <td>DevLead feature: gate that blocks task creation unless scratchpad item has been </td>
+                    <td class="muted">2026-04-05</td>
+                </tr><tr>
+                    <td><span class="badge-xs st-progress">FEAT</span></td>
+                    <td class="mono">FEAT-044</td>
+                    <td>DevLead feature: auto-raise tickets for gaps/bugs observed in real-time during s</td>
+                    <td class="muted">2026-04-05</td>
+                </tr><tr>
+                    <td><span class="badge-xs st-progress">FEAT</span></td>
+                    <td class="mono">FEAT-046</td>
+                    <td>Post-migration cleanup -- `devlead migrate --cleanup` or `devlead cleanup` comma</td>
+                    <td class="muted">2026-04-05</td>
+                </tr><tr>
+                    <td><span class="badge-xs st-progress">FEAT</span></td>
+                    <td class="mono">FEAT-047</td>
+                    <td>Claude Code plugin packaging -- restructure repo as official Claude Code plugin</td>
+                    <td class="muted">2026-04-05</td>
+                </tr><tr>
+                    <td><span class="badge-xs st-progress">FEAT</span></td>
+                    <td class="mono">FEAT-048</td>
+                    <td>Plugin self-onboarding -- auto-detect ungoverned projects on SessionStart</td>
+                    <td class="muted">2026-04-05</td>
+                </tr><tr>
+                    <td><span class="badge-xs st-progress">FEAT</span></td>
+                    <td class="mono">FEAT-049</td>
+                    <td>DevLead-Superpowers integration -- brainstorming/planning skills must read devle</td>
+                    <td class="muted">2026-04-05</td>
+                </tr><tr>
+                    <td><span class="badge-xs st-block">BUG</span></td>
+                    <td class="mono">BUG-001</td>
+                    <td>Intake process not enforced -- AI finds issues but doesn't register in intake fi</td>
+                    <td class="muted">2026-04-05</td>
+                </tr><tr>
+                    <td><span class="badge-xs st-block">BUG</span></td>
+                    <td class="mono">BUG-002</td>
+                    <td>Status file says FEAT-014 registered but intake has FEAT-016 -- status not updat</td>
+                    <td class="muted">2026-04-05</td>
+                </tr><tr>
+                    <td><span class="badge-xs st-block">BUG</span></td>
+                    <td class="mono">BUG-003</td>
+                    <td>Session summary reported from model memory, not from md files</td>
+                    <td class="muted">2026-04-05</td>
+                </tr><tr>
+                    <td><span class="badge-xs warn-bg">GAP</span></td>
+                    <td class="mono">GAP-001</td>
+                    <td>Missing LICENSE file -- pyproject.toml says MIT but no LICENSE file exists</td>
+                    <td class="muted">2026-04-05</td>
+                </tr><tr>
+                    <td><span class="badge-xs warn-bg">GAP</span></td>
+                    <td class="mono">GAP-002</td>
+                    <td>Empty README.md -- only contains `# devlead`</td>
+                    <td class="muted">2026-04-05</td>
+                </tr><tr>
+                    <td><span class="badge-xs warn-bg">GAP</span></td>
+                    <td class="mono">GAP-003</td>
+                    <td>Incomplete pyproject.toml -- no authors, urls, classifiers, keywords</td>
+                    <td class="muted">2026-04-05</td>
+                </tr><tr>
+                    <td><span class="badge-xs warn-bg">GAP</span></td>
+                    <td class="mono">GAP-004</td>
+                    <td>No MANIFEST.in -- scaffold/ templates may not get packaged</td>
+                    <td class="muted">2026-04-05</td>
+                </tr><tr>
+                    <td><span class="badge-xs warn-bg">GAP</span></td>
+                    <td class="mono">GAP-005</td>
+                    <td>Missing _living_business_objectives.md -- referenced in standing instruction #14</td>
+                    <td class="muted">2026-04-05</td>
+                </tr><tr>
+                    <td><span class="badge-xs warn-bg">GAP</span></td>
+                    <td class="mono">GAP-006</td>
+                    <td>Missing _living_distribution.md -- referenced in standing instruction #17</td>
+                    <td class="muted">2026-04-05</td>
+                </tr><tr>
+                    <td><span class="badge-xs warn-bg">GAP</span></td>
+                    <td class="mono">GAP-007</td>
+                    <td>Missing _project_stories.md -- referenced in status as &quot;added&quot; but doesn't exist</td>
+                    <td class="muted">2026-04-05</td>
+                </tr><tr>
+                    <td><span class="badge-xs warn-bg">GAP</span></td>
+                    <td class="mono">GAP-010</td>
+                    <td>Superpowers has zero awareness of DevLead -- no integration between plugins</td>
+                    <td class="muted">2026-04-05</td>
+                </tr><tr>
+                    <td><span class="badge-xs warn-bg">GAP</span></td>
+                    <td class="mono">GAP-011</td>
+                    <td>migrate command doesn't create or append to CLAUDE.md</td>
+                    <td class="muted">2026-04-05</td>
+                </tr><tr>
+                    <td><span class="badge-xs warn-bg">GAP</span></td>
+                    <td class="mono">GAP-012</td>
+                    <td>migrate command doesn't install hooks -- only init does</td>
+                    <td class="muted">2026-04-05</td>
+                </tr><tr>
+                    <td><span class="badge-xs warn-bg">GAP</span></td>
+                    <td class="mono">GAP-013</td>
+                    <td>No scaffold template for CLAUDE.md exists</td>
+                    <td class="muted">2026-04-05</td>
+                </tr></tbody></table>
+            </div>
+            
+            <div class="kpi-cat">
+                <h3>P2 <span class="count">(18 items)</span></h3>
+                <table class="data-table"><thead><tr><th>Type</th><th>Key</th><th>Item</th><th>Added</th></tr></thead><tbody><tr>
+                    <td><span class="badge-xs st-progress">FEAT</span></td>
+                    <td class="mono">FEAT-003</td>
+                    <td>Rollover policy -- by date OR by file size (lines threshold)</td>
+                    <td class="muted">2026-04-05</td>
+                </tr><tr>
+                    <td><span class="badge-xs st-progress">FEAT</span></td>
+                    <td class="mono">FEAT-009</td>
+                    <td>Record model name everywhere -- audit log, session history, HTML dashboard</td>
+                    <td class="muted">2026-04-05</td>
+                </tr><tr>
+                    <td><span class="badge-xs st-progress">FEAT</span></td>
+                    <td class="mono">FEAT-011</td>
+                    <td>HTML dashboard â†’ markdown updates -- interactive edits from browser</td>
+                    <td class="muted">2026-04-05</td>
+                </tr><tr>
+                    <td><span class="badge-xs st-progress">FEAT</span></td>
+                    <td class="mono">FEAT-013</td>
+                    <td>Portfolio dashboard -- multi-project view with project selector</td>
+                    <td class="muted">2026-04-05</td>
+                </tr><tr>
+                    <td><span class="badge-xs st-progress">FEAT</span></td>
+                    <td class="mono">FEAT-015</td>
+                    <td>Split dashboard.py into smaller modules</td>
+                    <td class="muted">2026-04-05</td>
+                </tr><tr>
+                    <td><span class="badge-xs st-progress">FEAT</span></td>
+                    <td class="mono">FEAT-016</td>
+                    <td>Multi-LLM adapters -- Cursor, Copilot, Windsurf, Aider</td>
+                    <td class="muted">2026-04-05</td>
+                </tr><tr>
+                    <td><span class="badge-xs st-progress">FEAT</span></td>
+                    <td class="mono">FEAT-019</td>
+                    <td>Lightweight license API server -- 3 endpoints for purchase/verify/check</td>
+                    <td class="muted">2026-04-05</td>
+                </tr><tr>
+                    <td><span class="badge-xs st-progress">FEAT</span></td>
+                    <td class="mono">FEAT-040</td>
+                    <td>Audit tab - dont show .py files. Define clear objective for the tab. Should show</td>
+                    <td class="muted">2026-04-05</td>
+                </tr><tr>
+                    <td><span class="badge-xs st-progress">FEAT</span></td>
+                    <td class="mono">FEAT-042</td>
+                    <td>Interactive server (devlead serve) - add to book of work, do not implement now. </td>
+                    <td class="muted">2026-04-05</td>
+                </tr><tr>
+                    <td><span class="badge-xs st-progress">FEAT</span></td>
+                    <td class="mono">FEAT-045</td>
+                    <td>Session tab needs rethink - what question does it answer? Currently shows raw st</td>
+                    <td class="muted">2026-04-05</td>
+                </tr><tr>
+                    <td><span class="badge-xs st-block">BUG</span></td>
+                    <td class="mono">BUG-004</td>
+                    <td>Subagents bypass Edit/Write gate by using sed/bash instead</td>
+                    <td class="muted">2026-04-05</td>
+                </tr><tr>
+                    <td><span class="badge-xs st-block">BUG</span></td>
+                    <td class="mono">BUG-005</td>
+                    <td>ORIENT checklist not enforced -- session proceeded without reading required file</td>
+                    <td class="muted">2026-04-05</td>
+                </tr><tr>
+                    <td><span class="badge-xs st-block">BUG</span></td>
+                    <td class="mono">BUG-006</td>
+                    <td>session_history.jsonl missing -- file not created on session start</td>
+                    <td class="muted">2026-04-05</td>
+                </tr><tr>
+                    <td><span class="badge-xs st-block">BUG</span></td>
+                    <td class="mono">BUG-007</td>
+                    <td>effort and doctor commands not wired into CLI</td>
+                    <td class="muted">2026-04-05</td>
+                </tr><tr>
+                    <td><span class="badge-xs st-block">BUG</span></td>
+                    <td class="mono">BUG-008</td>
+                    <td>Intake file header counts stale -- gap command detects mismatch</td>
+                    <td class="muted">2026-04-05</td>
+                </tr><tr>
+                    <td><span class="badge-xs warn-bg">GAP</span></td>
+                    <td class="mono">GAP-008</td>
+                    <td>Roadmap stories S-002 through S-016 unchecked despite tasks being DONE</td>
+                    <td class="muted">2026-04-05</td>
+                </tr><tr>
+                    <td><span class="badge-xs warn-bg">GAP</span></td>
+                    <td class="mono">GAP-009</td>
+                    <td>6 files exceed 200-line rule -- dashboard.py (1323), kpi_engine.py (601), state_</td>
+                    <td class="muted">2026-04-05</td>
+                </tr><tr>
+                    <td><span class="badge-xs warn-bg">GAP</span></td>
+                    <td class="mono">GAP-014</td>
+                    <td>Audit log doesn't capture migration actions</td>
+                    <td class="muted">2026-04-05</td>
+                </tr></tbody></table>
+            </div>
+            
+            <div class="kpi-cat">
+                <h3>P3 <span class="count">(2 items)</span></h3>
+                <table class="data-table"><thead><tr><th>Type</th><th>Key</th><th>Item</th><th>Added</th></tr></thead><tbody><tr>
+                    <td><span class="badge-xs st-progress">FEAT</span></td>
+                    <td class="mono">FEAT-001</td>
+                    <td>Token usage KPIs -- cost per task, wasted tokens, efficiency</td>
+                    <td class="muted">2026-04-05</td>
+                </tr><tr>
+                    <td><span class="badge-xs st-progress">FEAT</span></td>
+                    <td class="mono">FEAT-002</td>
+                    <td>Claude Workflow hooks -- governance for scheduled agents</td>
+                    <td class="muted">2026-04-05</td>
+                </tr></tbody></table>
+            </div>
+            
+    <div class="section" style="margin-top:1rem;">
+        <div class="muted">2 scratchpad items pending triage | 70 open backlog items</div>
+    </div>
+    </div></div>
+<div class="tab-panel" id="panel-session"><div class="section"><h2>State Timeline</h2><div class="timeline-h"><div class="tl-step active"><div class="tl-dot"></div><div class="tl-label">ORIENT</div><div class="tl-time">2026-04-13 00:56:55</div></div></div></div><div class="section"><h2>Checklists</h2><div class="ck-grid">
+        <div class="ck-group">
+            <div class="ck-header">
+                <h3>ORIENT</h3>
+                <span class="ck-count">0/4</span>
+            </div>
+            <div class="progress-bar"><div class="progress-fill" style="width: 0%; background: #e74c3c"></div></div>
+            <div class="ck-item">&#x26AA; status_read</div><div class="ck-item">&#x26AA; tasks_read</div><div class="ck-item">&#x26AA; intake_scanned</div><div class="ck-item">&#x26AA; kpis_reported</div>
+        </div>
+        
+        <div class="ck-group">
+            <div class="ck-header">
+                <h3>TRIAGE</h3>
+                <span class="ck-count">0/2</span>
+            </div>
+            <div class="progress-bar"><div class="progress-fill" style="width: 0%; background: #e74c3c"></div></div>
+            <div class="ck-item">&#x26AA; scratchpad_reviewed</div><div class="ck-item">&#x26AA; items_triaged</div>
+        </div>
+        
+        <div class="ck-group">
+            <div class="ck-header">
+                <h3>PRIORITIZE</h3>
+                <span class="ck-count">0/2</span>
+            </div>
+            <div class="progress-bar"><div class="progress-fill" style="width: 0%; background: #e74c3c"></div></div>
+            <div class="ck-item">&#x26AA; priorities_assigned</div><div class="ck-item">&#x26AA; session_scope_set</div>
+        </div>
+        
+        <div class="ck-group">
+            <div class="ck-header">
+                <h3>UPDATE</h3>
+                <span class="ck-count">0/5</span>
+            </div>
+            <div class="progress-bar"><div class="progress-fill" style="width: 0%; background: #e74c3c"></div></div>
+            <div class="ck-item">&#x26AA; intake_updated</div><div class="ck-item">&#x26AA; tasks_updated</div><div class="ck-item">&#x26AA; status_updated</div><div class="ck-item">&#x26AA; living_reviewed</div><div class="ck-item">&#x26AA; memory_derived</div>
+        </div>
+        </div></div>
+    <div class="section">
+        <h2>Claude Memory <span class="count">(8 entries)</span></h2>
+        <p class="muted" style="margin-bottom: 12px;">What Claude remembered from this project. Better signals in your docs = better memory.</p>
+        <table class="data-table">
+            <thead><tr><th>Type</th><th>File</th><th>Name</th><th>Description</th></tr></thead>
+            <tbody><tr>
+            <td><span class="badge-xs st-open">feedback</span></td>
+            <td class="mono">feedback_devlead_governance.md</td>
+            <td>follow-devlead-governance</td>
+            <td class="muted">Model must follow DevLead's own governance â€” register tasks before work, use state machine, update docs</td>
+        </tr><tr>
+            <td><span class="badge-xs st-open">feedback</span></td>
+            <td class="mono">feedback_enforcement_posture.md</td>
+            <td>relaxed-enforcement-posture</td>
+            <td class="muted">Default to log/audit, not block â€” user wants configurable enforcement that starts relaxed</td>
+        </tr><tr>
+            <td><span class="badge-xs st-open">feedback</span></td>
+            <td class="mono">feedback_file_size.md</td>
+            <td>keep-files-small</td>
+            <td class="muted">User wants files under ~200 lines â€” split large modules proactively</td>
+        </tr><tr>
+            <td><span class="badge-xs st-open">feedback</span></td>
+            <td class="mono">feedback_subagent_mode.md</td>
+            <td>subagent-mode-default</td>
+            <td class="muted">User prefers subagent-driven execution â€” don't ask, just do it</td>
+        </tr><tr>
+            <td><span class="badge-xs st-done">project</span></td>
+            <td class="mono">project_convergence_engine.md</td>
+            <td>convergence-engine-shipped</td>
+            <td class="muted">Business Convergence Engine implemented â€” BO hierarchy, weighted convergence, 6 KPIs, gate framework, model ownership</td>
+        </tr><tr>
+            <td><span class="badge-xs st-done">project</span></td>
+            <td class="mono">project_dashboard_bookends.md</td>
+            <td>dashboard-bookend-principle</td>
+            <td class="muted">Business tab (first) and Distribution tab (last) are truth â€” middle tabs are operational</td>
+        </tr><tr>
+            <td><span class="badge-xs st-done">project</span></td>
+            <td class="mono">project_tbo_model.md</td>
+            <td>tbo-business-model</td>
+            <td class="muted">TBO (Tangible Business Outcome) is the unit of progress â€” core design principle from session 2</td>
+        </tr><tr>
+            <td><span class="badge-xs st-prog">user</span></td>
+            <td class="mono">user_nitin.md</td>
+            <td>nitin-profile</td>
+            <td class="muted">Nitin's role, thinking style, and product instincts â€” shapes how to collaborate</td>
+        </tr></tbody>
+        </table>
+    </div>
+    </div>
+<div class="tab-panel" id="panel-audit">
+    <div class="section">
+        <h2>Governance Audit <span class="count">(123 governance actions | 237 source edits filtered)</span></h2>
+        <p class="muted">Shows: doc updates, memory writes, config changes, cross-project detections. Source code edits (.py) filtered out.</p>
+        <table class="data-table"><thead><tr><th>Time</th><th>State</th><th>Tool</th><th>File</th></tr></thead><tbody><tr><td class="mono">2026-04-06T00:13:44</td><td><span class="badge-xs st-default">ORIENT</span></td><td>Edit</td><td class="fp">C:\Users\nitin\plugin-development\devlead\claude_docs\_intake_gaps.md</td></tr><tr><td class="mono">2026-04-06T00:17:37</td><td><span class="badge-xs st-default">ORIENT</span></td><td>Edit</td><td class="fp">C:\Users\nitin\plugin-development\devlead\claude_docs\_intake_bugs.md</td></tr><tr><td class="mono">2026-04-06T00:17:43</td><td><span class="badge-xs st-default">ORIENT</span></td><td>Edit</td><td class="fp">C:\Users\nitin\plugin-development\devlead\claude_docs\_intake_features.md</td></tr><tr><td class="mono">2026-04-06T00:17:57</td><td><span class="badge-xs st-default">ORIENT</span></td><td>Edit</td><td class="fp">C:\Users\nitin\plugin-development\devlead\claude_docs\_intake_features.md</td></tr><tr><td class="mono">2026-04-06T00:18:01</td><td><span class="badge-xs st-default">ORIENT</span></td><td>Edit</td><td class="fp">C:\Users\nitin\plugin-development\devlead\claude_docs\_project_status.md</td></tr><tr><td class="mono">2026-04-06T00:18:23</td><td><span class="badge-xs st-default">ORIENT</span></td><td>Edit</td><td class="fp">C:\Users\nitin\plugin-development\devlead\claude_docs\_project_status.md</td></tr><tr><td class="mono">2026-04-06T00:23:07</td><td><span class="badge-xs st-default">EXECUTE</span></td><td>Edit</td><td class="fp">C:\Users\nitin\plugin-development\devlead\claude_docs\_intake_features.md</td></tr><tr><td class="mono">2026-04-06T00:23:19</td><td><span class="badge-xs st-default">EXECUTE</span></td><td>Edit</td><td class="fp">C:\Users\nitin\plugin-development\devlead\claude_docs\_intake_features.md</td></tr><tr><td class="mono">2026-04-06T00:23:48</td><td><span class="badge-xs st-default">EXECUTE</span></td><td>Edit</td><td class="fp">C:\Users\nitin\plugin-development\devlead\claude_docs\_intake_features.md</td></tr><tr><td class="mono">2026-04-06T00:26:11</td><td><span class="badge-xs st-default">EXECUTE</span></td><td>Edit</td><td class="fp">C:\Users\nitin\plugin-development\devlead\claude_docs\_intake_features.md</td></tr><tr><td class="mono">2026-04-06T00:26:21</td><td><span class="badge-xs st-default">EXECUTE</span></td><td>Edit</td><td class="fp">C:\Users\nitin\plugin-development\devlead\claude_docs\_intake_features.md</td></tr><tr><td class="mono">2026-04-06T00:29:48</td><td><span class="badge-xs st-default">EXECUTE</span></td><td>Edit</td><td class="fp">C:\Users\nitin\plugin-development\devlead\claude_docs\_intake_features.md</td></tr><tr><td class="mono">2026-04-06T00:29:58</td><td><span class="badge-xs st-default">EXECUTE</span></td><td>Edit</td><td class="fp">C:\Users\nitin\plugin-development\devlead\claude_docs\_intake_features.md</td></tr><tr><td class="mono">2026-04-06T00:31:21</td><td><span class="badge-xs st-default">EXECUTE</span></td><td>Edit</td><td class="fp">C:\Users\nitin\plugin-development\devlead\claude_docs\_intake_bugs.md</td></tr><tr><td class="mono">2026-04-06T00:31:29</td><td><span class="badge-xs st-default">EXECUTE</span></td><td>Edit</td><td class="fp">C:\Users\nitin\plugin-development\devlead\claude_docs\_intake_bugs.md</td></tr><tr><td class="mono">2026-04-06T00:34:52</td><td><span class="badge-xs st-default">EXECUTE</span></td><td>Edit</td><td class="fp">C:\Users\nitin\plugin-development\devlead\claude_docs\_intake_features.md</td></tr><tr><td class="mono">2026-04-06T00:35:08</td><td><span class="badge-xs st-default">EXECUTE</span></td><td>Edit</td><td class="fp">C:\Users\nitin\plugin-development\devlead\claude_docs\_intake_features.md</td></tr><tr><td class="mono">2026-04-06T00:40:38</td><td><span class="badge-xs st-default">EXECUTE</span></td><td>Edit</td><td class="fp">C:\Users\nitin\plugin-development\devlead\claude_docs\_intake_features.md</td></tr><tr><td class="mono">2026-04-06T00:40:49</td><td><span class="badge-xs st-default">EXECUTE</span></td><td>Edit</td><td class="fp">C:\Users\nitin\plugin-development\devlead\claude_docs\_intake_features.md</td></tr><tr><td class="mono">2026-04-06T00:42:18</td><td><span class="badge-xs st-default">EXECUTE</span></td><td>Edit</td><td class="fp">C:\Users\nitin\plugin-development\devlead\devlead.toml</td></tr><tr><td class="mono">2026-04-06T00:43:58</td><td><span class="badge-xs st-default">EXECUTE</span></td><td>Edit</td><td class="fp">C:\Users\nitin\plugin-development\devlead\claude_docs\_intake_features.md</td></tr><tr><td class="mono">2026-04-06T00:44:07</td><td><span class="badge-xs st-default">EXECUTE</span></td><td>Edit</td><td class="fp">C:\Users\nitin\plugin-development\devlead\claude_docs\_intake_features.md</td></tr><tr><td class="mono">2026-04-06T00:45:25</td><td><span class="badge-xs st-default">EXECUTE</span></td><td>Edit</td><td class="fp">C:\Users\nitin\plugin-development\devlead\claude_docs\_intake_features.md</td></tr><tr><td class="mono">2026-04-06T00:45:36</td><td><span class="badge-xs st-default">EXECUTE</span></td><td>Edit</td><td class="fp">C:\Users\nitin\plugin-development\devlead\claude_docs\_intake_features.md</td></tr><tr><td class="mono">2026-04-06T00:48:24</td><td><span class="badge-xs st-default">EXECUTE</span></td><td>Edit</td><td class="fp">C:\Users\nitin\plugin-development\devlead\claude_docs\_intake_features.md</td></tr><tr><td class="mono">2026-04-06T00:48:38</td><td><span class="badge-xs st-default">EXECUTE</span></td><td>Edit</td><td class="fp">C:\Users\nitin\plugin-development\devlead\claude_docs\_intake_features.md</td></tr><tr><td class="mono">2026-04-06T00:48:42</td><td><span class="badge-xs st-default">EXECUTE</span></td><td>Edit</td><td class="fp">C:\Users\nitin\plugin-development\devlead\claude_docs\_intake_features.md</td></tr><tr><td class="mono">2026-04-06T00:48:52</td><td><span class="badge-xs st-default">EXECUTE</span></td><td>Edit</td><td class="fp">C:\Users\nitin\plugin-development\devlead\claude_docs\_intake_features.md</td></tr><tr><td class="mono">2026-04-06T00:49:22</td><td><span class="badge-xs st-default">EXECUTE</span></td><td>Edit</td><td class="fp">C:\Users\nitin\plugin-development\devlead\claude_docs\_intake_features.md</td></tr><tr><td class="mono">2026-04-06T00:49:31</td><td><span class="badge-xs st-default">EXECUTE</span></td><td>Edit</td><td class="fp">C:\Users\nitin\plugin-development\devlead\claude_docs\_intake_features.md</td></tr><tr><td class="mono">2026-04-06T00:50:25</td><td><span class="badge-xs st-default">EXECUTE</span></td><td>Edit</td><td class="fp">C:\Users\nitin\plugin-development\devlead\claude_docs\_living_standing_instructions.md</td></tr><tr><td class="mono">2026-04-06T00:51:56</td><td><span class="badge-xs st-default">EXECUTE</span></td><td>Edit</td><td class="fp">C:\Users\nitin\plugin-development\devlead\claude_docs\_living_standing_instructions.md</td></tr><tr><td class="mono">2026-04-06T00:54:04</td><td><span class="badge-xs st-default">EXECUTE</span></td><td>Edit</td><td class="fp">C:\Users\nitin\plugin-development\devlead\claude_docs\_intake_features.md</td></tr><tr><td class="mono">2026-04-06T00:54:13</td><td><span class="badge-xs st-default">EXECUTE</span></td><td>Edit</td><td class="fp">C:\Users\nitin\plugin-development\devlead\claude_docs\_intake_features.md</td></tr><tr><td class="mono">2026-04-06T00:54:35</td><td><span class="badge-xs st-default">EXECUTE</span></td><td>Edit</td><td class="fp">C:\Users\nitin\plugin-development\devlead\.claude\settings.json</td></tr><tr><td class="mono">2026-04-06T00:58:16</td><td><span class="badge-xs st-default">EXECUTE</span></td><td>Write</td><td class="fp">C:\Users\nitin\plugin-development\devlead\LICENSE <span class="badge-xs blue-bg">general-purpose</span></td></tr><tr><td class="mono">2026-04-06T00:58:24</td><td><span class="badge-xs st-default">EXECUTE</span></td><td>Edit</td><td class="fp">C:\Users\nitin\plugin-development\devlead\claude_docs\_project_tasks.md <span class="badge-xs blue-bg">general-purpose</span></td></tr><tr><td class="mono">2026-04-06T00:58:26</td><td><span class="badge-xs st-default">EXECUTE</span></td><td>Edit</td><td class="fp">C:\Users\nitin\plugin-development\devlead\claude_docs\_project_tasks.md <span class="badge-xs blue-bg">general-purpose</span></td></tr><tr><td class="mono">2026-04-06T00:58:28</td><td><span class="badge-xs st-default">EXECUTE</span></td><td>Write</td><td class="fp">C:\Users\nitin\plugin-development\devlead\README.md <span class="badge-xs blue-bg">general-purpose</span></td></tr><tr><td class="mono">2026-04-06T00:58:31</td><td><span class="badge-xs st-default">EXECUTE</span></td><td>Write</td><td class="fp">C:\Users\nitin\plugin-development\devlead\claude_docs\_living_business_objectives.md <span class="badge-xs blue-bg">general-purpose</span></td></tr><tr><td class="mono">2026-04-06T00:58:32</td><td><span class="badge-xs st-default">EXECUTE</span></td><td>Edit</td><td class="fp">C:\Users\nitin\plugin-development\devlead\claude_docs\_project_roadmap.md <span class="badge-xs blue-bg">general-purpose</span></td></tr><tr><td class="mono">2026-04-06T00:58:33</td><td><span class="badge-xs st-default">EXECUTE</span></td><td>Edit</td><td class="fp">C:\Users\nitin\plugin-development\devlead\pyproject.toml <span class="badge-xs blue-bg">general-purpose</span></td></tr><tr><td class="mono">2026-04-06T00:58:38</td><td><span class="badge-xs st-default">EXECUTE</span></td><td>Edit</td><td class="fp">C:\Users\nitin\plugin-development\devlead\claude_docs\_project_roadmap.md <span class="badge-xs blue-bg">general-purpose</span></td></tr><tr><td class="mono">2026-04-06T00:58:45</td><td><span class="badge-xs st-default">EXECUTE</span></td><td>Write</td><td class="fp">C:\Users\nitin\plugin-development\devlead\claude_docs\_living_distribution.md <span class="badge-xs blue-bg">general-purpose</span></td></tr><tr><td class="mono">2026-04-06T00:59:04</td><td><span class="badge-xs st-default">EXECUTE</span></td><td>Write</td><td class="fp">C:\Users\nitin\plugin-development\devlead\claude_docs\_project_stories.md <span class="badge-xs blue-bg">general-purpose</span></td></tr><tr><td class="mono">2026-04-06T01:02:35</td><td><span class="badge-xs st-default">EXECUTE</span></td><td>Edit</td><td class="fp">C:\Users\nitin\plugin-development\devlead\claude_docs\_intake_features.md</td></tr><tr><td class="mono">2026-04-06T01:02:50</td><td><span class="badge-xs st-default">EXECUTE</span></td><td>Edit</td><td class="fp">C:\Users\nitin\plugin-development\devlead\claude_docs\_intake_features.md</td></tr><tr><td class="mono">2026-04-06T01:04:00</td><td><span class="badge-xs st-default">EXECUTE</span></td><td>Edit</td><td class="fp">C:\Users\nitin\plugin-development\devlead\claude_docs\_intake_features.md</td></tr><tr><td class="mono">2026-04-06T01:04:09</td><td><span class="badge-xs st-default">EXECUTE</span></td><td>Edit</td><td class="fp">C:\Users\nitin\plugin-development\devlead\claude_docs\_intake_features.md</td></tr><tr><td class="mono">2026-04-06T01:06:31</td><td><span class="badge-xs st-default">EXECUTE</span></td><td>Edit</td><td class="fp">C:\Users\nitin\plugin-development\devlead\claude_docs\_living_distribution.md <span class="badge-xs blue-bg">general-purpose</span></td></tr><tr><td class="mono">2026-04-06T01:06:40</td><td><span class="badge-xs st-default">EXECUTE</span></td><td>Edit</td><td class="fp">C:\Users\nitin\plugin-development\devlead\claude_docs\_living_distribution.md <span class="badge-xs blue-bg">general-purpose</span></td></tr><tr><td class="mono">2026-04-06T01:17:40</td><td><span class="badge-xs st-default">EXECUTE</span></td><td>Edit</td><td class="fp">C:\Users\nitin\plugin-development\devlead\claude_docs\_living_distribution.md</td></tr><tr><td class="mono">2026-04-06T01:27:08</td><td><span class="badge-xs st-default">EXECUTE</span></td><td>Edit</td><td class="fp">C:\Users\nitin\plugin-development\devlead\claude_docs\_living_business_objectives.md</td></tr><tr><td class="mono">2026-04-06T02:15:09</td><td><span class="badge-xs st-default">EXECUTE</span></td><td>Edit</td><td class="fp">C:\Users\nitin\plugin-development\devlead\claude_docs\_project_stories.md</td></tr><tr><td class="mono">2026-04-06T02:20:41</td><td><span class="badge-xs st-default">EXECUTE</span></td><td>Edit</td><td class="fp">C:\Users\nitin\plugin-development\devlead\pyproject.toml</td></tr><tr><td class="mono">2026-04-06T02:41:44</td><td><span class="badge-xs st-default">EXECUTE</span></td><td>Write</td><td class="fp">C:\Users\nitin\plugin-development\devlead\docs\SETUP_GUIDE.md</td></tr><tr><td class="mono">2026-04-06T03:01:25</td><td><span class="badge-xs st-default">ORIENT</span></td><td>Edit</td><td class="fp">C:\Users\nitin\plugin-development\devlead\claude_docs\_intake_features.md</td></tr><tr><td class="mono">2026-04-06T03:46:24</td><td><span class="badge-xs st-default">ORIENT</span></td><td>Edit</td><td class="fp">C:\Users\nitin\plugin-development\devlead\CLAUDE.md <span class="badge-xs blue-bg">general-purpose</span></td></tr><tr><td class="mono">2026-04-06T03:46:25</td><td><span class="badge-xs st-default">ORIENT</span></td><td>Edit</td><td class="fp">C:\Users\nitin\plugin-development\devlead\README.md <span class="badge-xs blue-bg">general-purpose</span></td></tr><tr><td class="mono">2026-04-06T03:46:25</td><td><span class="badge-xs st-default">ORIENT</span></td><td>Edit</td><td class="fp">C:\Users\nitin\plugin-development\devlead\devlead.toml <span class="badge-xs blue-bg">general-purpose</span></td></tr><tr><td class="mono">2026-04-06T03:46:26</td><td><span class="badge-xs st-default">ORIENT</span></td><td>Edit</td><td class="fp">C:\Users\nitin\plugin-development\devlead\.gitignore <span class="badge-xs blue-bg">general-purpose</span></td></tr><tr><td class="mono">2026-04-06T03:46:27</td><td><span class="badge-xs st-default">ORIENT</span></td><td>Edit</td><td class="fp">C:\Users\nitin\plugin-development\devlead\docs\SETUP_GUIDE.md <span class="badge-xs blue-bg">general-purpose</span></td></tr><tr><td class="mono">2026-04-06T03:46:29</td><td><span class="badge-xs st-default">ORIENT</span></td><td>Edit</td><td class="fp">C:\Users\nitin\plugin-development\devlead\docs\2026-04-05-devlead-design.md <span class="badge-xs blue-bg">general-purpose</span></td></tr><tr><td class="mono">2026-04-06T03:46:29</td><td><span class="badge-xs st-default">ORIENT</span></td><td>Edit</td><td class="fp">C:\Users\nitin\plugin-development\devlead\docs\superpowers\plans\2026-04-05-devlead-implementation.md <span class="badge-xs blue-bg">general-purpose</span></td></tr><tr><td class="mono">2026-04-06T03:46:31</td><td><span class="badge-xs st-default">ORIENT</span></td><td>Edit</td><td class="fp">C:\Users\nitin\plugin-development\devlead\docs\superpowers\plans\2026-04-05-scope-lock.md <span class="badge-xs blue-bg">general-purpose</span></td></tr><tr><td class="mono">2026-04-06T03:46:32</td><td><span class="badge-xs st-default">ORIENT</span></td><td>Edit</td><td class="fp">C:\Users\nitin\plugin-development\devlead\docs\superpowers\plans\2026-04-05-audit-collab-rollover.md <span class="badge-xs blue-bg">general-purpose</span></td></tr><tr><td class="mono">2026-04-06T03:52:06</td><td><span class="badge-xs st-default">ORIENT</span></td><td>Edit</td><td class="fp">C:\Users\nitin\plugin-development\devlead\devlead_docs\_intake_gaps.md</td></tr><tr><td class="mono">2026-04-06T03:52:29</td><td><span class="badge-xs st-default">ORIENT</span></td><td>Edit</td><td class="fp">C:\Users\nitin\plugin-development\devlead\devlead_docs\_intake_features.md</td></tr><tr><td class="mono">2026-04-06T03:53:50</td><td><span class="badge-xs st-default">ORIENT</span></td><td>Edit</td><td class="fp">C:\Users\nitin\plugin-development\devlead\devlead_docs\_intake_bugs.md</td></tr><tr><td class="mono">2026-04-06T03:59:05</td><td><span class="badge-xs st-default">EXECUTE</span></td><td>Edit</td><td class="fp">C:\Users\nitin\plugin-development\devlead\devlead_docs\_intake_bugs.md</td></tr><tr><td class="mono">2026-04-06T04:01:40</td><td><span class="badge-xs st-default">EXECUTE</span></td><td>Edit</td><td class="fp">C:\Users\nitin\plugin-development\devlead\.claude\settings.json <span class="badge-xs blue-bg">general-purpose</span></td></tr><tr><td class="mono">2026-04-06T04:01:43</td><td><span class="badge-xs st-default">EXECUTE</span></td><td>Edit</td><td class="fp">C:\Users\nitin\plugin-development\devlead\src\devlead\scaffold\hooks_settings.json <span class="badge-xs blue-bg">general-purpose</span></td></tr><tr><td class="mono">2026-04-06T04:03:39</td><td><span class="badge-xs st-default">EXECUTE</span></td><td>Edit</td><td class="fp">C:\Users\nitin\plugin-development\devlead\devlead_docs\_project_tasks.md</td></tr><tr><td class="mono">2026-04-06T04:10:34</td><td><span class="badge-xs st-default">EXECUTE</span></td><td>Edit</td><td class="fp">C:\Users\nitin\plugin-development\devlead\devlead_docs\_intake_bugs.md</td></tr><tr><td class="mono">2026-04-06T04:10:44</td><td><span class="badge-xs st-default">EXECUTE</span></td><td>Edit</td><td class="fp">C:\Users\nitin\plugin-development\devlead\devlead_docs\_project_tasks.md</td></tr><tr><td class="mono">2026-04-06T04:10:59</td><td><span class="badge-xs st-default">EXECUTE</span></td><td>Edit</td><td class="fp">C:\Users\nitin\plugin-development\devlead\devlead_docs\_project_tasks.md</td></tr><tr><td class="mono">2026-04-06T04:11:43</td><td><span class="badge-xs st-default">ORIENT</span></td><td>Edit</td><td class="fp">C:\Users\nitin\plugin-development\devlead\devlead_docs\_project_tasks.md</td></tr><tr><td class="mono">2026-04-06T04:12:28</td><td><span class="badge-xs st-default">ORIENT</span></td><td>Edit</td><td class="fp">C:\Users\nitin\plugin-development\devlead\.claude\settings.json</td></tr><tr><td class="mono">2026-04-06T04:12:48</td><td><span class="badge-xs st-default">ORIENT</span></td><td>Write</td><td class="fp">C:\Users\nitin\plugin-development\devlead\.claude\settings.json</td></tr><tr><td class="mono">2026-04-06T04:26:54</td><td><span class="badge-xs st-default">ORIENT</span></td><td>Write</td><td class="fp">C:\Users\nitin\plugin-development\devlead\devlead_docs\session_state.json</td></tr><tr><td class="mono">2026-04-06T04:27:08</td><td><span class="badge-xs st-default">EXECUTE</span></td><td>Edit</td><td class="fp">C:\Users\nitin\plugin-development\devlead\.claude\settings.json</td></tr><tr><td class="mono">2026-04-06T04:27:17</td><td><span class="badge-xs st-default">ORIENT</span></td><td>Edit</td><td class="fp">C:\Users\nitin\plugin-development\devlead\devlead_docs\_project_tasks.md</td></tr><tr><td class="mono">2026-04-06T04:27:27</td><td><span class="badge-xs st-default">ORIENT</span></td><td>Write</td><td class="fp">C:\Users\nitin\plugin-development\devlead\devlead_docs\session_state.json</td></tr><tr><td class="mono">2026-04-06T04:27:37</td><td><span class="badge-xs st-default">EXECUTE</span></td><td>Edit</td><td class="fp">C:\Users\nitin\plugin-development\devlead\.claude\settings.json</td></tr><tr><td class="mono">2026-04-06T04:29:14</td><td><span class="badge-xs st-default">EXECUTE</span></td><td>Edit</td><td class="fp">C:\Users\nitin\plugin-development\devlead\src\devlead\scaffold\hooks_settings.json</td></tr><tr><td class="mono">2026-04-06T04:29:30</td><td><span class="badge-xs st-default">EXECUTE</span></td><td>Edit</td><td class="fp">C:\Users\nitin\plugin-development\devlead\devlead_docs\_intake_bugs.md</td></tr><tr><td class="mono">2026-04-06T04:29:37</td><td><span class="badge-xs st-default">EXECUTE</span></td><td>Edit</td><td class="fp">C:\Users\nitin\plugin-development\devlead\devlead_docs\_project_tasks.md</td></tr><tr><td class="mono">2026-04-06T04:32:10</td><td><span class="badge-xs st-default">EXECUTE</span></td><td>Write</td><td class="fp">C:\Users\nitin\plugin-development\devlead\docs\SETUP_GUIDE.md</td></tr><tr><td class="mono">2026-04-06T04:32:19</td><td><span class="badge-xs st-default">EXECUTE</span></td><td>Edit</td><td class="fp">C:\Users\nitin\plugin-development\devlead\devlead_docs\_project_tasks.md</td></tr><tr><td class="mono">2026-04-06T04:33:23</td><td><span class="badge-xs st-default">EXECUTE</span></td><td>Write</td><td class="fp">C:\Users\nitin\plugin-development\devlead\docs\SETUP_GUIDE.md</td></tr><tr><td class="mono">2026-04-06T04:33:34</td><td><span class="badge-xs st-default">EXECUTE</span></td><td>Edit</td><td class="fp">C:\Users\nitin\plugin-development\devlead\devlead_docs\_project_tasks.md</td></tr><tr class="warn"><td class="mono">2026-04-08T03:17:04</td><td><span class="badge-xs st-default">ORIENT</span></td><td>Edit</td><td class="fp">C:\Users\nitin\.claude\projects\C--Users-nitin-plugin-development-devlead\memory\user_nitin.md <span class="badge-xs warn-bg">CROSS</span></td></tr><tr class="warn"><td class="mono">2026-04-08T03:17:53</td><td><span class="badge-xs st-default">ORIENT</span></td><td>Edit</td><td class="fp">C:\Users\nitin\.claude\projects\C--Users-nitin-plugin-development-devlead\memory\project_tbo_model.md <span class="badge-xs warn-bg">CROSS</span></td></tr><tr class="warn"><td class="mono">2026-04-08T03:17:54</td><td><span class="badge-xs st-default">ORIENT</span></td><td>Edit</td><td class="fp">C:\Users\nitin\.claude\projects\C--Users-nitin-plugin-development-devlead\memory\project_dashboard_bookends.md <span class="badge-xs warn-bg">CROSS</span></td></tr><tr class="warn"><td class="mono">2026-04-08T03:18:09</td><td><span class="badge-xs st-default">ORIENT</span></td><td>Write</td><td class="fp">C:\Users\nitin\.claude\projects\C--Users-nitin-plugin-development-devlead\memory\feedback_enforcement_to_user.md <span class="badge-xs warn-bg">CROSS</span></td></tr><tr><td class="mono">2026-04-08T04:31:37</td><td><span class="badge-xs st-default">ORIENT</span></td><td>Write</td><td class="fp">C:\Users\nitin\plugin-development\devlead\docs\superpowers\specs\2026-04-07-business-convergence-design.md</td></tr><tr><td class="mono">2026-04-08T04:35:27</td><td><span class="badge-xs st-default">PLAN</span></td><td>Write</td><td class="fp">C:\Users\nitin\plugin-development\devlead\docs\superpowers\specs\2026-04-07-business-convergence-design.md</td></tr><tr><td class="mono">2026-04-08T04:37:19</td><td><span class="badge-xs st-default">EXECUTE</span></td><td>Write</td><td class="fp">C:\Users\nitin\plugin-development\devlead\docs\superpowers\specs\2026-04-07-business-convergence-design.md</td></tr><tr><td class="mono">2026-04-08T04:37:40</td><td><span class="badge-xs st-default">EXECUTE</span></td><td>Edit</td><td class="fp">C:\Users\nitin\plugin-development\devlead\devlead_docs\_project_tasks.md</td></tr><tr><td class="mono">2026-04-08T04:39:09</td><td><span class="badge-xs st-default">EXECUTE</span></td><td>Write</td><td class="fp">C:\Users\nitin\plugin-development\devlead\docs\superpowers\specs\2026-04-07-business-convergence-design.md</td></tr><tr><td class="mono">2026-04-08T04:41:15</td><td><span class="badge-xs st-default">EXECUTE</span></td><td>Edit</td><td class="fp">C:\Users\nitin\plugin-development\devlead\docs\superpowers\specs\2026-04-07-business-convergence-design.md</td></tr><tr><td class="mono">2026-04-08T04:41:26</td><td><span class="badge-xs st-default">EXECUTE</span></td><td>Edit</td><td class="fp">C:\Users\nitin\plugin-development\devlead\docs\superpowers\specs\2026-04-07-business-convergence-design.md</td></tr><tr><td class="mono">2026-04-08T04:41:49</td><td><span class="badge-xs st-default">EXECUTE</span></td><td>Edit</td><td class="fp">C:\Users\nitin\plugin-development\devlead\docs\superpowers\specs\2026-04-07-business-convergence-design.md</td></tr><tr><td class="mono">2026-04-08T04:41:56</td><td><span class="badge-xs st-default">EXECUTE</span></td><td>Edit</td><td class="fp">C:\Users\nitin\plugin-development\devlead\docs\superpowers\specs\2026-04-07-business-convergence-design.md</td></tr><tr><td class="mono">2026-04-08T04:42:05</td><td><span class="badge-xs st-default">EXECUTE</span></td><td>Edit</td><td class="fp">C:\Users\nitin\plugin-development\devlead\docs\superpowers\specs\2026-04-07-business-convergence-design.md</td></tr><tr class="warn"><td class="mono">2026-04-08T04:53:18</td><td><span class="badge-xs st-default">EXECUTE</span></td><td>Write</td><td class="fp">C:\Users\nitin\.claude\plans\harmonic-sauteeing-treehouse.md <span class="badge-xs warn-bg">CROSS</span></td></tr><tr><td class="mono">2026-04-08T04:54:55</td><td><span class="badge-xs st-default">EXECUTE</span></td><td>Write</td><td class="fp">C:\Users\nitin\plugin-development\devlead\.claude\settings.json <span class="badge-xs blue-bg">general-purpose</span></td></tr><tr><td class="mono">2026-04-08T04:55:29</td><td><span class="badge-xs st-default">EXECUTE</span></td><td>Write</td><td class="fp">C:\Users\nitin\plugin-development\devlead\src\devlead\scaffold\hooks_settings.json <span class="badge-xs blue-bg">general-purpose</span></td></tr><tr><td class="mono">2026-04-08T04:55:30</td><td><span class="badge-xs st-default">EXECUTE</span></td><td>Edit</td><td class="fp">C:\Users\nitin\plugin-development\devlead\devlead.toml <span class="badge-xs blue-bg">general-purpose</span></td></tr><tr><td class="mono">2026-04-08T04:55:30</td><td><span class="badge-xs st-default">EXECUTE</span></td><td>Edit</td><td class="fp">C:\Users\nitin\plugin-development\devlead\src\devlead\scaffold\devlead_toml_template.toml <span class="badge-xs blue-bg">general-purpose</span></td></tr><tr><td class="mono">2026-04-08T05:03:35</td><td><span class="badge-xs st-default">UPDATE</span></td><td>Edit</td><td class="fp">C:\Users\nitin\plugin-development\devlead\devlead_docs\_project_tasks.md</td></tr><tr><td class="mono">2026-04-08T05:05:16</td><td><span class="badge-xs st-default">EXECUTE</span></td><td>Write</td><td class="fp">C:\Users\nitin\plugin-development\devlead\docs\superpowers\plans\2026-04-08-convergence-engine.md</td></tr><tr><td class="mono">2026-04-08T05:17:52</td><td><span class="badge-xs st-default">EXECUTE</span></td><td>Write</td><td class="fp">C:\Users\nitin\plugin-development\devlead\src\devlead\scaffold\_living_vision.md <span class="badge-xs blue-bg">general-purpose</span></td></tr><tr><td class="mono">2026-04-08T05:17:58</td><td><span class="badge-xs st-default">EXECUTE</span></td><td>Write</td><td class="fp">C:\Users\nitin\plugin-development\devlead\src\devlead\scaffold\_living_business_objectives.md <span class="badge-xs blue-bg">general-purpose</span></td></tr><tr><td class="mono">2026-04-08T05:18:12</td><td><span class="badge-xs st-default">EXECUTE</span></td><td>Edit</td><td class="fp">C:\Users\nitin\plugin-development\devlead\src\devlead\scaffold\_living_standing_instructions.md <span class="badge-xs blue-bg">general-purpose</span></td></tr><tr><td class="mono">2026-04-08T05:23:55</td><td><span class="badge-xs st-default">UPDATE</span></td><td>Edit</td><td class="fp">C:\Users\nitin\plugin-development\devlead\devlead_docs\_project_status.md</td></tr><tr><td class="mono">2026-04-08T05:24:19</td><td><span class="badge-xs st-default">UPDATE</span></td><td>Edit</td><td class="fp">C:\Users\nitin\plugin-development\devlead\devlead_docs\_project_status.md</td></tr><tr><td class="mono">2026-04-08T05:24:24</td><td><span class="badge-xs st-default">UPDATE</span></td><td>Edit</td><td class="fp">C:\Users\nitin\plugin-development\devlead\devlead_docs\_project_tasks.md</td></tr><tr><td class="mono">2026-04-08T05:24:31</td><td><span class="badge-xs st-default">UPDATE</span></td><td>Edit</td><td class="fp">C:\Users\nitin\plugin-development\devlead\devlead_docs\_project_tasks.md</td></tr><tr class="warn"><td class="mono">2026-04-08T05:24:44</td><td><span class="badge-xs st-default">UPDATE</span></td><td>Write</td><td class="fp">C:\Users\nitin\.claude\projects\C--Users-nitin-plugin-development-devlead\memory\project_convergence_engine.md <span class="badge-xs warn-bg">CROSS</span></td></tr><tr class="warn"><td class="mono">2026-04-08T05:24:50</td><td><span class="badge-xs st-default">UPDATE</span></td><td>Write</td><td class="fp">C:\Users\nitin\.claude\projects\C--Users-nitin-plugin-development-devlead\memory\feedback_subagent_mode.md <span class="badge-xs warn-bg">CROSS</span></td></tr><tr class="warn"><td class="mono">2026-04-08T05:24:59</td><td><span class="badge-xs st-default">UPDATE</span></td><td>Write</td><td class="fp">C:\Users\nitin\.claude\projects\C--Users-nitin-plugin-development-devlead\memory\feedback_devlead_governance.md <span class="badge-xs warn-bg">CROSS</span></td></tr><tr class="warn"><td class="mono">2026-04-08T05:25:10</td><td><span class="badge-xs st-default">UPDATE</span></td><td>Write</td><td class="fp">C:\Users\nitin\.claude\projects\C--Users-nitin-plugin-development-devlead\memory\MEMORY.md <span class="badge-xs warn-bg">CROSS</span></td></tr></tbody></table>
+    </div>
+    </div>
+<div class="tab-panel" id="panel-distribution"><div class="section">
+        <div class="section">
+            <h2>Distribution Channels</h2>
+            <table class="data-table"><thead><tr><th>Milestone</th><th>Status</th><th>Depends On</th><th>Notes</th></tr></thead><tbody><tr><td>LICENSE file (MIT)</td><td>DONE</td><td>--</td><td>MIT license added</td></tr><tr><td>README.md with install + usage</td><td>DONE</td><td>--</td><td>Install and usage docs complete</td></tr><tr><td>pyproject.toml metadata complete</td><td>DONE</td><td>--</td><td>Classifiers, URLs, description filled in</td></tr><tr><td>MANIFEST.in for sdist</td><td>DONE</td><td>--</td><td>Using package_data in pyproject.toml instead</td></tr></tbody></table>
+        </div>
+        <div class="section"><h2>Funnel</h2><div class="status-prose"><p>```</p><p>Discovery (GitHub, PyPI, Anthropic recommendation)</p><p>â†’ Install (pip install devlead) -- FREE</p><p>â†’ Single project governance -- FREE</p><p>â†’ Hit 1-project limit</p><p>â†’ Pro ($29/yr, 5 projects)</p><p>â†’ Hit 5-project limit</p><p>â†’ Unlimited ($49/yr)</p><p>```</p></div></div></div></div>
+</div>
+    </div>
+    
+<div class="footer">Generated by DevLead &mdash; Lead your development. Don't let AI wander.</div>
+</body>
+</html>

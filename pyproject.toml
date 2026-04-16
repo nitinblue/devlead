@@ -8,12 +8,45 @@ version = "0.1.0"
 description = "Lead your development. Don't let AI wander."
 requires-python = ">=3.11"
 license = "MIT"
+readme = "README.md"
+authors = [
+    { name = "Nitin Jain" },
+]
+keywords = [
+    "ai",
+    "governance",
+    "cli",
+    "development",
+    "state-machine",
+    "claude",
+    "hooks",
+    "project-management",
+]
+classifiers = [
+    "Development Status :: 3 - Alpha",
+    "Intended Audience :: Developers",
+    "Operating System :: OS Independent",
+    "Programming Language :: Python :: 3",
+    "Programming Language :: Python :: 3.11",
+    "Programming Language :: Python :: 3.12",
+    "Programming Language :: Python :: 3.13",
+    "Topic :: Software Development :: Quality Assurance",
+    "Typing :: Typed",
+]
+
+[project.urls]
+Homepage = "https://github.com/nitinjain/devlead"
+Repository = "https://github.com/nitinjain/devlead"
+Issues = "https://github.com/nitinjain/devlead/issues"
 
 [project.scripts]
 devlead = "devlead.cli:main"
 
 [tool.setuptools.packages.find]
 where = ["src"]
+
+[tool.setuptools.package-data]
+"devlead.scaffold" = ["*.md", "*.toml", "*.json"]
 
 [tool.pytest.ini_options]
 testpaths = ["tests"]

@@ -1,0 +1,41 @@
+{
+  "hooks": {
+    "SessionStart": [
+      {
+        "hooks": [
+          {
+            "type": "command",
+            "command": "devlead start",
+            "timeout": 15,
+            "statusMessage": "Initializing DevLead session..."
+          }
+        ]
+      }
+    ],
+    "PreToolUse": [
+      {
+        "matcher": "Edit|Write",
+        "hooks": [
+          {
+            "type": "command",
+            "command": "devlead gate EXECUTE",
+            "timeout": 5,
+            "statusMessage": "Checking state gate..."
+          }
+        ]
+      }
+    ],
+    "Stop": [
+      {
+        "hooks": [
+          {
+            "type": "command",
+            "command": "devlead report",
+            "timeout": 15,
+            "statusMessage": "DevLead: generating session report..."
+          }
+        ]
+      }
+    ]
+  }
+}

@@ -1,110 +1,70 @@
-# src/devlead/audit.py
-"""Audit layer — log every file write with session context.
+"""DevLead audit log writer. Implements FEATURES-0010.
 
-Parses Claude Code hook stdin JSON, extracts file_path + metadata,
-appends to _audit_log.jsonl in claude_docs/.
+Append-only JSONL log at `devlead_docs/_audit_log.jsonl`. Every command writes
+one event. Schema per HTML section 8.1 of
+docs/memory_and_enforcement_design_2026-04-14.html:
+
+    {ts, event, tool?, cwi?, intake_id?, source?, origin?, result?,
+     message?, file?, rule?}
+
+`ts` and `event` are added automatically; the caller passes the rest as kwargs.
+
+Audit MUST NOT break the caller. All write failures are logged to stderr and
+swallowed. If the parent directory is missing the file is simply not written.
+
+ASCII only. Stdlib only.
 """
 
+from __future__ import annotations
+
 import json
-from dataclasses import dataclass, field
+import sys
 from datetime import datetime, timezone
 from pathlib import Path
 
-
-@dataclass
-class AuditEntry:
-    """A single audit log entry."""
-
-    session_id: str = ""
-    cwd: str = ""
-    tool_name: str = ""
-    file_path: str | None = None
-    state: str = ""
-    agent_id: str | None = None
-    agent_type: str | None = None
-    token_count: int = 0
-    model_name: str = ""
+_LOG_NAME = "_audit_log.jsonl"
 
 
-def parse_hook_stdin(stdin_text: str) -> AuditEntry | None:
-    """Parse Claude Code hook stdin JSON into an AuditEntry.
+def _utc_now() -> str:
+    return datetime.now(timezone.utc).strftime("%Y-%m-%dT%H:%M:%SZ")
 
-    Returns None if JSON is malformed.
-    """
+
+def append_event(docs_dir: Path, event: str, **fields) -> None:
+    """Append one JSON line to `<docs_dir>/_audit_log.jsonl`. Never raises."""
     try:
-        data = json.loads(stdin_text)
-    except (json.JSONDecodeError, TypeError):
-        return None
-
-    tool_input = data.get("tool_input", {})
-    file_path = tool_input.get("file_path")
-
-    # Extract token count: check "token_count" directly, or nested "usage"
-    token_count = data.get("token_count", 0)
-    if not token_count:
-        usage = data.get("usage", {})
-        if isinstance(usage, dict):
-            token_count = usage.get("total_tokens", 0) or (
-                usage.get("input_tokens", 0) + usage.get("output_tokens", 0)
-            )
-    token_count = int(token_count) if token_count else 0
-
-    model_name = data.get("model_name", "") or data.get("model", "")
-
-    return AuditEntry(
-        session_id=data.get("session_id", ""),
-        cwd=data.get("cwd", ""),
-        tool_name=data.get("tool_name", ""),
-        file_path=file_path,
-        agent_id=data.get("agent_id"),
-        agent_type=data.get("agent_type"),
-        token_count=token_count,
-        model_name=model_name,
-    )
+        docs_dir = Path(docs_dir)
+        if not docs_dir.exists():
+            return
+        record: dict = {"ts": _utc_now(), "event": event}
+        for k, v in fields.items():
+            if v is None:
+                continue
+            record[k] = v
+        line = json.dumps(record, ensure_ascii=True, sort_keys=False)
+        log_path = docs_dir / _LOG_NAME
+        with log_path.open("a", encoding="utf-8") as fh:
+            fh.write(line + "\n")
+    except Exception as e:  # noqa: BLE001 - audit must never break the caller
+        print(f"devlead: audit write failed: {e}", file=sys.stderr)
 
 
-def log_write(entry: AuditEntry, log_file: Path) -> None:
-    """Append an audit entry to the JSONL log file.
-
-    Adds timestamp and cross_project flag automatically.
-    """
-    now = datetime.now(timezone.utc).isoformat()
-
-    # Detect cross-project write
-    cross_project = False
-    if entry.file_path and entry.cwd:
-        try:
-            file_resolved = str(Path(entry.file_path).resolve())
-            cwd_resolved = str(Path(entry.cwd).resolve())
-            cross_project = not file_resolved.startswith(cwd_resolved)
-        except (ValueError, OSError):
-            cross_project = False
-
-    record = {
-        "timestamp": now,
-        "session_id": entry.session_id,
-        "cwd": entry.cwd,
-        "tool_name": entry.tool_name,
-        "file_path": entry.file_path,
-        "state": entry.state,
-        "agent_id": entry.agent_id,
-        "agent_type": entry.agent_type,
-        "cross_project": cross_project,
-        "token_count": entry.token_count,
-        "model_name": entry.model_name,
-    }
-
-    log_file.parent.mkdir(parents=True, exist_ok=True)
-    with open(log_file, "a") as f:
-        f.write(json.dumps(record) + "\n")
-
-
-def read_audit_log(log_file: Path) -> list[dict]:
-    """Read all entries from the audit log."""
-    if not log_file.exists():
+def tail(docs_dir: Path, n: int = 20) -> list[dict]:
+    """Return the last `n` audit events as dicts (oldest first). Never raises."""
+    try:
+        log_path = Path(docs_dir) / _LOG_NAME
+        if not log_path.exists():
+            return []
+        lines = log_path.read_text(encoding="utf-8").splitlines()
+        out: list[dict] = []
+        for line in lines[-n:]:
+            line = line.strip()
+            if not line:
+                continue
+            try:
+                out.append(json.loads(line))
+            except json.JSONDecodeError:
+                continue
+        return out
+    except Exception as e:  # noqa: BLE001
+        print(f"devlead: audit tail failed: {e}", file=sys.stderr)
         return []
-    entries = []
-    for line in log_file.read_text().strip().splitlines():
-        if line.strip():
-            entries.append(json.loads(line))
-    return entries

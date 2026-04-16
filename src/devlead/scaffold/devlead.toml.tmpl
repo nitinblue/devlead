@@ -1,0 +1,30 @@
+# devlead.toml - DevLead v2 project configuration.
+#
+# This file is OPTIONAL. Defaults live in src/devlead/config.py.
+# Uncomment any line below to override the default. Loaded by stdlib tomllib
+# at every devlead invocation - no daemon, no reload step.
+#
+# NOTE: This template is shipped under src/devlead/scaffold/ but is NOT
+# auto-installed by `devlead init`. Adding it to install.SCAFFOLD_FILES is a
+# follow-up decision (see scratchpad / FEATURES-0009 trail).
+
+# [memory]
+# resume_bloat_cap_lines = 50
+# scratchpad_archive_after_sprints = 1
+
+# [enforcement]
+# mode = "warning"                 # warning | soft | hard
+# exempt_paths = [
+#   "devlead_docs/**",
+#   "docs/**",
+#   "*.md",
+#   "commands/**",
+#   "tests/**",
+# ]
+
+# [audit]
+# log_file = "devlead_docs/_audit_log.jsonl"
+# retention_days = 365
+
+# [intake]
+# actionable_items_min = 1

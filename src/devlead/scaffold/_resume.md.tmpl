@@ -1,0 +1,48 @@
+# _resume.md
+
+<!-- devlead:sot
+  purpose: "Session bootstrap cursor: focus pointer, read order, next action, blockers"
+  owner: "claude+user"
+  canonical_for: ["session_bootstrap"]
+  lineage:
+    receives_from: ["_scratchpad.md (via triage)"]
+    migrates_to: []
+  lifetime: "permanent"
+  bloat_cap_lines: 50
+  last_audit: "2026-04-15"
+-->
+
+
+Session bootstrap cursor for `<project>`. Target ~30-50 lines maximum. This
+file is NOT history, NOT a decisions archive, NOT an open-threads log.
+
+> **Contrast with other files.**
+> - Locked decisions live in `_living_decisions.md`
+> - Design intent lives in `_living_design.md`
+> - Raw untriaged capture lives in `_scratchpad.md`
+> - Current code state lives in `_aware_*.md` (its own evolving category)
+> - Current focus is any intake entry with `status: in_progress`
+>
+> This file only holds the session-start cursor: what to read first, what
+> to do next, what (if anything) is blocking.
+
+## Currently focused on
+
+**Focus:** (none - set via `/devlead focus <intake-id>`, which flips the entry's `status` to `in_progress`)
+**Last touched:** (set on first session)
+
+## Read at session start
+
+1. `devlead_docs/_intake_*.md` - scan for `status: in_progress` to find current focus
+2. `devlead_docs/_aware_features.md` - current feature inventory (auto-derived)
+3. `devlead_docs/_aware_design.md` - current module inventory (auto-derived)
+4. `devlead_docs/_scratchpad.md` - untriaged raw capture
+5. `devlead_docs/_living_decisions.md` - locked decisions archive
+
+## Next action
+
+(Filled at the end of every session. One paragraph plus one concrete next step.)
+
+## Open blockers
+
+- (none)

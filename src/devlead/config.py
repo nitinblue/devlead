@@ -1,119 +1,130 @@
-"""Configuration management for DevLead.
+"""DevLead config loader. Implements FEATURES-0009.
 
-Reads devlead.toml (Python 3.11+ tomllib), merges with defaults.
+Reads `devlead.toml` from the repo root via stdlib `tomllib` (Python 3.11+).
+Defaults live in code; the TOML file overrides any subset of them. Zero deps.
+
+Layout mirrors HTML section 7 of docs/memory_and_enforcement_design_2026-04-14.html:
+
+    [memory]
+    resume_bloat_cap_lines = 50
+    scratchpad_archive_after_sprints = 1
+
+    [enforcement]
+    mode = "warning"                 # warning | soft | hard
+    exempt_paths = ["devlead_docs/**", "docs/**", "*.md",
+                    "commands/**", "tests/**"]
+
+    [audit]
+    log_file = "devlead_docs/_audit_log.jsonl"
+    retention_days = 365
+
+    [intake]
+    actionable_items_min = 1
+
+ASCII only. Stdlib only. On a missing or malformed file the loader falls back
+to defaults and prints a one-line warning to stderr; it never raises.
 """
 
+from __future__ import annotations
+
+import sys
 import tomllib
+from dataclasses import dataclass, field
 from pathlib import Path
 
 
-DEFAULT_CONFIG: dict = {
-    "project": {
-        "name": "",
-        "docs_dir": "claude_docs",
+DEFAULTS: dict = {
+    "memory": {
+        "resume_bloat_cap_lines": 50,
+        "scratchpad_archive_after_sprints": 1,
     },
-    "kpis": {
-        "circles_warning": 50,
-        "ftr_minimum": 60,
-        "convergence_target": 80,
-    },
-    "rollover": {
-        "trigger": "date",
-        "day_of_month": 1,
-        "max_lines": 500,
-        "retain_months": 12,
-        "files": [
-            "_project_tasks.md",
-            "_intake_issues.md",
-            "_intake_features.md",
+    "enforcement": {
+        "mode": "warning",
+        "exempt_paths": [
+            "devlead_docs/**",
+            "docs/**",
+            "*.md",
+            "commands/**",
+            "tests/**",
         ],
     },
-    "scope": {
-        "enforcement": "log",  # "log", "warn", "block"
-        "auto_clear": True,
-    },
-    "paths": {
-        "memory_policy": "warn",   # "log", "warn", "block" — memory writes outside UPDATE
-        "docs_policy": "warn",     # "log", "warn", "block" — claude_docs writes outside UPDATE
-    },
-    "governance": {
-        "task_required": "block",      # "log", "warn", "block" — Edit/Write needs IN_PROGRESS task
-        "memory_from_docs": "block",   # "log", "warn", "block" — memory writes only in UPDATE
-        "intake_required": "warn",     # "log", "warn", "block" — intake files must exist
-    },
     "audit": {
-        "enabled": True,
-        "cross_project_policy": "log",  # "log", "warn", "block"
+        "log_file": "devlead_docs/_audit_log.jsonl",
+        "retention_days": 365,
     },
-    "hooks": {
-        "session_start": True,
-        "gate_edits": True,
-        "gate_plan_mode": True,
-        "gate_session_end": True,
+    "intake": {
+        "actionable_items_min": 1,
     },
 }
 
 
+@dataclass
+class Config:
+    repo_root: Path
+    data: dict = field(default_factory=dict)
+
+    def section(self, name: str) -> dict:
+        return dict(self.data.get(name, {}))
+
+    def get(self, dotted: str, default=None):
+        cur = self.data
+        for part in dotted.split("."):
+            if not isinstance(cur, dict) or part not in cur:
+                return default
+            cur = cur[part]
+        return cur
+
+    # Typed accessors -------------------------------------------------
+    @property
+    def resume_bloat_cap_lines(self) -> int:
+        return int(self.get("memory.resume_bloat_cap_lines", 50))
+
+    @property
+    def scratchpad_archive_after_sprints(self) -> int:
+        return int(self.get("memory.scratchpad_archive_after_sprints", 1))
+
+    @property
+    def enforcement_mode(self) -> str:
+        return str(self.get("enforcement.mode", "warning"))
+
+    @property
+    def exempt_paths(self) -> list[str]:
+        v = self.get("enforcement.exempt_paths", DEFAULTS["enforcement"]["exempt_paths"])
+        return list(v) if isinstance(v, (list, tuple)) else []
+
+    @property
+    def audit_log_file(self) -> str:
+        return str(self.get("audit.log_file", "devlead_docs/_audit_log.jsonl"))
+
+    @property
+    def audit_retention_days(self) -> int:
+        return int(self.get("audit.retention_days", 365))
+
+    @property
+    def intake_actionable_items_min(self) -> int:
+        return int(self.get("intake.actionable_items_min", 1))
+
+
 def _deep_merge(base: dict, override: dict) -> dict:
-    """Merge override into base, recursively for nested dicts.
-
-    Lists and scalars in override replace base entirely.
-    """
-    result = dict(base)
-    for key, value in override.items():
-        if key in result and isinstance(result[key], dict) and isinstance(value, dict):
-            result[key] = _deep_merge(result[key], value)
+    out = {k: (dict(v) if isinstance(v, dict) else v) for k, v in base.items()}
+    for k, v in override.items():
+        if isinstance(v, dict) and isinstance(out.get(k), dict):
+            out[k] = _deep_merge(out[k], v)
         else:
-            result[key] = value
-    return result
+            out[k] = v
+    return out
 
 
-def load_config(
-    project_dir: Path, config_name: str = "devlead.toml"
-) -> dict:
-    """Load config from project_dir/devlead.toml, merged with defaults.
-
-    Returns DEFAULT_CONFIG if no toml file exists.
-    """
-    toml_path = project_dir / config_name
-    if not toml_path.exists():
-        return dict(DEFAULT_CONFIG)
-
-    with open(toml_path, "rb") as f:
-        user_config = tomllib.load(f)
-
-    return _deep_merge(DEFAULT_CONFIG, user_config)
-
-
-def get_docs_dir(config: dict, project_dir: Path) -> Path:
-    """Resolve the docs directory path."""
-    return project_dir / config["project"]["docs_dir"]
-
-
-def get_state_file(config: dict, project_dir: Path) -> Path:
-    """Resolve the session state file path."""
-    return get_docs_dir(config, project_dir) / "session_state.json"
-
-
-def get_kpi_thresholds(config: dict) -> dict:
-    """Extract KPI threshold values."""
-    return {
-        k: v
-        for k, v in config["kpis"].items()
-        if k != "custom" and k != "plugin"
-    }
-
-
-def get_custom_kpis(config: dict) -> list[dict]:
-    """Extract custom KPI definitions from config."""
-    return config.get("kpis", {}).get("custom", [])
-
-
-def get_rollover_config(config: dict) -> dict:
-    """Extract rollover configuration."""
-    return config["rollover"]
-
-
-def get_hook_config(config: dict) -> dict:
-    """Extract hook configuration."""
-    return config["hooks"]
+def load(repo_root: Path) -> Config:
+    """Load `devlead.toml` from `repo_root`. Falls back to defaults if absent."""
+    repo_root = Path(repo_root)
+    cfg_path = repo_root / "devlead.toml"
+    merged = _deep_merge(DEFAULTS, {})
+    if cfg_path.exists():
+        try:
+            with cfg_path.open("rb") as fh:
+                user = tomllib.load(fh)
+            merged = _deep_merge(merged, user)
+        except (tomllib.TOMLDecodeError, OSError) as e:
+            print(f"devlead: warning: failed to parse {cfg_path}: {e}", file=sys.stderr)
+    return Config(repo_root=repo_root, data=merged)

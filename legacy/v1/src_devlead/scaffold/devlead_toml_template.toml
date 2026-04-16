@@ -1,0 +1,46 @@
+[project]
+name = "{project_name}"
+docs_dir = "devlead_docs"
+
+[kpis]
+circles_warning = 50
+ftr_minimum = 60
+convergence_target = 80
+
+[rollover]
+trigger = "date"
+day_of_month = 1
+retain_months = 12
+files = [
+    "_project_tasks.md",
+    "_intake_issues.md",
+    "_intake_features.md",
+]
+
+[paths]
+memory_policy = "warn"      # "log" = silent, "warn" = allow + warn, "block" = deny memory writes outside UPDATE
+docs_policy = "warn"        # "log" = silent, "warn" = allow + warn, "block" = deny devlead_docs writes outside UPDATE
+
+[scope]
+enforcement = "log"         # "log" = silent, "warn" = allow + warn, "block" = deny
+auto_clear = true           # clear scope when leaving EXECUTE
+
+[audit]
+enabled = true
+cross_project_policy = "log"    # "log" = silent, "warn" = allow + warn, "block" = deny
+
+[[gates]]
+name = "memory-from-docs"
+trigger = "Edit|Write"
+path = "**/.claude/*/memory/**"
+condition = "state_not_in(UPDATE, SESSION_END)"
+action = "warn"
+message = "Memory must derive from devlead_docs. Transition to UPDATE first."
+
+[[gates]]
+name = "protect-docs"
+trigger = "Edit|Write"
+path = "**/devlead_docs/**"
+condition = "state_not_in(UPDATE, SESSION_END)"
+action = "warn"
+message = "Editing devlead_docs outside UPDATE state."

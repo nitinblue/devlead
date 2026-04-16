@@ -1,0 +1,605 @@
+"""DevLead CLI entry point."""
+
+import sys
+from pathlib import Path
+
+from devlead import __version__
+from devlead import ui
+
+COMMANDS = [
+    "init",
+    "migrate",
+    "start",
+    "status",
+    "gate",
+    "transition",
+    "checklist",
+    "kpis",
+    "rollover",
+    "healthcheck",
+    "portfolio",
+    "collab",
+    "audit",
+    "scope",
+    "dashboard",
+    "report",
+    "scratch",
+    "gap",
+    "view",
+    "analyze",
+    "triage",
+    "effort",
+    "doctor",
+]
+
+USAGE = f"""\
+{ui.banner()}
+
+Usage: devlead <command> [options]
+
+Commands:
+  init          Initialize a new project
+  migrate       Bootstrap DevLead on existing project
+  start         Start a session
+  status        Show project status
+  gate          Run a phase gate check
+  transition    Transition to next phase
+  checklist     Show/verify phase checklist
+  kpis          Show project KPIs
+  rollover      Roll incomplete work forward
+  healthcheck   Diagnose project health
+  portfolio     Manage multi-project portfolio
+  collab        Cross-repo collaboration
+  audit         Show file write audit log
+  scope         Set/show/clear file scope lock
+  dashboard     Generate HTML session report
+  report        Show session report from md files
+  scratch       Add/list/clear scratchpad items
+  gap           Detect governance gaps
+  view          Show TBO->Story->Task hierarchy
+  analyze       Smart project analysis by TBO
+  triage        Triage scratchpad items into intake
+  effort        Show effort per task/story
+  doctor        Diagnose project health
+
+Options:
+  --help        Show this help message
+  --version     Show version
+"""
+
+
+def main() -> None:
+    args = sys.argv[1:]
+
+    if not args or "--help" in args or "-h" in args:
+        print(USAGE)
+        return
+
+    if "--version" in args:
+        print(f"devlead {__version__}")
+        return
+
+    command = args[0]
+    if command not in COMMANDS:
+        print(ui.fail(f"Unknown command '{command}'"), file=sys.stderr)
+        print("Run 'devlead --help' for usage.", file=sys.stderr)
+        sys.exit(1)
+
+    # Resolve project paths
+    docs_dir = Path.cwd() / "devlead_docs"
+    state_file = docs_dir / "session_state.json"
+
+    if command == "init":
+        from devlead.init import do_init
+        do_init(Path.cwd())
+        return
+    elif command == "migrate":
+        _cmd_migrate(args[1:])
+        return
+    elif command == "start":
+        from devlead.state_machine import do_start
+        do_start(state_file, docs_dir)
+    elif command == "gate":
+        if len(args) < 2:
+            print("Usage: devlead gate <EXECUTE|PLAN|SESSION_END>", file=sys.stderr)
+            sys.exit(1)
+        # Read hook stdin for audit context
+        stdin_text = ""
+        if not sys.stdin.isatty():
+            stdin_text = sys.stdin.read()
+        audit_log = docs_dir / "_audit_log.jsonl"
+        from devlead.state_machine import check_gate_with_audit
+        check_gate_with_audit(state_file, args[1], stdin_text, audit_log)
+    elif command == "transition":
+        if len(args) < 2:
+            print("Usage: devlead transition <STATE>", file=sys.stderr)
+            sys.exit(1)
+        from devlead.state_machine import do_transition
+        do_transition(state_file, args[1])
+    elif command == "checklist":
+        if len(args) < 3:
+            print("Usage: devlead checklist <STATE> <KEY>", file=sys.stderr)
+            sys.exit(1)
+        from devlead.state_machine import do_checklist
+        do_checklist(state_file, args[1], args[2])
+    elif command == "status":
+        _cmd_status(state_file, docs_dir)
+    elif command == "kpis":
+        _cmd_kpis(docs_dir)
+    elif command == "rollover":
+        _cmd_rollover(docs_dir)
+    elif command == "healthcheck":
+        _cmd_healthcheck()
+    elif command == "portfolio":
+        _cmd_portfolio(args[1:])
+    elif command == "collab":
+        _cmd_collab(args[1:])
+    elif command == "audit":
+        _cmd_audit(docs_dir)
+    elif command == "scope":
+        _cmd_scope(args[1:], state_file)
+    elif command == "dashboard":
+        _cmd_dashboard()
+    elif command == "report":
+        _cmd_report(docs_dir)
+    elif command == "scratch":
+        _cmd_scratch(args[1:], docs_dir)
+    elif command == "gap":
+        _cmd_gap(Path.cwd())
+    elif command == "view":
+        _cmd_view(docs_dir)
+    elif command == "analyze":
+        _cmd_analyze(docs_dir)
+    elif command == "triage":
+        _cmd_triage(args[1:], docs_dir)
+    elif command == "effort":
+        _cmd_effort(args[1:], docs_dir)
+    elif command == "doctor":
+        _cmd_healthcheck()
+    else:
+        print(f"devlead: '{command}' not yet implemented.")
+
+
+def _cmd_status(state_file: Path, docs_dir: Path) -> None:
+    """Show current state + summary KPIs."""
+    from devlead.state_machine import load_state, VALID_TRANSITIONS
+    from devlead.doc_parser import get_builtin_vars
+    from devlead.kpi_engine import compute_builtin_kpis
+
+    if not state_file.exists():
+        print(ui.fail("No active session. Run 'devlead start' first."), file=sys.stderr)
+        sys.exit(1)
+
+    state = load_state(state_file)
+    current = state["state"]
+    next_states = VALID_TRANSITIONS.get(current, [])
+
+    vars = get_builtin_vars(docs_dir)
+    results = compute_builtin_kpis(vars, docs_dir=docs_dir)
+
+    convergence = next((r for r in results if r.name == "Code-Domain Convergence"), None)
+    throughput = next((r for r in results if r.name == "Intake Throughput"), None)
+    nba = next((r for r in results if r.name == "Next Best Action"), None)
+
+    print(ui.section("Status"))
+    print(ui.kv("State", f"{ui.BOLD}{ui.WHITE}{current}{ui.RESET}"))
+    print(ui.kv("Next", ", ".join(next_states)))
+    print(ui.section("Pipeline"))
+    print(ui.kv("Open", str(vars.get("tasks_open", 0))))
+    print(ui.kv("In Progress", str(vars.get("tasks_in_progress", 0))))
+    print(ui.kv("Done", str(vars.get("tasks_done", 0))))
+    if convergence:
+        print(ui.kv("Convergence", f"{convergence.value:.0f}/100"))
+    if throughput:
+        print(ui.kv("Intake", f"{throughput.value:.0f}% closed"))
+    if nba and nba.detail:
+        print(f"\n{ui.info(nba.detail)}")
+
+    # --- Business Convergence (weighted) ---
+    try:
+        from devlead.workbook import load_workbook
+        from devlead.convergence import phase_convergence, bo_convergence
+
+        wb = load_workbook(docs_dir)
+        if wb.bos:
+            phase = wb.bos[0].phase or "Phase 1"
+            phase_pct = phase_convergence(wb.bos)
+            print(ui.section("Business Convergence"))
+            print(ui.kv("Phase", phase))
+            print(ui.kv("Convergence", f"{phase_pct:.0f}/100"))
+            for bo in wb.bos:
+                bo_pct = bo_convergence(bo)
+                print(ui.kv(
+                    f"  {bo.id}: {bo.objective[:40]}",
+                    f"(wt:{bo.weight}) {ui.GRAY}{ui.LINE_H}{ui.RESET} {bo_pct:.0f}%",
+                ))
+    except Exception:
+        pass  # graceful degradation if no BOs defined
+
+
+def _cmd_kpis(docs_dir: Path) -> None:
+    """Show full KPI dashboard."""
+    from datetime import date
+    from devlead.config import load_config, get_custom_kpis
+    from devlead.doc_parser import get_builtin_vars
+    from devlead.kpi_engine import compute_all_kpis, format_dashboard
+
+    project_dir = docs_dir.parent
+    config = load_config(project_dir)
+    custom_defs = get_custom_kpis(config)
+
+    vars = get_builtin_vars(docs_dir)
+    results = compute_all_kpis(vars, docs_dir=docs_dir, custom_defs=custom_defs or None)
+    print(format_dashboard(results, project_date=str(date.today())))
+
+
+def _cmd_rollover(docs_dir: Path) -> None:
+    """Run monthly rollover."""
+    from devlead.config import load_config, get_rollover_config
+    from devlead.rollover import do_rollover
+
+    project_dir = docs_dir.parent
+    config = load_config(project_dir)
+    rollover_config = get_rollover_config(config)
+    files = rollover_config.get("files", [])
+
+    do_rollover(docs_dir, files)
+    print(ui.ok(f"Rollover complete. {len(files)} files processed."))
+
+
+def _cmd_healthcheck() -> None:
+    """Run health check."""
+    from devlead.doctor import do_doctor, format_doctor
+
+    project_dir = Path.cwd()
+    results = do_doctor(project_dir)
+    print(ui.section("Healthcheck"))
+    print(format_doctor(results))
+
+
+def _cmd_portfolio(sub_args: list[str]) -> None:
+    """Manage multi-project portfolio."""
+    from devlead.portfolio import (
+        add_project, remove_project, list_projects,
+        compute_portfolio_kpis, format_portfolio_dashboard,
+    )
+
+    workspace = Path.home() / ".devlead"
+
+    if not sub_args:
+        # Show portfolio dashboard
+        projects = list_projects(workspace)
+        results = compute_portfolio_kpis(workspace)
+        print(format_portfolio_dashboard(projects, results))
+        return
+
+    subcmd = sub_args[0]
+
+    if subcmd == "add":
+        if len(sub_args) < 2:
+            print("Usage: devlead portfolio add <path> [--name <name>]", file=sys.stderr)
+            sys.exit(1)
+        path = sub_args[1]
+        name = sub_args[3] if len(sub_args) > 3 and sub_args[2] == "--name" else Path(path).name
+        add_project(workspace, path, name)
+        print(ui.ok(f"Added '{name}' to portfolio."))
+    elif subcmd == "remove":
+        if len(sub_args) < 2:
+            print("Usage: devlead portfolio remove <name>", file=sys.stderr)
+            sys.exit(1)
+        remove_project(workspace, sub_args[1])
+        print(ui.ok(f"Removed '{sub_args[1]}' from portfolio."))
+    elif subcmd == "list":
+        projects = list_projects(workspace)
+        if not projects:
+            print(ui.info("No projects registered. Use 'devlead portfolio add <path>'."))
+        else:
+            print(ui.section("Portfolio"))
+            for p in projects:
+                print(f"  {ui.GREEN}•{ui.RESET} {p['name']:<20} {p['path']}")
+    else:
+        print(f"Unknown portfolio subcommand: {subcmd}", file=sys.stderr)
+        sys.exit(1)
+
+
+def _cmd_collab(sub_args: list[str]) -> None:
+    """Cross-project collaboration."""
+    from devlead.collab import init_collab, scan_inbox, collab_status
+
+    project_dir = Path.cwd()
+
+    if not sub_args or sub_args[0] == "status":
+        status = collab_status(project_dir)
+        print(ui.section("Collab"))
+        print(ui.kv("Inbox", str(status["inbox_count"])))
+        print(ui.kv("Outbox", str(status["outbox_count"])))
+        print(ui.kv("Open requests", str(status["open_requests"])))
+    elif sub_args[0] == "init":
+        init_collab(project_dir)
+        print(ui.ok("Collab channel initialized (.collab/INBOX/ and .collab/OUTBOX/)."))
+    elif sub_args[0] == "inbox":
+        items = scan_inbox(project_dir)
+        if not items:
+            print(ui.info("Inbox is empty."))
+        else:
+            print(ui.section("Inbox"))
+            for item in items:
+                if item.get("status", "").upper() == "OPEN":
+                    mark = f"{ui.RED}!!{ui.RESET}"
+                else:
+                    mark = f"{ui.DIM}  {ui.RESET}"
+                print(f"  {mark} {item['filename']} {ui.GRAY}—{ui.RESET} {item.get('type', '?')}: {item.get('title', '?')} [{item.get('status', '?')}]")
+    elif sub_args[0] == "sync":
+        from devlead.collab import sync_outbox_to_inbox
+        from devlead.portfolio import list_projects
+        workspace = Path.home() / ".devlead"
+        projects = list_projects(workspace)
+        project_map = {p["name"]: Path(p["path"]) for p in projects}
+        synced = sync_outbox_to_inbox(project_dir, project_map)
+        print(ui.ok(f"Synced {synced} message(s) to target project inboxes."))
+    else:
+        print(f"Unknown collab subcommand: {sub_args[0]}", file=sys.stderr)
+        sys.exit(1)
+
+
+def _cmd_audit(docs_dir: Path) -> None:
+    """Show audit log."""
+    from devlead.audit import read_audit_log
+
+    log_file = docs_dir / "_audit_log.jsonl"
+    records = read_audit_log(log_file)
+
+    if not records:
+        print(ui.info("No audit entries."))
+        return
+
+    print(ui.section("Audit Log"))
+    for r in records:
+        ts = r.get("timestamp", "?")[:19]
+        tool = r.get("tool_name", "?")
+        fp = r.get("file_path", "?")
+        state = r.get("state", "?")
+        cross = f" {ui.RED}[CROSS-PROJECT]{ui.RESET}" if r.get("cross_project") else ""
+        agent = f" {ui.DIM}(agent: {r['agent_type']}){ui.RESET}" if r.get("agent_type") else ""
+        print(f"  {ui.GRAY}{ts}{ui.RESET} {ui.LINE_V} {ui.CYAN}{state:<10}{ui.RESET} {ui.LINE_V} {tool:<6} {ui.LINE_V} {fp}{cross}{agent}")
+
+
+def _cmd_scope(sub_args: list[str], state_file: Path) -> None:
+    """Manage scope lock."""
+    from devlead.scope import set_scope, get_scope, clear_scope
+
+    if not sub_args or sub_args[0] == "show":
+        scope = get_scope(state_file)
+        if not scope:
+            print(ui.scope_clear())
+        else:
+            print(ui.scope_active(scope))
+    elif sub_args[0] == "set":
+        if len(sub_args) < 2:
+            print("Usage: devlead scope set <path1> [path2] ...", file=sys.stderr)
+            sys.exit(1)
+        set_scope(state_file, sub_args[1:])
+        print(ui.ok(f"Scope set: {len(sub_args) - 1} path(s) allowed."))
+        print(ui.scope_active(sub_args[1:]))
+    elif sub_args[0] == "clear":
+        clear_scope(state_file)
+        print(ui.ok("Scope cleared. All files editable during EXECUTE."))
+    else:
+        print(f"Unknown scope subcommand: {sub_args[0]}", file=sys.stderr)
+        sys.exit(1)
+
+
+def _cmd_dashboard() -> None:
+    """Generate HTML session report."""
+    from devlead.dashboard import write_dashboard
+
+    project_dir = Path.cwd()
+    path = write_dashboard(project_dir)
+    print(ui.ok(f"Dashboard generated: {path}"))
+    print(ui.info(f"Open in browser: file:///{path.as_posix()}"))
+
+
+def _cmd_report(docs_dir: Path) -> None:
+    """Show session report derived from md files."""
+    from devlead.report import generate_report
+
+    if not docs_dir.exists():
+        print(ui.fail("No devlead_docs/ found. Run 'devlead init' first."), file=sys.stderr)
+        sys.exit(1)
+    report = generate_report(docs_dir)
+    sys.stdout.buffer.write(report.encode("utf-8", errors="replace"))
+    sys.stdout.buffer.write(b"\n")
+    try:
+        from devlead.dashboard import write_dashboard
+        write_dashboard(docs_dir.parent)
+    except Exception:
+        pass
+
+
+def _cmd_gap(project_dir: Path) -> None:
+    """Run governance gap analysis."""
+    from devlead.gap import run_gap_analysis, format_gaps
+
+    gaps = run_gap_analysis(project_dir)
+    print(format_gaps(gaps))
+
+
+def _cmd_view(docs_dir: Path) -> None:
+    """Show TBO -> Story -> Task hierarchy."""
+    from devlead.view import generate_project_view
+
+    if not docs_dir.exists():
+        print(ui.fail("No devlead_docs/ found. Run 'devlead init' first."), file=sys.stderr)
+        sys.exit(1)
+    output = generate_project_view(docs_dir)
+    sys.stdout.buffer.write(output.encode("utf-8", errors="replace"))
+    sys.stdout.buffer.write(b"\n")
+    try:
+        from devlead.dashboard import write_dashboard
+        write_dashboard(docs_dir.parent)
+    except Exception:
+        pass
+
+
+def _cmd_analyze(docs_dir: Path) -> None:
+    """Show smart TBO-driven project analysis."""
+    from devlead.analyze import generate_analysis
+
+    if not docs_dir.exists():
+        print(ui.fail("No devlead_docs/ found. Run 'devlead init' first."), file=sys.stderr)
+        sys.exit(1)
+    output = generate_analysis(docs_dir)
+    sys.stdout.buffer.write(output.encode("utf-8", errors="replace"))
+    sys.stdout.buffer.write(b"\n")
+
+
+def _cmd_triage(sub_args: list[str], docs_dir: Path) -> None:
+    """Triage scratchpad items into proper intake files."""
+    from devlead.triage import (
+        get_pending_items, triage_item, format_pending_list,
+        INTAKE_MAP, VALID_PRIORITIES,
+    )
+
+    if not sub_args:
+        # Show pending items
+        items = get_pending_items(docs_dir)
+        output = format_pending_list(items)
+        sys.stdout.buffer.write(output.encode("utf-8", errors="replace"))
+        sys.stdout.buffer.write(b"\n")
+        return
+
+    # Classify mode: devlead triage SCRATCH-XXX <feature|bug|gap|archive> [P1|P2|P3]
+    if len(sub_args) < 2:
+        print(
+            "Usage: devlead triage SCRATCH-XXX <feature|bug|gap|archive> [P1|P2|P3]",
+            file=sys.stderr,
+        )
+        sys.exit(1)
+
+    scratch_key = sub_args[0].upper()
+    intake_type = sub_args[1].lower()
+
+    if intake_type not in INTAKE_MAP:
+        print(
+            ui.fail(f"Invalid type '{intake_type}'. Use: feature, bug, gap, archive"),
+            file=sys.stderr,
+        )
+        sys.exit(1)
+
+    # Archive doesn't need priority
+    if intake_type == "archive":
+        priority = ""
+    elif len(sub_args) < 3:
+        print(
+            ui.fail("Priority required for feature/bug/gap. Use: P1, P2, P3"),
+            file=sys.stderr,
+        )
+        sys.exit(1)
+    else:
+        priority = sub_args[2].upper()
+        if priority not in VALID_PRIORITIES:
+            print(
+                ui.fail(f"Invalid priority '{priority}'. Use: P1, P2, P3"),
+                file=sys.stderr,
+            )
+            sys.exit(1)
+
+    # Find the item in scratchpad
+    items = get_pending_items(docs_dir)
+    match = None
+    for item in items:
+        if item.get("Key", "").strip().upper() == scratch_key:
+            match = item
+            break
+
+    if not match:
+        print(ui.fail(f"No pending item found with key '{scratch_key}'."), file=sys.stderr)
+        sys.exit(1)
+
+    item_text = match.get("Item", "").strip()
+    new_key = triage_item(docs_dir, scratch_key, intake_type, priority, item_text)
+    print(ui.ok(f"Triaged {scratch_key} -> {new_key} ({intake_type}, {priority})"))
+
+
+def _cmd_effort(sub_args: list[str], docs_dir: Path) -> None:
+    """Show effort per task or story."""
+    from devlead.effort import get_task_effort, _read_effort_log
+
+    entries = _read_effort_log(docs_dir)
+    if not entries:
+        print(ui.info("No effort entries recorded yet."))
+        return
+
+    # If a task ID is given, show that task
+    if sub_args:
+        tid = sub_args[0].upper()
+        result = get_task_effort(docs_dir, tid)
+        print(ui.section(f"Effort: {tid}"))
+        print(ui.kv("Tokens", str(result["total_tokens"])))
+        print(ui.kv("Sessions", str(result["session_count"])))
+        print(ui.kv("Duration", f"{result['duration_estimate']}s"))
+        return
+
+    # Otherwise show summary of all tasks with effort
+    task_ids = sorted({e.get("task_id", "") for e in entries if e.get("task_id")})
+    print(ui.section("Effort Summary"))
+    for tid in task_ids:
+        result = get_task_effort(docs_dir, tid)
+        tokens = result["total_tokens"]
+        sessions = result["session_count"]
+        print(f"  {ui.YELLOW}{tid:<12}{ui.RESET} {tokens:>8} tokens  {sessions:>3} sessions")
+
+
+def _cmd_migrate(sub_args: list[str]) -> None:
+    """Bootstrap DevLead on an existing project."""
+    from devlead.migrate import (
+        scan_existing, do_migrate, do_migrate_dry_run,
+        format_migration_report,
+    )
+
+    project_dir = Path.cwd()
+    dry_run = "--dry-run" in sub_args
+
+    # Always show scan results first
+    scan = scan_existing(project_dir)
+    if scan["found_files"]:
+        print(ui.section("Existing Files Detected"))
+        for f in scan["found_files"]:
+            print(f"  {ui.CYAN}{ui.ICON_BULLET}{ui.RESET} {f}")
+
+    if dry_run:
+        result = do_migrate_dry_run(project_dir)
+    else:
+        result = do_migrate(project_dir)
+
+    print(format_migration_report(result))
+
+
+def _cmd_scratch(sub_args: list[str], docs_dir: Path) -> None:
+    """Manage scratchpad items."""
+    from devlead.governance import scratchpad_add, scratchpad_list, scratchpad_clear
+
+    if not sub_args or sub_args[0] == "list":
+        items = scratchpad_list(docs_dir)
+        if not items:
+            print(ui.info("Scratchpad is empty."))
+        else:
+            print(ui.section("Scratchpad"))
+            for item in items:
+                key = item.get("Key", "?")
+                text = item.get("Item", "?")
+                status = item.get("Status", "?")
+                print(f"  {ui.YELLOW}{key}{ui.RESET} {text} [{status}]")
+    elif sub_args[0] == "add":
+        if len(sub_args) < 2:
+            print("Usage: devlead scratch add <description>", file=sys.stderr)
+            sys.exit(1)
+        text = " ".join(sub_args[1:])
+        sid = scratchpad_add(docs_dir, text)
+        print(ui.ok(f"Added {sid}: {text}"))
+    elif sub_args[0] == "clear":
+        count = scratchpad_clear(docs_dir)
+        print(ui.ok(f"Cleared {count} pending items from scratchpad."))
+    else:
+        print(ui.fail(f"Unknown scratch subcommand: {sub_args[0]}"), file=sys.stderr)
+        sys.exit(1)

@@ -1,267 +1,266 @@
-"""DevLead migrate — bootstrap DevLead on an existing project non-destructively.
+"""DevLead content migration. Implements FEATURES-0006.
 
-Scans for existing governance files, creates missing ones, and reports results.
-Never overwrites existing files.
+Hash-checked, reversible content migration between devlead_docs/ files with
+zero-loss guarantee. Always strict -- information loss is unrecoverable.
+
+Migrations are logged to `devlead_docs/_migration_log.jsonl`. Every migration
+can be rolled back by ID.
+
+ASCII only. Stdlib only.
 """
 
-from datetime import date
+from __future__ import annotations
+
+import hashlib
+import json
+import re
+import uuid
+from dataclasses import asdict, dataclass
+from datetime import datetime, timezone
 from pathlib import Path
 
-from devlead import ui
-
-# Scaffold directory within the package
-SCAFFOLD_DIR = Path(__file__).parent / "scaffold"
-
-# Expected governance files in claude_docs/
-EXPECTED_DOC_FILES = [
-    "_project_status.md",
-    "_project_tasks.md",
-    "_project_roadmap.md",
-    "_project_stories.md",
-    "_intake_features.md",
-    "_intake_issues.md",
-    "_intake_bugs.md",
-    "_intake_gaps.md",
-    "_living_standing_instructions.md",
-    "_living_business_objectives.md",
-    "_living_distribution.md",
-]
-
-# Patterns that suggest governance-like files (case-insensitive stems)
-_GOVERNANCE_PATTERNS = ["tasks", "roadmap", "status", "intake", "backlog"]
+_LOG_NAME = "_migration_log.jsonl"
 
 
-def scan_existing(project_dir: Path) -> dict:
-    """Find existing governance-like files in the project.
+@dataclass
+class MigrationRecord:
+    id: str
+    ts: str
+    source: str
+    dest: str
+    section_heading: str
+    content_hash: str
+    status: str  # applied | rolled_back
 
-    Returns dict with:
-      found_files: list of str (relative paths of governance files found)
-      missing_files: list of str (expected doc files not present)
-      docs_dir_exists: bool
+    # Position in source file (line index, 0-based) for rollback re-insertion.
+    source_position: int = 0
+    # The migrated content itself (needed for rollback).
+    content: str = ""
+
+
+def _utc_now() -> str:
+    return datetime.now(timezone.utc).strftime("%Y-%m-%dT%H:%M:%SZ")
+
+
+def _short_uuid() -> str:
+    return uuid.uuid4().hex[:12]
+
+
+def _content_hash(text: str) -> str:
+    stripped = re.sub(r"\s+", "", text)
+    return hashlib.sha256(stripped.encode("utf-8")).hexdigest()
+
+
+def _extract_section(text: str, heading: str) -> tuple[str, int, int] | None:
+    """Find a ## section by heading. Returns (content, start_line, end_line).
+
+    Content includes the heading line itself. end_line is exclusive.
     """
-    found: list[str] = []
-    docs_dir = project_dir / "claude_docs"
-    docs_dir_exists = docs_dir.is_dir()
-
-    # Check claude_docs/ contents
-    if docs_dir_exists:
-        for f in sorted(docs_dir.iterdir()):
-            if f.is_file() and f.suffix == ".md":
-                found.append(f"claude_docs/{f.name}")
-
-    # Check CLAUDE.md in root
-    claude_md = project_dir / "CLAUDE.md"
-    if claude_md.is_file():
-        found.append("CLAUDE.md")
-
-    # Check devlead.toml
-    if (project_dir / "devlead.toml").is_file():
-        found.append("devlead.toml")
-
-    # Check .claude/settings.json
-    settings = project_dir / ".claude" / "settings.json"
-    if settings.is_file():
-        found.append(".claude/settings.json")
-
-    # Scan root for governance-like md files
-    for f in sorted(project_dir.iterdir()):
-        if not f.is_file() or f.suffix != ".md":
+    lines = text.splitlines(keepends=True)
+    pattern = re.compile(r"^##\s+" + re.escape(heading) + r"\s*$")
+    start: int | None = None
+    for i, line in enumerate(lines):
+        if pattern.match(line.rstrip("\n\r")):
+            start = i
             continue
-        if f.name == "CLAUDE.md":
-            continue  # already captured
-        name_lower = f.name.lower()
-        if any(p in name_lower for p in _GOVERNANCE_PATTERNS):
-            found.append(f.name)
-
-    # Scan docs/ if it exists
-    docs_folder = project_dir / "docs"
-    if docs_folder.is_dir():
-        for f in sorted(docs_folder.iterdir()):
-            if not f.is_file() or f.suffix != ".md":
-                continue
-            name_lower = f.name.lower()
-            if any(p in name_lower for p in _GOVERNANCE_PATTERNS):
-                found.append(f"docs/{f.name}")
-
-    # Determine missing expected files
-    existing_doc_names = set()
-    if docs_dir_exists:
-        for f in docs_dir.iterdir():
-            if f.is_file():
-                existing_doc_names.add(f.name)
-
-    missing = [f for f in EXPECTED_DOC_FILES if f not in existing_doc_names]
-
-    return {
-        "found_files": found,
-        "missing_files": missing,
-        "docs_dir_exists": docs_dir_exists,
-    }
+        if start is not None and re.match(r"^##\s+", line):
+            return "".join(lines[start:i]), start, i
+    if start is not None:
+        return "".join(lines[start:]), start, len(lines)
+    return None
 
 
-def do_migrate(project_dir: Path) -> dict:
-    """Non-destructive migration: create missing governance files.
+def _append_log(docs_dir: Path, record: MigrationRecord) -> None:
+    log_path = docs_dir / _LOG_NAME
+    line = json.dumps(asdict(record), ensure_ascii=True, sort_keys=False)
+    with log_path.open("a", encoding="utf-8") as fh:
+        fh.write(line + "\n")
 
-    Returns dict with:
-      created: list of str (files created)
-      skipped: list of str (files that already existed)
-      warnings: list of str
-    """
-    today = str(date.today())
-    project_name = project_dir.name
-    created: list[str] = []
-    skipped: list[str] = []
-    warnings: list[str] = []
 
-    # Create claude_docs/ if missing
-    docs_dir = project_dir / "claude_docs"
-    if not docs_dir.is_dir():
-        docs_dir.mkdir(exist_ok=True)
-        created.append("claude_docs/")
-
-    # Create expected doc files if missing
-    for fname in EXPECTED_DOC_FILES:
-        target = docs_dir / fname
-        if target.exists():
-            skipped.append(f"claude_docs/{fname}")
+def _update_log_status(docs_dir: Path, migration_id: str, new_status: str) -> None:
+    """Rewrite the JSONL log, flipping status for the given ID."""
+    log_path = docs_dir / _LOG_NAME
+    if not log_path.exists():
+        return
+    lines = log_path.read_text(encoding="utf-8").splitlines()
+    out: list[str] = []
+    for line in lines:
+        if not line.strip():
             continue
-
-        source = SCAFFOLD_DIR / fname
-        if source.exists():
-            content = source.read_text()
-            content = content.replace("{date}", today)
-            target.write_text(content)
-            created.append(f"claude_docs/{fname}")
+        try:
+            rec = json.loads(line)
+        except json.JSONDecodeError:
+            out.append(line)
+            continue
+        if rec.get("id") == migration_id:
+            rec["status"] = new_status
+            out.append(json.dumps(rec, ensure_ascii=True, sort_keys=False))
         else:
-            # Generate a minimal template for files without scaffold
-            content = _minimal_template(fname, today)
-            target.write_text(content)
-            created.append(f"claude_docs/{fname}")
-            warnings.append(
-                f"No scaffold template for {fname} -- created minimal placeholder"
-            )
-
-    # Create devlead.toml if missing
-    toml_target = project_dir / "devlead.toml"
-    if toml_target.exists():
-        skipped.append("devlead.toml")
-    else:
-        toml_source = SCAFFOLD_DIR / "devlead_toml_template.toml"
-        if toml_source.exists():
-            content = toml_source.read_text()
-            content = content.replace("{project_name}", project_name)
-            toml_target.write_text(content)
-            created.append("devlead.toml")
-        else:
-            warnings.append("No scaffold template for devlead.toml")
-
-    return {
-        "created": created,
-        "skipped": skipped,
-        "warnings": warnings,
-    }
+            out.append(line)
+    log_path.write_text("\n".join(out) + "\n", encoding="utf-8")
 
 
-def do_migrate_dry_run(project_dir: Path) -> dict:
-    """Preview what migrate would do without writing anything.
+def migrate(
+    source_path: Path,
+    section_heading: str,
+    dest_path: Path,
+    docs_dir: Path,
+) -> MigrationRecord:
+    """Migrate a section from source to dest with hash verification.
 
-    Returns dict with:
-      would_create: list of str
-      already_exists: list of str
-      warnings: list of str
+    The destination file must already contain the section content (copy-first
+    pattern). Raises ValueError if hash mismatch or section not found.
     """
-    would_create: list[str] = []
-    already_exists: list[str] = []
-    warnings: list[str] = []
+    from devlead import audit
 
-    docs_dir = project_dir / "claude_docs"
-    if not docs_dir.is_dir():
-        would_create.append("claude_docs/")
+    source_path = Path(source_path)
+    dest_path = Path(dest_path)
+    docs_dir = Path(docs_dir)
 
-    for fname in EXPECTED_DOC_FILES:
-        target = docs_dir / fname
-        if target.exists():
-            already_exists.append(f"claude_docs/{fname}")
-        else:
-            would_create.append(f"claude_docs/{fname}")
-            if not (SCAFFOLD_DIR / fname).exists():
-                warnings.append(f"No scaffold for {fname} -- will use minimal template")
+    if not source_path.exists():
+        raise ValueError(f"source not found: {source_path}")
+    if not dest_path.exists():
+        raise ValueError(f"dest not found: {dest_path}")
 
-    toml_target = project_dir / "devlead.toml"
-    if toml_target.exists():
-        already_exists.append("devlead.toml")
-    else:
-        would_create.append("devlead.toml")
-
-    return {
-        "would_create": would_create,
-        "already_exists": already_exists,
-        "warnings": warnings,
-    }
-
-
-def format_migration_report(result: dict) -> str:
-    """Format migration result as branded terminal output."""
-    lines: list[str] = []
-    lines.append(ui.section("Migration Report"))
-
-    # Handle both dry-run and real results
-    created = result.get("created") or result.get("would_create") or []
-    skipped = result.get("skipped") or result.get("already_exists") or []
-    warnings = result.get("warnings", [])
-    is_dry_run = "would_create" in result
-
-    if is_dry_run:
-        lines.append(f"  {ui.DIM}(dry run -- no files written){ui.RESET}")
-        lines.append("")
-
-    if created:
-        label = "Would create" if is_dry_run else "Created"
-        lines.append(f"  {ui.BOLD}{label}:{ui.RESET}")
-        for f in created:
-            lines.append(f"    {ui.GREEN}{ui.ICON_OK}{ui.RESET} {f}")
-    else:
-        lines.append(f"  {ui.DIM}Nothing to create.{ui.RESET}")
-
-    if skipped:
-        label = "Already exists" if is_dry_run else "Skipped (existing)"
-        lines.append(f"\n  {ui.BOLD}{label}:{ui.RESET}")
-        for f in skipped:
-            lines.append(f"    {ui.CYAN}{ui.ICON_BULLET}{ui.RESET} {f}")
-
-    if warnings:
-        lines.append(f"\n  {ui.BOLD}Warnings:{ui.RESET}")
-        for w in warnings:
-            lines.append(f"    {ui.YELLOW}{ui.ICON_WARN}{ui.RESET} {w}")
-
-    total_created = len(created)
-    total_skipped = len(skipped)
-    if is_dry_run:
-        summary = f"{total_created} file(s) to create, {total_skipped} already present"
-    else:
-        summary = f"{total_created} file(s) created, {total_skipped} skipped"
-    lines.append("")
-    lines.append(ui.ok(summary))
-
-    return "\n".join(lines)
-
-
-def _minimal_template(filename: str, today: str) -> str:
-    """Generate a minimal markdown template for files without a scaffold."""
-    # Derive a title from the filename
-    name = filename.replace(".md", "").replace("_", " ").strip().title()
-
-    if "intake" in filename.lower():
-        return (
-            f"# {name}\n\n"
-            f"> Type: INTAKE\n"
-            f"> Last updated: {today} | Open: 0 | Closed: 0\n\n"
-            f"## Active\n\n"
-            f"| Key | Item | Source | Added | Status | Priority | Notes |\n"
-            f"|-----|------|--------|-------|--------|----------|-------|\n\n"
-            f"## Archive\n\n"
-            f"| Key | Item | Resolved | Resolution |\n"
-            f"|-----|------|----------|------------|\n"
+    source_text = source_path.read_text(encoding="utf-8")
+    extracted = _extract_section(source_text, section_heading)
+    if extracted is None:
+        raise ValueError(
+            f"section '## {section_heading}' not found in {source_path}"
         )
-    else:
-        return f"# {name}\n\n> Last updated: {today}\n"
+    section_content, start_line, end_line = extracted
+    src_hash = _content_hash(section_content)
+
+    # Verify destination contains matching content.
+    dest_text = dest_path.read_text(encoding="utf-8")
+    dest_hash = _content_hash(
+        _find_section_in_dest(dest_text, section_heading, section_content)
+    )
+    if src_hash != dest_hash:
+        raise ValueError(
+            f"hash mismatch: destination does not contain matching content "
+            f"for '## {section_heading}' (source={src_hash[:16]}.. "
+            f"dest={dest_hash[:16]}..)"
+        )
+
+    # Remove section from source.
+    lines = source_text.splitlines(keepends=True)
+    new_source = "".join(lines[:start_line] + lines[end_line:])
+    source_path.write_text(new_source, encoding="utf-8")
+
+    record = MigrationRecord(
+        id=_short_uuid(),
+        ts=_utc_now(),
+        source=str(source_path),
+        dest=str(dest_path),
+        section_heading=section_heading,
+        content_hash=src_hash,
+        status="applied",
+        source_position=start_line,
+        content=section_content,
+    )
+    _append_log(docs_dir, record)
+    audit.append_event(
+        docs_dir,
+        "migrate",
+        source=str(source_path),
+        dest=str(dest_path),
+        section=section_heading,
+        migration_id=record.id,
+        result="applied",
+    )
+    return record
+
+
+def _find_section_in_dest(dest_text: str, heading: str, fallback_content: str) -> str:
+    """Locate the section in dest. If exact heading match exists, return it.
+    Otherwise return fallback_content for hash comparison (will fail)."""
+    result = _extract_section(dest_text, heading)
+    if result is not None:
+        return result[0]
+    # Heading not found as a section -- check if the raw content appears.
+    stripped_fallback = re.sub(r"\s+", "", fallback_content)
+    stripped_dest = re.sub(r"\s+", "", dest_text)
+    if stripped_fallback in stripped_dest:
+        return fallback_content
+    return ""  # Will cause hash mismatch.
+
+
+def rollback(migration_id: str, docs_dir: Path) -> str:
+    """Roll back a migration by ID. Returns a summary string."""
+    from devlead import audit
+
+    docs_dir = Path(docs_dir)
+    log_path = docs_dir / _LOG_NAME
+    if not log_path.exists():
+        raise ValueError("no migration log found")
+
+    record: MigrationRecord | None = None
+    for line in log_path.read_text(encoding="utf-8").splitlines():
+        if not line.strip():
+            continue
+        try:
+            data = json.loads(line)
+        except json.JSONDecodeError:
+            continue
+        if data.get("id") == migration_id:
+            record = MigrationRecord(**{
+                k: data[k]
+                for k in MigrationRecord.__dataclass_fields__
+                if k in data
+            })
+            break
+
+    if record is None:
+        raise ValueError(f"migration {migration_id} not found in log")
+    if record.status == "rolled_back":
+        raise ValueError(f"migration {migration_id} already rolled back")
+    if not record.content:
+        raise ValueError(
+            f"migration {migration_id} has no stored content; cannot rollback"
+        )
+
+    source_path = Path(record.source)
+    if not source_path.exists():
+        raise ValueError(f"source file missing: {source_path}")
+
+    # Re-insert content at original position (or end if file is shorter).
+    source_text = source_path.read_text(encoding="utf-8")
+    lines = source_text.splitlines(keepends=True)
+    insert_at = min(record.source_position, len(lines))
+    content_lines = record.content.splitlines(keepends=True)
+    new_lines = lines[:insert_at] + content_lines + lines[insert_at:]
+    source_path.write_text("".join(new_lines), encoding="utf-8")
+
+    _update_log_status(docs_dir, migration_id, "rolled_back")
+    audit.append_event(
+        docs_dir,
+        "migrate_rollback",
+        migration_id=migration_id,
+        source=record.source,
+        section=record.section_heading,
+        result="rolled_back",
+    )
+    return f"rolled back {migration_id}: re-inserted '## {record.section_heading}' into {record.source}"
+
+
+def list_migrations(docs_dir: Path) -> list[MigrationRecord]:
+    """Read all migration records from the JSONL log."""
+    docs_dir = Path(docs_dir)
+    log_path = docs_dir / _LOG_NAME
+    if not log_path.exists():
+        return []
+    out: list[MigrationRecord] = []
+    for line in log_path.read_text(encoding="utf-8").splitlines():
+        if not line.strip():
+            continue
+        try:
+            data = json.loads(line)
+            out.append(MigrationRecord(**{
+                k: data[k]
+                for k in MigrationRecord.__dataclass_fields__
+                if k in data
+            }))
+        except (json.JSONDecodeError, TypeError, KeyError):
+            continue
+    return out

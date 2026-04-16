@@ -1,0 +1,900 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>DevLead Memory Model &amp; Enforcement Design Analysis</title>
+  <style>
+    :root {
+      --fg: #1f2937;
+      --bg: #f9fafb;
+      --muted: #6b7280;
+      --accent: #2563eb;
+      --accent-soft: #dbeafe;
+      --border: #e5e7eb;
+      --code-bg: #f3f4f6;
+      --warn: #dc2626;
+      --ok: #059669;
+      --amber: #d97706;
+    }
+    * { box-sizing: border-box; }
+    body {
+      font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif;
+      max-width: 920px;
+      margin: 0 auto;
+      padding: 48px 24px 96px;
+      background: var(--bg);
+      color: var(--fg);
+      line-height: 1.65;
+      font-size: 16px;
+    }
+    h1 { font-size: 32px; margin: 0 0 4px; color: var(--accent); letter-spacing: -0.02em; }
+    h2 { font-size: 24px; border-bottom: 2px solid var(--border); padding-bottom: 8px; margin-top: 56px; letter-spacing: -0.01em; }
+    h3 { font-size: 19px; margin-top: 32px; color: #111827; }
+    p { margin: 12px 0; }
+    a { color: var(--accent); text-decoration: none; }
+    a:hover { text-decoration: underline; }
+    ul, ol { margin: 12px 0; padding-left: 28px; }
+    li { margin: 5px 0; }
+    code {
+      background: var(--code-bg);
+      padding: 2px 6px;
+      border-radius: 3px;
+      font-size: 13.5px;
+      font-family: "SF Mono", SFMono-Regular, Menlo, Consolas, monospace;
+      color: #0f172a;
+    }
+    pre {
+      background: var(--code-bg);
+      padding: 16px 20px;
+      border-radius: 6px;
+      overflow-x: auto;
+      font-size: 13px;
+      line-height: 1.55;
+      border: 1px solid var(--border);
+    }
+    pre code { background: none; padding: 0; font-size: 13px; }
+    table { border-collapse: collapse; width: 100%; margin: 20px 0; font-size: 14px; }
+    th, td { border: 1px solid var(--border); padding: 10px 12px; text-align: left; vertical-align: top; }
+    th { background: var(--accent-soft); font-weight: 600; }
+    tr:nth-child(even) td { background: #fff; }
+    .meta { color: var(--muted); font-size: 14px; }
+    .toc { background: #fff; border: 1px solid var(--border); padding: 20px 28px; border-radius: 6px; margin: 24px 0; }
+    .toc ol { margin: 4px 0; padding-left: 24px; }
+    .toc li { margin: 6px 0; }
+    .callout { background: #fef3c7; border-left: 4px solid #f59e0b; padding: 12px 18px; margin: 20px 0; border-radius: 4px; }
+    .callout-ok { background: #d1fae5; border-left: 4px solid var(--ok); padding: 12px 18px; margin: 20px 0; border-radius: 4px; }
+    .callout-warn { background: #fee2e2; border-left: 4px solid var(--warn); padding: 12px 18px; margin: 20px 0; border-radius: 4px; }
+    .status-green { color: var(--ok); font-weight: 600; }
+    .status-red { color: var(--warn); font-weight: 600; }
+    .status-amber { color: var(--amber); font-weight: 600; }
+    .footer { color: var(--muted); font-size: 13px; margin-top: 72px; border-top: 1px solid var(--border); padding-top: 20px; }
+    .footer p { margin: 6px 0; }
+  </style>
+</head>
+<body>
+
+<h1>DevLead Memory Model &amp; Enforcement Design Analysis</h1>
+<p class="meta">Drafted: 2026-04-14 &middot; Refreshed: 2026-04-15 (post Session 3 close-out) &middot; Depth phase kickoff</p>
+
+<div class="callout-ok">
+<strong>Refresh note (2026-04-15).</strong> This document was first written at 2026-04-14 21:25 during Session 3. Between then and session close, Nitin dictated answers to the open questions and a batch of fixes landed. This refresh preserves the original analysis as the reasoning archive and adds a <a href="#resolution">Resolution Log</a> at &sect;0 plus inline <em>(UPDATE 2026-04-15)</em> markers on every row that changed. Nothing from the original draft has been deleted.
+</div>
+
+<h2>Context</h2>
+<p>Development was frozen after Session 3 because Nitin wants to pivot from <strong>breadth</strong> (new features) to <strong>depth</strong> (cohesiveness, flexibility, configurability, agility, gracefulness). This document analyses two phase objectives and proposes concrete mechanisms for each.</p>
+
+<ol>
+  <li><strong>Memory model cohesion.</strong> Clutter-less. Leak-free. Full lineage. The memory layer should be a tight, traceable graph of content with clear ownership and lifecycle.</li>
+  <li><strong>Enforcement design.</strong> How DevLead <em>gracefully</em> overrides LLM behavior. Specifically: how to keep <code>_intake_*.md</code> files as the source of truth such that nothing gets developed without a traceable entry.</li>
+</ol>
+
+<p><strong>Non-goals.</strong> No new features. No new breadth. Every proposal below tightens what already exists.</p>
+
+<h2>Table of contents</h2>
+<div class="toc">
+  <ol start="0">
+    <li><a href="#resolution">Resolution Log &mdash; what landed between the draft and Session 3 close <em>(added 2026-04-15)</em></a></li>
+    <li><a href="#inventory">Memory inventory &mdash; every file, catalogued</a></li>
+    <li><a href="#leaks">Leakage analysis &mdash; where cohesion breaks</a></li>
+    <li><a href="#lineage">Lineage map &mdash; how content flows</a></li>
+    <li><a href="#tighten">Tightening proposals (A through D)</a></li>
+    <li><a href="#spectrum">Enforcement spectrum &mdash; Level 0 through 5</a></li>
+    <li><a href="#recommend">Recommended enforcement for v1 &mdash; Level 2 detailed</a></li>
+    <li><a href="#config">Configurability &mdash; the devlead.yml surface</a></li>
+    <li><a href="#audit">Audit and observability</a></li>
+    <li><a href="#rollout">Depth-first rollout plan</a></li>
+    <li><a href="#questions">Open questions for Nitin</a></li>
+  </ol>
+</div>
+
+<h2 id="resolution">0. Resolution Log &mdash; Session 3 close-out <span style="font-size:15px;color:var(--muted);font-weight:normal;">(added 2026-04-15)</span></h2>
+
+<p>After this analysis was drafted (2026-04-14 21:25), Nitin answered the open questions live and a batch of fixes landed before session close. This section is the authoritative diff between the draft and the repo state at end-of-Session-3.</p>
+
+<h3>0.1 Answered open questions</h3>
+
+<table>
+<thead><tr><th>#</th><th>Question</th><th>Draft lean</th><th>Locked answer (2026-04-14)</th></tr></thead>
+<tbody>
+<tr>
+  <td>Q1</td>
+  <td>Fate of <code>_living_goals.md</code></td>
+  <td>(a) Remove from scaffold</td>
+  <td class="status-amber"><strong>Keep as doc-only narrative container.</strong> Goals are meta-narrative (e.g. "ship first revenue"); BOs are measurable. Separating them allows loose goal framing without metric overhead. File stays in scaffold, rewritten as prose-only &mdash; no schema, no metric fields, no convergence rollups. See <code>_living_decisions.md</code> row "2026-04-14 &ndash; Goals as doc-only container".</td>
+</tr>
+<tr>
+  <td>Q2</td>
+  <td>Decision log boundary: <code>_resume.md</code> &sect;3 vs <code>_living_decisions.md</code></td>
+  <td>(a) &sect;3 = active locks, log = permanent archive, migrate on Sprint close</td>
+  <td class="status-green"><strong>Stronger than the lean:</strong> <code>_living_decisions.md</code> is the sole canonical source. <code>_resume.md</code> does NOT hold locked decisions at all. The thin-cursor rewrite of <code>_resume.md</code> removed &sect;3 entirely; all prior locked decisions landed in <code>_living_decisions.md</code>.</td>
+</tr>
+<tr>
+  <td>Q3</td>
+  <td>CWI tracking mechanism</td>
+  <td>(a) Separate <code>_session_state.json</code></td>
+  <td class="status-red"><strong>Opposite of the lean. Focus is tracked via the <code>status: in_progress</code> field inside the intake entry body itself.</strong> No <code>_session_state.json</code>. No <code>src/devlead/session.py</code>. No parallel store. The existing <code>status</code> lifecycle field <em>is</em> the focus mechanism; multiple entries can be <code>in_progress</code> simultaneously. Rationale: parallel session-state file creates two sources of truth that can drift. See locked decision "2026-04-14 &ndash; Focus via intake entry status (not a separate file)" &mdash; explicitly supersedes the CWI framing in &sect;6.2 of this doc.</td>
+</tr>
+<tr>
+  <td>Q4</td>
+  <td>Enforcement default mode</td>
+  <td>(a) Warn</td>
+  <td class="status-green"><strong>Confirmed: <code>warning</code> by default.</strong> Three modes locked in config: <code>warning</code> (advisory systemMessage via hook; never blocks), <code>soft</code> (exit 1; blocks but overridable), <code>hard</code> (exit 2; blocks until resolved). Matches the &sect;3 "nothing exits 2 by default" principle.</td>
+</tr>
+<tr>
+  <td>Q5</td>
+  <td>Config file format</td>
+  <td>(c) TOML via stdlib <code>tomllib</code></td>
+  <td class="status-green"><strong>Confirmed: TOML via <code>tomllib</code>.</strong> YAML also permitted for files where nested structure is more natural. Zero external dep.</td>
+</tr>
+<tr>
+  <td>Q6</td>
+  <td>Bloat cap for <code>_resume.md</code></td>
+  <td>(a) 200 lines</td>
+  <td class="status-amber"><strong>Tighter than the lean: 30&ndash;50 lines target.</strong> <code>_resume.md</code> was rewritten as a pure thin bootstrap cursor (focus pointer, read order, next action, open blockers only). No locked decisions, no hierarchy diagrams, no design sections. Current file sits at ~35 lines. The 200-line "bloat cap" from Proposal D is now irrelevant because the file is one-sixth that size by construction.</td>
+</tr>
+<tr>
+  <td>Q7</td>
+  <td>Scratchpad retirement</td>
+  <td>(b) Archive after 1 Sprint post-promotion</td>
+  <td class="status-amber"><strong>Still open.</strong> Not answered this session. Revisit in the Session 4 shake-the-tree test.</td>
+</tr>
+<tr>
+  <td>Q8</td>
+  <td>Which leaks to fix first?</td>
+  <td>(b) L1, L2, L3, L12 now; rest with SOT backfill</td>
+  <td class="status-green"><strong>Exceeded the lean:</strong> L1, L2, L3, L4, L6, L7, L12 all resolved this session without Proposal A/C infrastructure. L5, L8, L9, L10, L11 remain open.</td>
+</tr>
+</tbody>
+</table>
+
+<h3>0.2 New locked decisions introduced</h3>
+
+<p><code>_living_decisions.md</code> is now the canonical archive. Twelve decisions are logged there; the ones that <strong>change the design in this document</strong> are:</p>
+
+<ol>
+  <li><strong>Goals as doc-only container</strong> (supersedes the earlier "BO = Goal merged" framing). <code>_living_goals.md</code> is prose-only, no metrics, no rollups.</li>
+  <li><strong>_resume.md is a thin bootstrap cursor</strong> (supersedes all earlier &sect;3/&sect;13/&sect;4/&sect;18/&sect;19 responsibilities). Target 30&ndash;50 lines. Historical content archived to <code>_resume_archive_2026-04-14.md</code>.</li>
+  <li><strong>Focus via intake entry status</strong> (supersedes the <code>_session_state.json</code> / CWI framing in &sect;6.2). No parallel session store.</li>
+  <li><strong>Config file format: TOML via stdlib <code>tomllib</code></strong>.</li>
+  <li><strong>Scratchpad routing has three targets.</strong> Not just intake. Entries are routed to one of: (a) work &rarr; <code>_intake_*.md</code>, (b) decision &rarr; <code>_living_decisions.md</code>, (c) fact/doc &rarr; <code>_living_*.md</code>. Implemented via new <code>/devlead promote</code> command.</li>
+  <li><strong>Enforcement: configurable three modes</strong> (<code>warning</code>, <code>soft</code>, <code>hard</code>; default <code>warning</code>).</li>
+</ol>
+
+<h3>0.3 Code that shipped this session</h3>
+
+<table>
+<thead><tr><th>What</th><th>Where</th><th>Status</th></tr></thead>
+<tbody>
+<tr>
+  <td>L12 dedupe fix</td>
+  <td><code>src/devlead/scratchpad.py</code> <code>append_cross_reference()</code></td>
+  <td class="status-green">Shipped. Body is scanned for an identical note before append; duplicate &gt; <strong>Promoted:</strong> lines no longer occur.</td>
+</tr>
+<tr>
+  <td><code>/devlead focus</code> command</td>
+  <td><code>src/devlead/cli.py</code> <code>_cmd_focus()</code>; <code>commands/focus.md</code></td>
+  <td class="status-green">Shipped. Three subforms: <code>show</code>, <code>clear</code>, <code>&lt;entity-id&gt;</code>. Backed by <code>intake.update_status()</code> flipping the entry's <code>status</code> field between <code>pending</code> and <code>in_progress</code>. No session-state file.</td>
+</tr>
+<tr>
+  <td><code>/devlead promote</code> command</td>
+  <td><code>src/devlead/cli.py</code> <code>_cmd_promote()</code>; <code>commands/promote.md</code></td>
+  <td class="status-green">Shipped. Three targets: <code>--into &lt;_intake_*.md&gt;</code>, <code>--to decision</code>, <code>--to fact --into &lt;_living_*.md&gt;</code>. Backed by <code>bridge.ingest_from_scratchpad()</code> and the new <code>bridge.promote_to_living()</code>.</td>
+</tr>
+<tr>
+  <td><code>bridge.promote_to_living()</code></td>
+  <td><code>src/devlead/bridge.py</code></td>
+  <td class="status-green">Shipped. Migrates a scratchpad entry's body into a <code>_living_*.md</code> file, appends a cross-reference in the source entry. Validates target matches <code>_living_*.md</code>.</td>
+</tr>
+<tr>
+  <td><code>/devlead triage</code> three-way routing</td>
+  <td><code>commands/triage.md</code></td>
+  <td class="status-green">Shipped. Triage flow now explicitly chooses work / decision / fact per entry.</td>
+</tr>
+<tr>
+  <td><code>_resume.md</code> thin-cursor rewrite</td>
+  <td><code>devlead_docs/_resume.md</code> (~35 lines); scaffold template <code>src/devlead/scaffold/_resume.md.tmpl</code></td>
+  <td class="status-green">Shipped. Old 654-line file archived verbatim to <code>devlead_docs/_resume_archive_2026-04-14.md</code>. Manual zero-loss archive because Proposal C (migration protocol) has not been built yet.</td>
+</tr>
+<tr>
+  <td><code>_living_decisions.md</code> populated</td>
+  <td><code>devlead_docs/_living_decisions.md</code> (~93 lines, 12 decisions)</td>
+  <td class="status-green">Shipped. Now the canonical source of locked decisions.</td>
+</tr>
+<tr>
+  <td><code>_living_goals.md</code> repurposed</td>
+  <td><code>devlead_docs/_living_goals.md</code></td>
+  <td class="status-green">Shipped as doc-only narrative container. L3 closed.</td>
+</tr>
+<tr>
+  <td><code>CLAUDE.md</code> session-start read order</td>
+  <td><code>CLAUDE.md</code></td>
+  <td class="status-green">Updated. Read order now: <code>_resume.md</code> &rarr; <code>_intake_*.md</code> (scan in_progress) &rarr; <code>_aware_*.md</code> &rarr; <code>_scratchpad.md</code> &rarr; <code>_living_decisions.md</code>.</td>
+</tr>
+<tr>
+  <td><code>install.py</code> scaffold list</td>
+  <td><code>src/devlead/install.py</code></td>
+  <td class="status-green">Updated to match the new scaffold shape.</td>
+</tr>
+</tbody>
+</table>
+
+<h3>0.4 Explicitly not built (deferred to later sessions)</h3>
+
+<ul>
+  <li><strong>Proposal A (SOT blocks)</strong> &mdash; no <code>src/devlead/sot.py</code>. Deferred.</li>
+  <li><strong>Proposal B (lineage metadata extensions)</strong> &mdash; deferred.</li>
+  <li><strong>Proposal C (migration protocol <code>/devlead migrate</code>)</strong> &mdash; deferred. Session 3 used a manual archive copy as a one-off.</li>
+  <li><strong>Proposal D (bloat nudges)</strong> &mdash; moot because <code>_resume.md</code> is already lean.</li>
+  <li><strong>Level-2 enforcement gate</strong> &mdash; no <code>src/devlead/gate.py</code>, no <code>devlead gate PreToolUse</code>, no <code>.claude/settings.json</code> hook wiring. The discipline rule lives in <code>CLAUDE.md</code> text only (Level 0 &mdash; convention) at session close.</li>
+  <li><strong>Audit log schema wiring</strong> &mdash; <code>_audit_log.jsonl</code> still empty (0 bytes).</li>
+  <li><strong>devlead.toml config loader</strong> &mdash; not written; defaults live in code.</li>
+  <li><strong><code>/devlead verify-links</code></strong> &mdash; deferred.</li>
+</ul>
+
+<div class="callout">
+<strong>Net effect on rollout plan (&sect;9).</strong> Item 1 ("Fix Session-3 leaks") is largely complete. Items 2&ndash;9 are still ahead, but Session 4 is <strong>shake-the-tree test</strong> (not implementation) per the freeze. Shake-the-tree may change which of items 2&ndash;9 are still worth building in their current form.
+</div>
+
+<h2 id="inventory">1. Memory inventory &mdash; every file, catalogued</h2>
+
+<p>DevLead ships 23 files on first install (plus the <code>_intake_templates/</code> subdirectory). Each file has a role, an owner, a lifetime, and a current population status. The table is the complete inventory as of Session 3.</p>
+
+<table>
+<thead><tr><th>File</th><th>Category</th><th>Owner</th><th>Lifetime</th><th>Status</th><th>Role</th></tr></thead>
+<tbody>
+<tr><td><code>_resume.md</code></td><td>Session memory</td><td>claude+user</td><td>Permanent</td><td class="status-green">Thin cursor (~35 lines) <em>(UPDATE 2026-04-15: rewritten; historical content moved to <code>_resume_archive_2026-04-14.md</code>)</em></td><td>Session bootstrap cursor ONLY (focus, read order, next action, blockers)</td></tr>
+<tr><td><code>_scratchpad.md</code></td><td>Session memory</td><td>claude+user</td><td>Permanent</td><td class="status-amber">Growing (~280 lines)</td><td>Raw untriaged capture inbox</td></tr>
+<tr><td><code>_project_status.md</code></td><td>Project state</td><td>system</td><td>Permanent</td><td class="status-red">Placeholder</td><td>Derived flags (no state machine)</td></tr>
+<tr><td><code>_project_hierarchy.md</code></td><td>Project state</td><td>user+claude</td><td>Permanent</td><td class="status-red">Empty</td><td>Sprint / BO / TBO / TTO tree</td></tr>
+<tr><td><code>_intake_features.md</code></td><td>Intake (data)</td><td>claude</td><td>Permanent</td><td class="status-green">2 entries (post-dogfood)</td><td>Captured features awaiting promotion</td></tr>
+<tr><td><code>_intake_bugs.md</code></td><td>Intake (data)</td><td>claude</td><td>Permanent</td><td class="status-amber">Empty</td><td>Captured bugs awaiting promotion</td></tr>
+<tr><td><code>_intake_templates/default.md</code></td><td>Intake (schema)</td><td>user-editable</td><td>Permanent</td><td class="status-green">Populated</td><td>Field schema for all intake entries in v1</td></tr>
+<tr><td><code>_aware_features.md</code></td><td>Self-awareness</td><td>system (generator)</td><td>Regenerated on demand</td><td class="status-green">Current (6 commands)</td><td>Auto-derived feature inventory</td></tr>
+<tr><td><code>_aware_design.md</code></td><td>Self-awareness</td><td>system (generator)</td><td>Regenerated on demand</td><td class="status-green">Current (6 modules)</td><td>Auto-derived module inventory</td></tr>
+<tr><td><code>_living_project.md</code></td><td>Living docs (intent)</td><td>user+claude</td><td>Permanent</td><td class="status-red">Placeholder</td><td>What the project IS</td></tr>
+<tr><td><code>_living_goals.md</code></td><td>Living docs (intent)</td><td>user+claude</td><td>Permanent</td><td class="status-green">Doc-only container <em>(UPDATE 2026-04-15: kept, repurposed as prose-only narrative; Q1 answered)</em></td><td>Loose goal framing (narrative, no metrics)</td></tr>
+<tr><td><code>_living_metrics.md</code></td><td>Living docs (intent)</td><td>user+claude</td><td>Permanent</td><td class="status-red">Placeholder</td><td>Project metrics definitions</td></tr>
+<tr><td><code>_living_technical.md</code></td><td>Living docs (intent)</td><td>user+claude</td><td>Permanent</td><td class="status-red">Placeholder</td><td>Tech stack notes</td></tr>
+<tr><td><code>_living_design.md</code></td><td>Living docs (intent)</td><td>user+claude</td><td>Permanent</td><td class="status-red">Placeholder</td><td>How the system is shaped (intent)</td></tr>
+<tr><td><code>_living_decisions.md</code></td><td>Living docs (intent)</td><td>user+claude</td><td>Permanent</td><td class="status-green">Populated (12 decisions) <em>(UPDATE 2026-04-15: now canonical source of locked decisions)</em></td><td>Canonical append-only decision log &mdash; the ONLY place locked decisions live</td></tr>
+<tr><td><code>_living_glossary.md</code></td><td>Living docs (intent)</td><td>user+claude</td><td>Permanent</td><td class="status-red">Placeholder</td><td>Project vocabulary</td></tr>
+<tr><td><code>_living_standing_instructions.md</code></td><td>Living docs (intent)</td><td>user+claude</td><td>Permanent</td><td class="status-red">Placeholder</td><td>Rules that persist across sessions</td></tr>
+<tr><td><code>_living_risks.md</code></td><td>Living docs (intent)</td><td>user+claude</td><td>Permanent</td><td class="status-red">Placeholder</td><td>Risks and mitigations</td></tr>
+<tr><td><code>_audit_log.jsonl</code></td><td>Audit</td><td>system</td><td>Append-only</td><td class="status-red">Empty</td><td>All DevLead events</td></tr>
+<tr><td><code>_promise_ledger.jsonl</code></td><td>Audit</td><td>system</td><td>Append-only</td><td class="status-red">Empty</td><td>Claude's commitments (K9)</td></tr>
+<tr><td><code>interview_template.md</code></td><td>Reference</td><td>system</td><td>Permanent</td><td class="status-amber">Semi-stale</td><td>5-block interview playbook (command superseded)</td></tr>
+</tbody>
+</table>
+
+<p>Nine files are red (empty or stale), four are amber (bloat / semi-stale), seven are green (populated and current). Approximately <strong>one-third of the store is load-bearing today</strong>; the rest is placeholder waiting for implementation or cleanup.</p>
+
+<h2 id="leaks">2. Leakage analysis &mdash; where cohesion breaks</h2>
+
+<p>A "leak" is any place where content contradicts itself, duplicates across files, goes stale, or has no clear owner. Twelve leaks exist in the Session-3 state. Each has a proposed fix.</p>
+
+<table>
+<thead><tr><th>#</th><th>Leak</th><th>Where</th><th>Impact</th><th>Fix</th></tr></thead>
+<tbody>
+<tr style="background:#ecfdf5;">
+  <td>L1 <span class="status-green">&check;</span></td>
+  <td>Stale hierarchy diagram</td>
+  <td><code>_resume.md</code> &sect;4</td>
+  <td>Still shows <code>Vision &rarr; Goals &rarr; Phase &rarr; BO &rarr; TBO &rarr; TTO</code>. Actual hierarchy is <code>Sprint &rarr; BO &rarr; TBO &rarr; TTO</code>. Future sessions reading &sect;4 would be misled.</td>
+  <td><em>(UPDATE 2026-04-15: CLOSED.)</em> Resolved via thin-cursor rewrite of <code>_resume.md</code>. Old &sect;4 no longer exists in the file; full archive preserved in <code>_resume_archive_2026-04-14.md</code>.</td>
+</tr>
+<tr style="background:#ecfdf5;">
+  <td>L2 <span class="status-green">&check;</span></td>
+  <td>Stale scratchpad definition</td>
+  <td><code>_resume.md</code> &sect;18</td>
+  <td>Defines <code>_resume.md</code> AS the scratchpad. Split occurred 2026-04-14; <code>_scratchpad.md</code> is now separate. &sect;18 needs rewrite or migration.</td>
+  <td><em>(UPDATE 2026-04-15: CLOSED.)</em> Same fix as L1 &mdash; thin-cursor rewrite removed &sect;18 entirely; archive retains the original text.</td>
+</tr>
+<tr style="background:#ecfdf5;">
+  <td>L3 <span class="status-green">&check;</span></td>
+  <td><code>_living_goals.md</code> redundancy</td>
+  <td><code>_living_goals.md</code> vs <code>_project_hierarchy.md</code> BO section</td>
+  <td>BO = Goal now. <code>_living_goals.md</code> is empty and no longer has a distinct purpose.</td>
+  <td><em>(UPDATE 2026-04-15: CLOSED.)</em> "BO = Goal" framing was rejected. Goals is a <strong>doc-only narrative container</strong>; BOs are measurable. File stays in scaffold, prose-only. See Q1 row above.</td>
+</tr>
+<tr style="background:#ecfdf5;">
+  <td>L4 <span class="status-green">&check;</span></td>
+  <td>Decision log duplication</td>
+  <td><code>_resume.md</code> &sect;3 (locked decisions) vs <code>_living_decisions.md</code></td>
+  <td>Both hold decisions. No rule defines which is canonical. <code>_living_decisions.md</code> is currently empty; &sect;3 is live. If both get populated, which wins?</td>
+  <td><em>(UPDATE 2026-04-15: CLOSED.)</em> <code>_living_decisions.md</code> is now the sole canonical source. <code>_resume.md</code> does NOT hold locked decisions at all &mdash; not even as active locks. All 12 prior decisions migrated into the log.</td>
+</tr>
+<tr>
+  <td>L5</td>
+  <td><code>_living_design.md</code> vs <code>_aware_design.md</code> confusion</td>
+  <td>Both files, same topic area</td>
+  <td>One is intent (hand-authored), the other is observed reality (auto-derived). The distinction works in principle but isn't clear from filename alone.</td>
+  <td>Add source-of-truth blocks (Proposal A) to each file stating role explicitly.</td>
+</tr>
+<tr style="background:#ecfdf5;">
+  <td>L6 <span class="status-green">&check;</span></td>
+  <td>Semi-stale interview template</td>
+  <td><code>interview_template.md</code></td>
+  <td>Copied into every install; describes a command that doesn't exist (<code>/devlead interview</code>). Plan is subsumed by the plugin bridge.</td>
+  <td><em>(UPDATE 2026-04-15: CLOSED as low-priority noise.)</em> File remains in scaffold as reference-only; plugin bridge is the operative flow. Explicit status note deferred to SOT backfill.</td>
+</tr>
+<tr style="background:#ecfdf5;">
+  <td>L7 <span class="status-green">&check;</span></td>
+  <td><code>_resume.md</code> bloat</td>
+  <td><code>_resume.md</code> (&sim;620 lines)</td>
+  <td>Sections 4, 18, 19 are major content blocks that should live in dedicated design files. File is hard to scan at session start.</td>
+  <td><em>(UPDATE 2026-04-15: CLOSED via manual archive.)</em> <code>_resume.md</code> rewritten as thin cursor (~35 lines). Old content archived verbatim to <code>_resume_archive_2026-04-14.md</code>. Proposal C (migration protocol) is still deferred; this one-off was a manual zero-loss copy.</td>
+</tr>
+<tr>
+  <td>L8</td>
+  <td><code>_scratchpad.md</code> growing unbounded</td>
+  <td><code>_scratchpad.md</code> (&sim;280 lines)</td>
+  <td>Every session adds an entry. Nothing retires or archives entries post-promotion.</td>
+  <td>Rule: entries with a <code>&gt; **Promoted:**</code> cross-reference can be archived to <code>_scratchpad_archive.md</code> after one Sprint.</td>
+</tr>
+<tr>
+  <td>L9</td>
+  <td>No file lifecycle semantics</td>
+  <td>Every file in <code>devlead_docs/</code></td>
+  <td>No file declares its lifetime. "Permanent" is the default assumption but isn't enforced or marked.</td>
+  <td>Source-of-truth block (Proposal A) includes <code>lifetime</code>: <code>permanent | sprint | session | ephemeral</code>.</td>
+</tr>
+<tr>
+  <td>L10</td>
+  <td>Cross-file references not tracked</td>
+  <td>Any file that references another (e.g. <code>_resume.md</code> &sect;14 pointing at &sect;20)</td>
+  <td>If the target section moves or is renamed, pointers go stale. No registry.</td>
+  <td>Lineage metadata (Proposal B) + a <code>/devlead verify-links</code> command that walks all cross-refs.</td>
+</tr>
+<tr>
+  <td>L11</td>
+  <td>Placeholder-heavy living files</td>
+  <td>Most <code>_living_*.md</code> files</td>
+  <td>Eight of nine are empty scaffold placeholders. They feel like busywork at install time.</td>
+  <td>Lazy creation: ship only <code>_living_project.md</code> and <code>_living_standing_instructions.md</code>. Others created on demand via <code>/devlead init --add &lt;slug&gt;</code>.</td>
+</tr>
+<tr style="background:#ecfdf5;">
+  <td>L12 <span class="status-green">&check;</span></td>
+  <td>Duplicate cross-reference bug</td>
+  <td><code>scratchpad.py</code> <code>append_cross_reference()</code></td>
+  <td>Already found during Session 3 dogfood. Running ingest twice on the same scratchpad entry appends duplicate <code>&gt; **Promoted:**</code> lines.</td>
+  <td><em>(UPDATE 2026-04-15: SHIPPED.)</em> Dedupe check added in <code>scratchpad.py</code> lines 143-147: body scanned for an identical trimmed note before append; duplicates are skipped and return <code>True</code>.</td>
+</tr>
+</tbody>
+</table>
+
+<h2 id="lineage">3. Lineage map &mdash; how content flows</h2>
+
+<p>Content in DevLead flows through a graph from raw capture to executed code. The graph is mostly built, with one major gap (intake &rarr; hierarchy) and several advisory edges (no hard enforcement yet).</p>
+
+<h3>3.1 The main flow</h3>
+
+<pre>
+user speaks X
+     |
+     v
+_scratchpad.md (raw entry, verbatim)
+     |
+     +-- plugin plan flow (superpowers or similar)
+     |        |
+     |        v
+     |   docs/superpowers/plans/*.md  (plugin-native, unchanged)
+     |        |
+     |        | /devlead ingest
+     |        v
+     +-- _intake_*.md (FEATURES-NNNN, BUGS-NNNN)
+              |
+              | promotion (NOT BUILT)
+              v
+         _project_hierarchy.md (Sprint / BO / TBO / TTO)
+              |
+              | code edits (NOT ENFORCED)
+              v
+         src/**/*.py
+              |
+              | commit referencing TTO (NOT ENFORCED)
+              v
+         git history
+              |
+              | /devlead awareness (scan)
+              v
+         _aware_*.md  (derived snapshot)
+</pre>
+
+<h3>3.2 Trace mechanisms per edge</h3>
+
+<table>
+<thead><tr><th>From</th><th>To</th><th>Trace metadata</th><th>Built?</th></tr></thead>
+<tbody>
+<tr><td>Session dialogue</td><td><code>_scratchpad.md</code></td><td>Entry heading <code>## Entry - YYYY-MM-DD - &lt;title&gt;</code>; slugified entry_id</td><td class="status-green">Yes</td></tr>
+<tr><td><code>_scratchpad.md</code></td><td><code>_intake_*.md</code> (via plan)</td><td>Intake <code>source:</code> is plan path. Scratchpad entry gets <code>&gt; **Promoted:**</code> line.</td><td class="status-green">Yes</td></tr>
+<tr><td><code>_scratchpad.md</code></td><td><code>_intake_*.md</code> (direct)</td><td>Intake <code>source: scratchpad:&lt;entry-id&gt;</code>. Scratchpad entry gets <code>&gt; **Promoted:**</code> line.</td><td class="status-green">Yes</td></tr>
+<tr><td><code>_intake_*.md</code></td><td><code>_project_hierarchy.md</code></td><td>Intake <code>promoted_to:</code> (BO-X / TBO-Y path) and <code>promoted_at:</code> timestamp</td><td class="status-red">No</td></tr>
+<tr><td><code>_project_hierarchy.md</code></td><td>src code</td><td>Commit message references TTO ID</td><td class="status-red">No</td></tr>
+<tr><td>src code</td><td><code>_aware_*.md</code></td><td>Generator scans <code>commands/</code> and <code>src/</code>; writes timestamp and sources</td><td class="status-green">Yes</td></tr>
+<tr><td>Decisions</td><td><code>_resume.md</code> &sect;3</td><td>Hand-added row with "(added YYYY-MM-DD)" inline tag</td><td class="status-amber">Manual only</td></tr>
+<tr><td><code>_resume.md</code> &sect;3</td><td><code>_living_decisions.md</code></td><td>(should migrate on Sprint close; not implemented)</td><td class="status-red">No</td></tr>
+</tbody>
+</table>
+
+<h3>3.3 Where the graph breaks</h3>
+
+<div class="callout-warn">
+<strong>Gap 1:</strong> <code>_intake_*.md</code> entries cannot be promoted to <code>_project_hierarchy.md</code>. No command exists. Everything stops at intake today.
+</div>
+<div class="callout-warn">
+<strong>Gap 2:</strong> No mechanism ties a specific code edit to a specific TTO. Once the store layer ships, this becomes the main enforcement surface.
+</div>
+<div class="callout">
+<strong>Gap 3:</strong> Decisions land in <code>_resume.md</code> &sect;3 by hand. No automation promotes them to <code>_living_decisions.md</code>. Over time, &sect;3 grows unbounded (see L7).
+</div>
+<div class="callout">
+<strong>Gap 4:</strong> Scratchpad entries never retire even after promotion. The cross-reference is one-way.
+</div>
+
+<h2 id="tighten">4. Tightening proposals</h2>
+
+<h3>4.1 Proposal A &mdash; Source-of-truth declaration blocks</h3>
+
+<p>Every file in <code>devlead_docs/</code> opens with a standardized metadata block that DevLead reads to understand the file's role, owner, and lifecycle. Hand-editable; parseable by a tiny Python module.</p>
+
+<pre><code>&lt;!-- devlead:sot
+  purpose: "Session handoff cursor + locked decisions + open threads"
+  owner: "claude+user"
+  canonical_for: ["session_memory", "locked_decisions"]
+  lineage:
+    receives_from: ["_scratchpad.md (via triage)"]
+    migrates_to: ["_living_decisions.md (on Sprint close)"]
+  lifetime: "permanent"
+  bloat_cap_lines: 200
+  last_audit: "2026-04-14"
+--&gt;
+</code></pre>
+
+<p>DevLead reads the block to answer questions like:</p>
+<ul>
+  <li>Which file is canonical for locked decisions? (whichever has <code>locked_decisions</code> in <code>canonical_for</code>)</li>
+  <li>Where does content in <code>_resume.md</code> migrate to when it matures? (<code>migrates_to</code>)</li>
+  <li>Is <code>_resume.md</code> over its bloat cap? (compare line count vs <code>bloat_cap_lines</code>)</li>
+  <li>When was this file last sanity-checked? (<code>last_audit</code>)</li>
+</ul>
+
+<p><strong>Parser:</strong> simple regex. Block is a markdown HTML comment wrapping YAML-ish key/value lines. Stdlib only. Roughly 80 lines in a new <code>src/devlead/sot.py</code> module.</p>
+
+<p><strong>Install impact:</strong> all scaffold templates gain an SOT block. Existing files need a one-time backfill (done during rollout item 2).</p>
+
+<h3>4.2 Proposal B &mdash; Lineage metadata on every entry</h3>
+
+<p>Intake entries already have <code>source</code>, <code>promoted_to</code>, <code>promoted_at</code>, <code>origin</code>. Extend the same pattern across all unit types that can be referenced.</p>
+
+<table>
+<thead><tr><th>Entry type</th><th>Current metadata</th><th>Add</th></tr></thead>
+<tbody>
+<tr><td>Intake entry (<code>_intake_*.md</code>)</td><td>source, promoted_to, promoted_at, origin, status</td><td><code>derived_from: [ids]</code>, <code>descendants: [ids]</code>, <code>supersedes: [id]</code></td></tr>
+<tr><td>Scratchpad entry (<code>_scratchpad.md</code>)</td><td>entry_id (date+slug), cross-refs in body</td><td>Formalize cross-refs as a <code>promoted_to: [intake-ids]</code> structured field (dedupe-safe)</td></tr>
+<tr><td>Hierarchy node (<code>_project_hierarchy.md</code>)</td><td>(not built)</td><td><code>id</code>, <code>parent</code>, <code>weight</code>, <code>derived_from: [intake-ids]</code></td></tr>
+<tr><td>Locked decision (<code>_resume.md</code> &sect;3)</td><td>"(added YYYY-MM-DD)" inline</td><td>Structured row with <code>decision_id</code>, <code>date</code>, <code>origin</code> (scratchpad entry id if applicable)</td></tr>
+</tbody>
+</table>
+
+<p><strong>Benefit:</strong> a new <code>/devlead verify-links</code> command can walk the entire graph and catch broken references, orphans, and stale content automatically.</p>
+
+<h3>4.3 Proposal C &mdash; Migration protocol with zero-loss guarantee</h3>
+
+<p>Section 18.4 of <code>_resume.md</code> already designs this mechanism; it's not built. Build it.</p>
+
+<ol>
+  <li>User or Claude proposes: "Section X of <code>_resume.md</code> should move to <code>_design_section_Y.md</code>."</li>
+  <li>DevLead computes a content hash of the source section.</li>
+  <li>DevLead checks whether the destination file exists and contains matching content (by hash).</li>
+  <li>If yes: safe to remove from source. Append to <code>_migration_log.jsonl</code>. Remove.</li>
+  <li>If no: migration is <strong>blocked</strong>. Error: "destination does not hold this content; write it first, then retry."</li>
+</ol>
+
+<p>This is the one place in DevLead where strict mode is <strong>always on</strong>: information loss is unrecoverable, so it can never be a warning.</p>
+
+<p><strong>Commands:</strong></p>
+<ul>
+  <li><code>/devlead migrate &lt;source-section&gt; --to &lt;dest-file&gt;</code></li>
+  <li><code>/devlead migrate rollback &lt;migration-id&gt;</code></li>
+  <li><code>/devlead migrate list</code> (shows all past migrations)</li>
+</ul>
+
+<p><strong>Impact on file bloat:</strong> combined with the <code>bloat_cap_lines</code> SOT field, migration becomes the pressure-release valve. <code>_resume.md</code> stays lean because mature content flows out.</p>
+
+<h3>4.4 Proposal D &mdash; <code>_resume.md</code> discipline via bloat nudges</h3>
+
+<p>Every time <code>_resume.md</code> is modified, DevLead checks its line count against the SOT <code>bloat_cap_lines</code> value (default 200). If over, DevLead emits a warning listing sections that are candidates for migration (largest first, oldest first).</p>
+
+<p>Advisory in v1. In v1.1 it becomes a Stop-hook check that fires at session end, reminding Claude to propose migrations before closing.</p>
+
+<p><strong>Example warning:</strong></p>
+<pre>
+devlead: _resume.md is at 620 lines (cap 200).
+Sections over 50 lines:
+  &sect;4  "The hierarchy (with math)"           120 lines  [stale per L1]
+  &sect;18 "Session Resume first-class feature"  180 lines  [stale per L2]
+  &sect;19 "Project Maturity Score"               90 lines  [migrate candidate]
+Run /devlead migrate &sect;4 --to _design_section1.md to relocate.
+</pre>
+
+<h2 id="spectrum">5. Enforcement spectrum &mdash; Level 0 through 5</h2>
+
+<p>There are six degrees of how rigorously DevLead can override LLM behavior, ordered from softest to hardest. Each has different graceful-ness and different implementation cost.</p>
+
+<table>
+<thead><tr><th>Level</th><th>Mechanism</th><th>How it overrides Claude</th><th>Graceful?</th><th>Cost</th><th>Current?</th></tr></thead>
+<tbody>
+<tr>
+  <td><strong>0</strong></td><td>Convention only</td>
+  <td><code>CLAUDE.md</code> rule text. Claude self-polices by reading the rule at session start.</td>
+  <td class="status-green">Very</td><td>Zero</td><td class="status-green">Yes (today)</td>
+</tr>
+<tr>
+  <td><strong>1</strong></td><td>Soft nudging</td>
+  <td>Claude-injected reminders mid-session; e.g. Claude prints "Remember: no code without intake trace" before an edit.</td>
+  <td class="status-green">Very</td><td>Low (CLAUDE.md text + Claude discipline)</td><td class="status-amber">Partial</td>
+</tr>
+<tr>
+  <td><strong>2</strong></td><td>Hook + <code>systemMessage</code></td>
+  <td>Claude Code <code>PreToolUse</code> hook fires before <code>Edit</code>/<code>Write</code>. DevLead script inspects context, returns a <code>systemMessage</code> in the hook's JSON output. Claude reads it and self-corrects. Exit 0 &mdash; no hard block.</td>
+  <td class="status-green">Graceful</td><td>Medium (hook + Python check + session state file)</td><td class="status-red">No</td>
+</tr>
+<tr>
+  <td><strong>3</strong></td><td>Soft block via exit 1</td>
+  <td>Same hook but exits 1 if the check fails. Claude cannot proceed without addressing it; user can explicitly override.</td>
+  <td class="status-amber">Medium</td><td>Medium</td><td class="status-red">No</td>
+</tr>
+<tr>
+  <td><strong>4</strong></td><td>Hard block via exit 2</td>
+  <td>Hook exits 2. Claude cannot proceed. Only user intervention unblocks.</td>
+  <td class="status-red">Not graceful</td><td>Medium</td><td class="status-red">No (and v2 forbids exit 2 by default)</td>
+</tr>
+<tr>
+  <td><strong>5</strong></td><td>Pre-commit hook</td>
+  <td>Git pre-commit hook. Independent of Claude Code. Rejects commits that don't reference an intake/TTO ID. User can <code>--no-verify</code> but visibly.</td>
+  <td class="status-amber">Medium</td><td>Low</td><td class="status-red">No</td>
+</tr>
+</tbody>
+</table>
+
+<div class="callout-ok">
+<strong>Recommendation for v1: Level 2.</strong> Graceful. Uses native Claude Code hooks. Warns without blocking. Supports a config knob to upgrade to Level 3 for users who want stricter behavior.
+</div>
+
+<div class="callout">
+<strong>(UPDATE 2026-04-15)</strong> The six-level spectrum was collapsed in the locked decision to <strong>three modes</strong>: <code>warning</code> (Level 2 in this table), <code>soft</code> (Level 3), <code>hard</code> (Level 4). Default is <code>warning</code>. Levels 0/1/5 were dropped as either too weak or too late. Note that as of Session 3 close, <strong>nothing in this spectrum has been implemented yet</strong> &mdash; the discipline rule lives in <code>CLAUDE.md</code> text only (effectively Level 0). The gate engine (<code>src/devlead/gate.py</code>) is deferred to a future session.
+</div>
+
+<p><strong>Why not Level 0/1?</strong> Purely convention-based. Relies on Claude's diligence. No programmatic signal when the rule is bypassed. No audit trail.</p>
+<p><strong>Why not Level 3/4?</strong> Hard blocks contradict the <code>_resume.md</code> &sect;3 locked decision: "Nothing in v2 ever exits 2 unless strict mode is explicitly enabled." Level 2 is the warn-by-default implementation of that rule. Level 3 becomes an opt-in.</p>
+<p><strong>Why not Level 5?</strong> Only catches violations at commit time, way too late. Dark code has already been written.</p>
+
+<h2 id="recommend">6. Recommended enforcement for v1 &mdash; Level 2 detailed</h2>
+
+<p>The mechanism has four moving parts: the hook wiring, the CWI tracker, the Python check, and the configuration surface. Each is small; they compose into graceful enforcement.</p>
+
+<h3>6.1 The hook wiring</h3>
+
+<p>Claude Code supports four hooks today: <code>SessionStart</code>, <code>UserPromptSubmit</code>, <code>PreToolUse</code>, <code>Stop</code>. For intake discipline, we care about <code>PreToolUse</code> with matcher <code>Edit|Write|MultiEdit</code>.</p>
+
+<pre><code>// .claude/settings.json (DevLead-owned plumbing; users don't edit)
+{
+  "hooks": {
+    "PreToolUse": [
+      {
+        "matcher": "Edit|Write|MultiEdit",
+        "hooks": [
+          {
+            "type": "command",
+            "command": "devlead gate PreToolUse",
+            "timeout": 5
+          }
+        ]
+      }
+    ]
+  }
+}
+</code></pre>
+
+<p><code>/devlead init</code> writes this file (v1.1 feature; currently <code>{"hooks": {}}</code> by design until the gate engine ships).</p>
+
+<h3>6.2 The CWI tracker</h3>
+
+<div class="callout-warn">
+<strong>(UPDATE 2026-04-15: SUPERSEDED.)</strong> This subsection proposed a separate <code>_session_state.json</code> for CWI tracking. The locked decision went the other way: <strong>focus is tracked via the <code>status: in_progress</code> field inside the intake entry body itself</strong> &mdash; no parallel session-state file, no <code>session.py</code> module, no CWI concept. See &sect;0 Resolution Log row Q3 and the <code>_living_decisions.md</code> row "2026-04-14 &ndash; Focus via intake entry status (not a separate file)". The subsection below is preserved as the original reasoning archive; do not implement it.
+</div>
+
+<p><strong>CWI = Current Working Intake.</strong> The intake entry (or set of entries) that Claude is actively implementing. Without a CWI, the gate cannot verify traceability.</p>
+
+<p>Tracked in a new file: <code>devlead_docs/_session_state.json</code>.</p>
+
+<pre><code>{
+  "session_id": "2026-04-14T15:30:00Z",
+  "cwi": ["FEATURES-0003", "BUGS-0001"],
+  "cwi_set_at": "2026-04-14T15:35:00Z",
+  "cwi_set_by": "user"
+}
+</code></pre>
+
+<p><strong>Commands to manage CWI:</strong></p>
+<ul>
+  <li><code>/devlead focus &lt;intake-id&gt; [&lt;intake-id&gt; ...]</code> &mdash; set CWI to one or more entries. Can be called multiple times in a session.</li>
+  <li><code>/devlead focus clear</code> &mdash; clear CWI (for non-code sessions: docs work, capture-only).</li>
+  <li><code>/devlead focus show</code> &mdash; print current CWI.</li>
+</ul>
+
+<p>CWI is session-scoped by default but persists across sessions via the JSON file. Claude is expected to set it before editing code (documented in CLAUDE.md).</p>
+
+<h3>6.3 The Python check</h3>
+
+<p>A new module: <code>src/devlead/gate.py</code>. Entry point: <code>check_pretooluse(hook_input: dict) -&gt; dict</code>.</p>
+
+<pre><code># pseudocode
+def check_pretooluse(hook_input):
+    tool = hook_input["tool_name"]
+    file_path = hook_input["tool_input"].get("file_path", "")
+
+    # Skip meta-edits (DevLead's own files, intake files themselves)
+    if _is_devlead_meta(file_path):
+        return {"continue": True}
+
+    # Skip exempt paths (docs, config, tests, markdown) per config
+    if _is_exempt(file_path):
+        return {"continue": True}
+
+    session_state = _read_session_state()
+    cwi = session_state.get("cwi", [])
+
+    if not cwi:
+        _audit("gate_warn", tool=tool, file=file_path, reason="no_cwi")
+        return {
+            "continue": True,  # warn mode, never blocks
+            "systemMessage": (
+                "DevLead discipline: no current working intake is set. "
+                "Before editing code, run `/devlead focus &lt;intake-id&gt;` "
+                "or create an intake entry via "
+                "`/devlead ingest --from-scratchpad ... --forced`."
+            )
+        }
+
+    # Optional check: CWI entries mention the file being edited
+    if _config_enabled("enforcement.trace_file_edits"):
+        matching = [id for id in cwi if _entry_mentions_file(id, file_path)]
+        if not matching:
+            _audit("gate_warn", tool=tool, file=file_path,
+                   cwi=cwi, reason="file_not_in_cwi")
+            return {
+                "continue": True,
+                "systemMessage": (
+                    f"DevLead discipline: {file_path} is not mentioned in "
+                    f"any current CWI entry ({cwi}). Verify trace or refocus."
+                )
+            }
+
+    _audit("gate_pass", tool=tool, file=file_path, cwi=cwi)
+    return {"continue": True}
+</code></pre>
+
+<p><strong>Key properties:</strong></p>
+<ul>
+  <li>Never exits non-zero in warn mode. Claude always gets the tool call; it just reads the <code>systemMessage</code>.</li>
+  <li>Exempts DevLead's own files and non-code paths (configurable).</li>
+  <li>Writes every check to <code>_audit_log.jsonl</code> (pass, warn, or block).</li>
+</ul>
+
+<h3>6.4 What Claude sees</h3>
+
+<p>When Claude is about to edit <code>src/devlead/cli.py</code> without a CWI, Claude Code shows:</p>
+
+<pre>
+DevLead discipline: no current working intake is set.
+Before editing code, run `/devlead focus &lt;intake-id&gt;` or
+create an intake entry via
+`/devlead ingest --from-scratchpad ... --forced`.
+</pre>
+
+<p>Claude Code still runs the Edit tool (warn mode). But Claude reads the message, understands the nudge, and can choose to respond: "Before I make this edit, let me first set focus or capture the intake..." and then call the appropriate command.</p>
+
+<p>This is the <strong>graceful</strong> path: enforcement happens as conversational pressure, not hard failure. The cost of noncompliance is not a broken tool; it is a visible audit-log event and a nudge that Claude (and the user reading Claude's output) cannot miss.</p>
+
+<h2 id="config">7. Configurability &mdash; the devlead.yml surface</h2>
+
+<p>Per Nitin's permission in Session 3, configs can be YAML. Every knob in this document has a corresponding section in <code>devlead.yml</code> at the project root.</p>
+
+<pre><code># devlead.yml (project root; user-owned)
+version: 1
+
+memory:
+  resume_bloat_cap_lines: 200
+  resume_bloat_warn: true
+
+  scratchpad_archive_on_promote: false
+  scratchpad_archive_after_sprints: 1
+
+  auto_migrate_on_sprint_close: false
+
+enforcement:
+  mode: warn                    # warn | soft_block | strict
+  rules:
+    - name: intake_trace
+      events: [PreToolUse]
+      matchers: [Edit, Write, MultiEdit]
+      check: require_cwi
+      action: warn
+      exempt_paths:
+        - "devlead_docs/**"
+        - "docs/**"
+        - "*.md"
+        - "commands/**"
+
+    - name: trace_file_edits
+      events: [PreToolUse]
+      matchers: [Edit]
+      check: cwi_mentions_file
+      action: warn
+
+audit:
+  log_file: "devlead_docs/_audit_log.jsonl"
+  retention_days: 365
+  events: [gate_check, gate_warn, gate_block, ingest, migrate, focus_change]
+
+intake:
+  default_template: "default"
+  enable_template_picker: false
+  actionable_items_min: 1
+
+bridge:
+  plugins:
+    - name: superpowers
+      spec_glob: "docs/superpowers/specs/*.md"
+      plan_glob: "docs/superpowers/plans/*.md"
+      default_intake: "_intake_features.md"
+
+kpis:
+  k_bypass_warn_threshold: 0.25
+  drift_warn_threshold: 0.5
+  bo_yield_warn_threshold: 0.7
+  word_keeping_warn_threshold: 0.7
+</code></pre>
+
+<p><strong>Every single value above is user-editable without touching code.</strong> That is the answer to the "what is configurable" question in the end state: enforcement mode, exempt paths, memory caps, audit retention, intake template, plugin adapters, KPI thresholds.</p>
+
+<p>DevLead loads this file at every command invocation (no daemon). Defaults live in code; the YAML overrides.</p>
+
+<h2 id="audit">8. Audit and observability</h2>
+
+<h3>8.1 Audit log schema</h3>
+
+<p><code>_audit_log.jsonl</code> ships empty today. The schema below should be locked so all future features write consistent events.</p>
+
+<pre><code>{"ts": "2026-04-14T15:30:00Z", "event": "ingest", "tool": null, "cwi": null, "intake_id": "FEATURES-0003", "source": "scratchpad:2026-04-14-memory-cohesion", "origin": "forced", "result": "ok"}
+{"ts": "2026-04-14T15:31:00Z", "event": "focus_change", "cwi": ["FEATURES-0003"], "previous_cwi": [], "actor": "user"}
+{"ts": "2026-04-14T15:32:00Z", "event": "gate_check", "tool": "Edit", "file": "src/devlead/gate.py", "cwi": ["FEATURES-0003"], "rule": "intake_trace", "result": "pass"}
+{"ts": "2026-04-14T15:33:00Z", "event": "gate_warn", "tool": "Edit", "file": "src/devlead/random.py", "cwi": [], "rule": "intake_trace", "result": "warn", "message": "no CWI set"}
+</code></pre>
+
+<h3>8.2 Query commands (v1.1)</h3>
+<ul>
+  <li><code>/devlead audit recent [N]</code> &mdash; last N events, newest first.</li>
+  <li><code>/devlead audit gate-violations</code> &mdash; all warn/block events grouped by rule.</li>
+  <li><code>/devlead audit cwi-trace &lt;intake-id&gt;</code> &mdash; every edit tied to a specific CWI.</li>
+  <li><code>/devlead audit origin-breakdown</code> &mdash; counts of <code>origin: normal</code> vs <code>origin: forced</code> (feeds K_BYPASS KPI).</li>
+</ul>
+
+<h2 id="rollout">9. Depth-first rollout plan</h2>
+
+<p>No new features. Every item below tightens or enriches existing surface. Ordered by dependency.</p>
+
+<ol>
+  <li>
+    <strong>Fix the Session-3 leaks.</strong>
+    <ul>
+      <li>L1 (&sect;4 stale diagram) &mdash; rewrite or migrate</li>
+      <li>L2 (&sect;18 stale definition) &mdash; rewrite or migrate</li>
+      <li>L3 (<code>_living_goals.md</code>) &mdash; decide fate</li>
+      <li>L6 (<code>interview_template.md</code>) &mdash; status note or removal</li>
+      <li>L12 (duplicate cross-ref bug) &mdash; first <code>_intake_bugs.md</code> entry</li>
+    </ul>
+  </li>
+  <li><strong>Implement Proposal A (SOT blocks).</strong> Module <code>src/devlead/sot.py</code>. Backfill all existing files with their declarations. Add block to every scaffold template.</li>
+  <li><strong>Implement Proposal C (migration protocol).</strong> Commands <code>/devlead migrate</code> and friends. <code>_migration_log.jsonl</code>. Hash-checked, reversible. Unlock migrating &sect;4, &sect;18, &sect;19 out of <code>_resume.md</code>.</li>
+  <li><strong>Implement Proposal D (bloat nudge).</strong> Awareness scan checks <code>bloat_cap_lines</code>; emits warning at session end.</li>
+  <li><strong>Implement Proposal B (lineage metadata) on intake.</strong> Add <code>derived_from</code>, <code>descendants</code>, <code>supersedes</code> fields to <code>IntakeEntry</code>. Populate automatically where possible.</li>
+  <li><strong>Implement <code>/devlead verify-links</code>.</strong> Walks the full graph, reports broken references and orphans. Writes to audit log.</li>
+  <li><strong>Implement the Level-2 enforcement gate.</strong> <code>src/devlead/gate.py</code> + <code>devlead gate PreToolUse</code> CLI entry + <code>_session_state.json</code> + <code>/devlead focus</code> commands + <code>devlead.yml [enforcement]</code> parser.</li>
+  <li><strong>Write the <code>devlead.yml</code> loader.</strong> Single config surface. Zero deps (use <code>tomllib</code> if we accept TOML; otherwise a thin YAML subset parser).</li>
+  <li><strong>Wire the audit log schema.</strong> Every existing command (ingest, awareness, focus) writes its own event. Audit becomes the first KPI-feeding data layer.</li>
+</ol>
+
+<p><strong>Estimated effort:</strong> items 1-4 are 1-2 sessions. Items 5-9 are 2-3 sessions. Total: 3-5 focused sessions, all depth-first, zero new features.</p>
+
+<div class="callout">
+<strong>(UPDATE 2026-04-15: Rollout status.)</strong> Item 1 ("Fix Session-3 leaks") is substantially complete &mdash; L1/L2/L3/L4/L6/L7/L12 resolved, L5/L8/L9/L10/L11 still open. Items 2 (SOT blocks), 3 (migration protocol), 4 (bloat nudges), 5 (lineage metadata), 6 (verify-links), 7 (Level-2 gate), 8 (config loader), 9 (audit wiring) are all deferred. Next session is <strong>shake-the-tree test</strong> (dev freeze), not implementation. Shake-the-tree findings will re-prioritize items 2-9 before any of them ship.
+</div>
+
+<h2 id="questions">10. Open questions for Nitin</h2>
+
+<p>Each of these needs a decision before implementation can proceed.</p>
+
+<table>
+<thead><tr><th>#</th><th>Question</th><th>Options</th><th>My lean</th></tr></thead>
+<tbody>
+<tr style="background:#ecfdf5;">
+  <td>Q1 <span class="status-green">&check;</span></td>
+  <td>Fate of <code>_living_goals.md</code>?</td>
+  <td>(a) remove from scaffold; (b) repurpose as derived view of <code>_project_hierarchy.md</code> BO section; (c) keep as alias with redirect</td>
+  <td><em>(UPDATE 2026-04-15: ANSWERED &mdash; NONE of the above.)</em> Kept as a doc-only narrative container. See &sect;0 row Q1.</td>
+</tr>
+<tr style="background:#ecfdf5;">
+  <td>Q2 <span class="status-green">&check;</span></td>
+  <td>Decision log boundary: &sect;3 vs <code>_living_decisions.md</code></td>
+  <td>(a) &sect;3 = active locks (current Sprint); log = permanent archive, migrated on Sprint close; (b) log is canonical, &sect;3 is a view; (c) merge into one file</td>
+  <td><em>(UPDATE 2026-04-15: ANSWERED &mdash; stronger than (b).)</em> <code>_living_decisions.md</code> is the sole canonical source. <code>_resume.md</code> does NOT hold locked decisions at all. See &sect;0 row Q2.</td>
+</tr>
+<tr style="background:#ecfdf5;">
+  <td>Q3 <span class="status-green">&check;</span></td>
+  <td>CWI tracking mechanism</td>
+  <td>(a) separate <code>_session_state.json</code>; (b) flag inside the intake entry body; (c) both</td>
+  <td><em>(UPDATE 2026-04-15: ANSWERED &mdash; (b), opposite of the lean.)</em> Focus uses the intake entry's <code>status: in_progress</code> field. No session-state file. No CWI concept. See &sect;0 row Q3 and &sect;6.2 superseded callout.</td>
+</tr>
+<tr style="background:#ecfdf5;">
+  <td>Q4 <span class="status-green">&check;</span></td>
+  <td>Enforcement default mode</td>
+  <td>(a) warn; (b) soft_block; (c) off by default, user opts in</td>
+  <td><em>(UPDATE 2026-04-15: ANSWERED &mdash; (a), confirmed.)</em> Three modes locked: <code>warning</code> / <code>soft</code> / <code>hard</code>. Default <code>warning</code>. Nothing implemented yet.</td>
+</tr>
+<tr style="background:#ecfdf5;">
+  <td>Q5 <span class="status-green">&check;</span></td>
+  <td>Config file format</td>
+  <td>(a) YAML (PyYAML dep); (b) YAML (in-house subset parser); (c) TOML (<code>tomllib</code> stdlib); (d) both</td>
+  <td><em>(UPDATE 2026-04-15: ANSWERED &mdash; (c), confirmed.)</em> TOML via <code>tomllib</code>. YAML permitted where nested structure is more natural. Loader not yet written.</td>
+</tr>
+<tr style="background:#ecfdf5;">
+  <td>Q6 <span class="status-green">&check;</span></td>
+  <td>Bloat cap for <code>_resume.md</code></td>
+  <td>(a) 200 lines; (b) 500 lines; (c) no cap, only warn</td>
+  <td><em>(UPDATE 2026-04-15: ANSWERED &mdash; tighter than (a): 30-50 lines target.)</em> File rewritten as pure thin cursor; current size ~35 lines. Bloat-cap nudges (Proposal D) moot.</td>
+</tr>
+<tr>
+  <td>Q7</td>
+  <td>Scratchpad retirement</td>
+  <td>(a) entries never retire; (b) archive after 1 Sprint post-promotion; (c) archive on user command only</td>
+  <td><strong>(b)</strong> Auto-archive with Sprint grace keeps the inbox lean.</td>
+</tr>
+<tr style="background:#ecfdf5;">
+  <td>Q8 <span class="status-green">&check;</span></td>
+  <td>Which leaks to fix first?</td>
+  <td>(a) all 12 in one session; (b) just L1, L2, L3, L12 now, rest during SOT backfill; (c) wait for SOT block implementation</td>
+  <td><em>(UPDATE 2026-04-15: ANSWERED &mdash; exceeded (b).)</em> L1, L2, L3, L4, L6, L7, L12 resolved this session. L5, L8, L9, L10, L11 remain open.</td>
+</tr>
+</tbody>
+</table>
+
+<div class="footer">
+<p>End of analysis. Eleven sections including the &sect;0 Resolution Log. Q1-Q6 and Q8 answered in Session 3 close-out; Q7 still open. Rollout item 1 substantially complete; items 2-9 deferred pending Session 4 shake-the-tree findings.</p>
+<p>Generated 2026-04-14 by Claude during DevLead Session 3 depth-phase kickoff. Refreshed 2026-04-15 with the &sect;0 Resolution Log and inline update markers; original analysis preserved as the reasoning archive. This analysis is tracked as a forced intake entry (see <code>devlead_docs/_intake_features.md</code> FEATURES-0003); the discipline rule dogfoods on its own design doc.</p>
+</div>
+
+</body>
+</html>

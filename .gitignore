@@ -6,5 +6,5 @@ build/
 .eggs/
 .venv/
 .pytest_cache/
-claude_docs/session_state.json
-claude_docs/session_history.jsonl
+devlead_docs/session_state.json
+devlead_docs/session_history.jsonl
