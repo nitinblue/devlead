@@ -87,6 +87,8 @@ def main(argv: list[str] | None = None) -> int:
         return _cmd_report(args[1:])
     if cmd == "resume":
         return _cmd_resume(args[1:])
+    if cmd == "kpi":
+        return _cmd_kpi(args[1:])
 
     # Unknown command -> exit 0 (warn-only by design).
     print(f"devlead: unknown command '{cmd}' (v2 under construction)", file=sys.stderr)
@@ -528,6 +530,15 @@ def _cmd_config(sub_args: list[str]) -> int:
             else:
                 print(f"  {k} = {v}")
     return 0
+
+def _cmd_kpi(sub_args: list[str]) -> int:
+    from devlead import kpi
+
+    repo_root = Path(sub_args[0]) if sub_args else Path.cwd()
+    results = kpi.compute(repo_root)
+    print(kpi.summary(results))
+    return 0
+
 
 def _cmd_resume(sub_args: list[str]) -> int:
     from devlead import resume

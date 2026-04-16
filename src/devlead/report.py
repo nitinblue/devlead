@@ -30,6 +30,8 @@ def generate(repo_root: Path) -> str:
     sections.append(_check_audit(docs_dir))
     sections.append(_check_modules(repo_root))
     sections.append(_check_files_changed(repo_root))
+    sections.append(_check_kpis(repo_root))
+    sections.append(_check_hierarchy(docs_dir))
 
     pass_count = sum(s.count('class="pass"') for s in sections)
     fail_count = sum(s.count('class="fail"') for s in sections)
@@ -263,6 +265,56 @@ def _check_files_changed(repo_root: Path) -> str:
 <pre>{_esc(output)}</pre>"""
     except Exception as e:
         return f'<h2>7. Uncommitted changes</h2><p class="warn">Could not run git: {_esc(str(e))}</p>'
+
+
+def _check_kpis(repo_root: Path) -> str:
+    try:
+        from devlead import kpi
+        results = kpi.compute(repo_root)
+        categories = {"A": "LLM Effectiveness", "B": "Delivery", "C": "Project Health", "D": "Business Convergence"}
+        rows = []
+        for r in results:
+            cat_name = categories.get(r.category, r.category)
+            warn_class = "warn" if r.warning else "pass"
+            if r.fmt == "percent":
+                val = f"{r.value}%"
+            elif r.fmt == "count":
+                val = str(int(r.value))
+            else:
+                val = str(r.value)
+            rows.append(f'<tr><td>{cat_name}</td><td>{_esc(r.name)}</td><td class="{warn_class}">{val}</td><td>{_esc(r.detail)}</td></tr>')
+        return f"""<h2>8. KPIs (computed from real data)</h2>
+<table><thead><tr><th>Category</th><th>KPI</th><th>Value</th><th>Detail</th></tr></thead>
+<tbody>{"".join(rows)}</tbody></table>"""
+    except Exception as e:
+        return f'<h2>8. KPIs</h2><p class="fail">Error computing KPIs: {_esc(str(e))}</p>'
+
+
+def _check_hierarchy(docs_dir: Path) -> str:
+    try:
+        from devlead import hierarchy
+        h_path = docs_dir / "_project_hierarchy.md"
+        if not h_path.exists():
+            return '<h2>9. Hierarchy convergence</h2><p class="info">No hierarchy file</p>'
+        sprints = hierarchy.parse(h_path)
+        rows = []
+        for s in sprints:
+            rows.append(f'<tr><td colspan="4" style="background:#dbeafe;font-weight:600;">Sprint: {_esc(s.name)} — {s.convergence:.1f}%</td></tr>')
+            for bo in s.bos:
+                deadline_info = f" (deadline: {bo.end_date})" if bo.end_date else ""
+                revised = ""
+                if bo.revised_date and bo.revised_date != "(none)":
+                    revised = f' <span class="warn">REVISED to {bo.revised_date}: {bo.revision_justification}</span>'
+                rows.append(f'<tr><td>{bo.id}</td><td>{_esc(bo.name)}</td><td>{bo.convergence:.1f}%</td><td>{deadline_info}{revised}</td></tr>')
+                for tbo in bo.tbos:
+                    done = sum(1 for t in tbo.ttos if t.done)
+                    total = len(tbo.ttos)
+                    rows.append(f'<tr><td style="padding-left:24px;">{tbo.id}</td><td>{_esc(tbo.name)}</td><td>{tbo.convergence:.1f}%</td><td>{done}/{total} TTOs</td></tr>')
+        return f"""<h2>9. Hierarchy convergence</h2>
+<table><thead><tr><th>ID</th><th>Name</th><th>Convergence</th><th>Detail</th></tr></thead>
+<tbody>{"".join(rows)}</tbody></table>"""
+    except Exception as e:
+        return f'<h2>9. Hierarchy convergence</h2><p class="fail">Error: {_esc(str(e))}</p>'
 
 
 def write_report(repo_root: Path) -> Path:

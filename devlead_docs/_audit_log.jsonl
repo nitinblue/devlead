@@ -43,3 +43,9 @@
 {"ts": "2026-04-16T02:46:17Z", "event": "gate_warn", "tool": "Edit", "file": "C:\\Users\\nitin\\plugin-development\\devlead\\src\\devlead\\hierarchy.py", "cwi": [], "rule": "intake_trace", "result": "warn", "message": "no_cwi"}
 {"ts": "2026-04-16T02:48:26Z", "event": "gate_warn", "tool": "Edit", "file": "C:\\Users\\nitin\\plugin-development\\devlead\\src\\devlead\\resume.py", "cwi": [], "rule": "intake_trace", "result": "warn", "message": "no_cwi"}
 {"ts": "2026-04-16T02:48:37Z", "event": "gate_warn", "tool": "Edit", "file": "C:\\Users\\nitin\\plugin-development\\devlead\\src\\devlead\\resume.py", "cwi": [], "rule": "intake_trace", "result": "warn", "message": "no_cwi"}
+{"ts": "2026-04-16T02:53:38Z", "event": "gate_warn", "tool": "Write", "file": "C:\\Users\\nitin\\plugin-development\\devlead\\src\\devlead\\kpi.py", "cwi": [], "rule": "intake_trace", "result": "warn", "message": "no_cwi"}
+{"ts": "2026-04-16T02:53:45Z", "event": "gate_warn", "tool": "Edit", "file": "C:\\Users\\nitin\\plugin-development\\devlead\\src\\devlead\\cli.py", "cwi": [], "rule": "intake_trace", "result": "warn", "message": "no_cwi"}
+{"ts": "2026-04-16T02:53:52Z", "event": "gate_warn", "tool": "Edit", "file": "C:\\Users\\nitin\\plugin-development\\devlead\\src\\devlead\\cli.py", "cwi": [], "rule": "intake_trace", "result": "warn", "message": "no_cwi"}
+{"ts": "2026-04-16T02:54:15Z", "event": "gate_warn", "tool": "Edit", "file": "C:\\Users\\nitin\\plugin-development\\devlead\\src\\devlead\\report.py", "cwi": [], "rule": "intake_trace", "result": "warn", "message": "no_cwi"}
+{"ts": "2026-04-16T02:54:34Z", "event": "gate_warn", "tool": "Edit", "file": "C:\\Users\\nitin\\plugin-development\\devlead\\src\\devlead\\report.py", "cwi": [], "rule": "intake_trace", "result": "warn", "message": "no_cwi"}
+{"ts": "2026-04-16T02:54:49Z", "event": "verify_pass", "result": "ok"}
