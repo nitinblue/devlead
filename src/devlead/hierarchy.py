@@ -140,6 +140,57 @@ def parse(hierarchy_path: Path) -> list[Sprint]:
     return sprints
 
 
+def coverage_score(bo: BO) -> float:
+    """What % of BO weight is covered by TBOs. Returns 0-100."""
+    if not bo.tbos:
+        return 0.0
+    return min(sum(t.weight for t in bo.tbos), 100)
+
+
+def tbo_coverage_score(tbo: TBO) -> float:
+    """What % of TBO weight is covered by TTOs. Returns 0-100."""
+    if not tbo.ttos:
+        return 0.0
+    return min(sum(t.weight for t in tbo.ttos), 100)
+
+
+def traceability_score(sprints: list[Sprint]) -> float:
+    """% of TTOs that exist in the hierarchy (all by definition in v2). Returns 0-100."""
+    total = sum(1 for s in sprints for b in s.bos for t in b.tbos for tt in t.ttos)
+    return 100.0 if total > 0 else 0.0
+
+
+def convergence_breakdown(sprints: list[Sprint]) -> dict:
+    """Full convergence breakdown for dashboard rendering."""
+    result = {"sprints": []}
+    for s in sprints:
+        sprint_data = {"name": s.name, "convergence": s.convergence, "bos": []}
+        for bo in s.bos:
+            bo_data = {
+                "id": bo.id, "name": bo.name, "weight": bo.weight,
+                "convergence": bo.convergence, "coverage": coverage_score(bo),
+                "start_date": bo.start_date, "end_date": bo.end_date,
+                "actual_date": bo.actual_date, "revised_date": bo.revised_date,
+                "revision_justification": bo.revision_justification,
+                "tbos": [],
+            }
+            for tbo in bo.tbos:
+                tbo_data = {
+                    "id": tbo.id, "name": tbo.name, "weight": tbo.weight,
+                    "convergence": tbo.convergence, "coverage": tbo_coverage_score(tbo),
+                    "ttos": [],
+                }
+                for tto in tbo.ttos:
+                    tbo_data["ttos"].append({
+                        "id": tto.id, "name": tto.name, "weight": tto.weight,
+                        "done": tto.done, "ttype": tto.ttype,
+                    })
+                bo_data["tbos"].append(tbo_data)
+            sprint_data["bos"].append(bo_data)
+        result["sprints"].append(sprint_data)
+    return result
+
+
 def summary(sprints: list[Sprint]) -> str:
     """Plain-text convergence summary."""
     lines = []
