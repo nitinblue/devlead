@@ -19,7 +19,7 @@ th { background: #dbeafe; font-weight: 600; }
 pre { background: #f3f4f6; padding: 12px; border-radius: 6px; font-size: 13px; overflow-x: auto; }
 </style></head><body>
 <h1>DevLead Session Report</h1>
-<p class="meta">Generated: 2026-04-16 01:58:22 UTC</p>
+<p class="meta">Generated: 2026-04-16 02:02:05 UTC</p>
 <p class="meta">Project: C:\Users\nitin\plugin-development\devlead</p>
 
 <div class="verdict pass">ALL CHECKS PASSED</div>
@@ -28,7 +28,7 @@ pre { background: #f3f4f6; padding: 12px; border-radius: 6px; font-size: 13px; o
 <h2>1. Installation health</h2>
 <p>Does devlead_docs/ have all required files?</p>
 <table><thead><tr><th>File</th><th>Status</th><th>Note</th></tr></thead>
-<tbody><tr><td><code>_resume.md</code></td><td class="pass">EXISTS</td><td>3033 bytes</td></tr><tr><td><code>_scratchpad.md</code></td><td class="pass">EXISTS</td><td>17649 bytes</td></tr><tr><td><code>_intake_features.md</code></td><td class="pass">EXISTS</td><td>14862 bytes</td></tr><tr><td><code>_intake_bugs.md</code></td><td class="pass">EXISTS</td><td>1028 bytes</td></tr><tr><td><code>_living_decisions.md</code></td><td class="pass">EXISTS</td><td>8097 bytes</td></tr><tr><td><code>_living_project.md</code></td><td class="pass">EXISTS</td><td>739 bytes</td></tr><tr><td><code>_living_standing_instructions.md</code></td><td class="pass">EXISTS</td><td>913 bytes</td></tr><tr><td><code>_project_hierarchy.md</code></td><td class="pass">EXISTS</td><td>938 bytes</td></tr><tr><td><code>_project_status.md</code></td><td class="pass">EXISTS</td><td>1482 bytes</td></tr><tr><td><code>_aware_features.md</code></td><td class="pass">EXISTS</td><td>2091 bytes</td></tr><tr><td><code>_aware_design.md</code></td><td class="pass">EXISTS</td><td>2264 bytes</td></tr><tr><td><code>_audit_log.jsonl</code></td><td class="pass">EXISTS</td><td>2100 bytes</td></tr><tr><td><code>_intake_templates/default.md</code></td><td class="pass">EXISTS</td><td>2981 bytes</td></tr><tr><td><code>CLAUDE.md</code></td><td class="pass">HAS DEVLEAD SECTION</td><td>Auto-generated governance rules present</td></tr></tbody></table>
+<tbody><tr><td><code>_resume.md</code></td><td class="pass">EXISTS</td><td>3815 bytes</td></tr><tr><td><code>_scratchpad.md</code></td><td class="pass">EXISTS</td><td>17649 bytes</td></tr><tr><td><code>_intake_features.md</code></td><td class="pass">EXISTS</td><td>14862 bytes</td></tr><tr><td><code>_intake_bugs.md</code></td><td class="pass">EXISTS</td><td>1028 bytes</td></tr><tr><td><code>_living_decisions.md</code></td><td class="pass">EXISTS</td><td>8097 bytes</td></tr><tr><td><code>_living_project.md</code></td><td class="pass">EXISTS</td><td>739 bytes</td></tr><tr><td><code>_living_standing_instructions.md</code></td><td class="pass">EXISTS</td><td>913 bytes</td></tr><tr><td><code>_project_hierarchy.md</code></td><td class="pass">EXISTS</td><td>938 bytes</td></tr><tr><td><code>_project_status.md</code></td><td class="pass">EXISTS</td><td>1482 bytes</td></tr><tr><td><code>_aware_features.md</code></td><td class="pass">EXISTS</td><td>2091 bytes</td></tr><tr><td><code>_aware_design.md</code></td><td class="pass">EXISTS</td><td>2264 bytes</td></tr><tr><td><code>_audit_log.jsonl</code></td><td class="pass">EXISTS</td><td>2806 bytes</td></tr><tr><td><code>_intake_templates/default.md</code></td><td class="pass">EXISTS</td><td>2981 bytes</td></tr><tr><td><code>CLAUDE.md</code></td><td class="pass">HAS DEVLEAD SECTION</td><td>Auto-generated governance rules present</td></tr></tbody></table>
 <h2>2. Hook wiring</h2>
 <p>Are Claude Code hooks configured to call DevLead?</p>
 <table><thead><tr><th>Hook</th><th>Status</th><th>Meaning</th></tr></thead>
@@ -36,127 +36,24 @@ pre { background: #f3f4f6; padding: 12px; border-radius: 6px; font-size: 13px; o
 <h2>3. Command health</h2>
 <p>Can every DevLead command actually run without crashing?</p>
 <table><thead><tr><th>Command</th><th>Status</th><th>Output</th></tr></thead>
-<tbody><tr><td><code>devlead intake</code></td><td class="pass">OK</td><td>[_intake_bugs.md]</td></tr><tr><td><code>devlead scratchpad</code></td><td class="pass">OK</td><td>2026-04-14-plugin-bridge-and-intake-flow	Plugin Bridge and Intake Flow</td></tr><tr><td><code>devlead focus show</code></td><td class="pass">OK</td><td>focus: (none)</td></tr><tr><td><code>devlead config show</code></td><td class="pass">OK</td><td># devlead config (repo_root=C:\Users\nitin\plugin-development\devlead)</td></tr><tr><td><code>devlead verify-links</code></td><td class="pass">OK</td><td>verify-links: all references valid, no orphans.</td></tr><tr><td><code>devlead audit recent 5</code></td><td class="pass">OK</td><td>{"ts": "2026-04-16T01:53:38Z", "event": "gate_pass", "tool": "Edit", "file": "C:</td></tr></tbody></table>
+<tbody><tr><td><code>devlead intake</code></td><td class="pass">OK</td><td>[_intake_bugs.md]</td></tr><tr><td><code>devlead scratchpad</code></td><td class="pass">OK</td><td>2026-04-14-plugin-bridge-and-intake-flow	Plugin Bridge and Intake Flow</td></tr><tr><td><code>devlead focus show</code></td><td class="pass">OK</td><td>focus: (none)</td></tr><tr><td><code>devlead config show</code></td><td class="pass">OK</td><td># devlead config (repo_root=C:\Users\nitin\plugin-development\devlead)</td></tr><tr><td><code>devlead verify-links</code></td><td class="pass">OK</td><td>verify-links: all references valid, no orphans.</td></tr><tr><td><code>devlead audit recent 5</code></td><td class="pass">OK</td><td>{"ts": "2026-04-16T02:01:08Z", "event": "gate_pass", "tool": "Edit", "file": "C:</td></tr></tbody></table>
 <h2>4. Intake status</h2>
 <p>13 entries: 13 done, 0 in progress, 0 pending</p>
 <table><thead><tr><th>ID</th><th>Title</th><th>Status</th><th>Origin</th></tr></thead>
 <tbody><tr><td>FEATURES-0001</td><td>Scratchpad to intake conversion + dev-work discipline</td><td class="pass">done</td><td>forced</td></tr><tr><td>FEATURES-0002</td><td>Self-awareness framework (reduce CLAUDE.md reliance)</td><td class="pass">done</td><td>normal</td></tr><tr><td>FEATURES-0003</td><td>Memory cohesion and enforcement design analysis (depth phase</td><td class="pass">done</td><td>forced</td></tr><tr><td>FEATURES-0004</td><td>Level-2 enforcement gate (devlead gate PreToolUse)</td><td class="pass">done</td><td>forced</td></tr><tr><td>FEATURES-0005</td><td>SOT declaration blocks (Proposal A)</td><td class="pass">done</td><td>forced</td></tr><tr><td>FEATURES-0006</td><td>Migration protocol /devlead migrate (Proposal C)</td><td class="pass">done</td><td>forced</td></tr><tr><td>FEATURES-0007</td><td>Lineage metadata on intake entries (Proposal B)</td><td class="pass">done</td><td>forced</td></tr><tr><td>FEATURES-0008</td><td>/devlead verify-links cross-reference walker</td><td class="pass">done</td><td>forced</td></tr><tr><td>FEATURES-0009</td><td>devlead.toml config loader (stdlib tomllib)</td><td class="pass">done</td><td>forced</td></tr><tr><td>FEATURES-0010</td><td>Audit log writes from all commands</td><td class="pass">done</td><td>forced</td></tr><tr><td>FEATURES-0011</td><td>Scratchpad archival rule (L8, Q7)</td><td class="pass">done</td><td>forced</td></tr><tr><td>FEATURES-0012</td><td>Lazy living-file creation (L11)</td><td class="pass">done</td><td>forced</td></tr><tr><td>FEATURES-0013</td><td>Shake-the-tree dogfood test (Session 4 planned)</td><td class="pass">done</td><td>forced</td></tr></tbody></table>
 <h2>5. Audit log</h2>
-<p>14 total events</p>
+<p>19 total events</p>
 <table><thead><tr><th>Event type</th><th>Count</th></tr></thead>
-<tbody><tr><td>gate_pass</td><td>6</td></tr><tr><td>gate_warn</td><td>3</td></tr><tr><td>session_start</td><td>1</td></tr><tr><td>verify_broken</td><td>1</td></tr><tr><td>verify_pass</td><td>3</td></tr></tbody></table>
+<tbody><tr><td>gate_pass</td><td>8</td></tr><tr><td>gate_warn</td><td>4</td></tr><tr><td>session_start</td><td>2</td></tr><tr><td>verify_broken</td><td>1</td></tr><tr><td>verify_pass</td><td>4</td></tr></tbody></table>
 <h2>6. Module health</h2>
 <p>Can every Python module import without errors?</p>
 <table><thead><tr><th>Module</th><th>Status</th></tr></thead>
 <tbody><tr><td><code>devlead.audit</code></td><td class="pass">IMPORTS OK</td></tr><tr><td><code>devlead.awareness</code></td><td class="pass">IMPORTS OK</td></tr><tr><td><code>devlead.bootstrap</code></td><td class="pass">IMPORTS OK</td></tr><tr><td><code>devlead.bridge</code></td><td class="pass">IMPORTS OK</td></tr><tr><td><code>devlead.cli</code></td><td class="pass">IMPORTS OK</td></tr><tr><td><code>devlead.config</code></td><td class="pass">IMPORTS OK</td></tr><tr><td><code>devlead.gate</code></td><td class="pass">IMPORTS OK</td></tr><tr><td><code>devlead.install</code></td><td class="pass">IMPORTS OK</td></tr><tr><td><code>devlead.intake</code></td><td class="pass">IMPORTS OK</td></tr><tr><td><code>devlead.migrate</code></td><td class="pass">IMPORTS OK</td></tr><tr><td><code>devlead.report</code></td><td class="pass">IMPORTS OK</td></tr><tr><td><code>devlead.scratchpad</code></td><td class="pass">IMPORTS OK</td></tr><tr><td><code>devlead.sot</code></td><td class="pass">IMPORTS OK</td></tr><tr><td><code>devlead.verify</code></td><td class="pass">IMPORTS OK</td></tr></tbody></table>
 <h2>7. Uncommitted changes</h2>
 <p>What has changed since the last commit?</p>
-<pre>.claude/settings.json                              |   51 +-
- .claude/settings.local.json                        |    5 +-
- .gitignore                                         |    4 +-
- CLAUDE.md                                          |  214 +-
- README.md                                          |   25 +-
- claude_docs/_intake_bugs.md                        |   14 -
- claude_docs/_intake_features.md                    |   29 -
- claude_docs/_intake_gaps.md                        |   15 -
- claude_docs/_project_roadmap.md                    |   41 -
- claude_docs/_project_status.md                     |   43 -
- claude_docs/_project_tasks.md                      |   23 -
- claude_docs/dashboard_2026-04-05.html              |  600 ------
- devlead.toml                                       |   26 -
- legacy/v1/devlead.toml                             |   36 +
- legacy/v1/devlead_docs/_intake_bugs.md             |   22 +
- .../v1/devlead_docs}/_intake_changes.md            |    0
- legacy/v1/devlead_docs/_intake_features.md         |   63 +
- legacy/v1/devlead_docs/_intake_gaps.md             |   29 +
- .../devlead_docs}/_living_standing_instructions.md |   24 +-
- legacy/v1/devlead_docs/_project_roadmap.md         |   41 +
- legacy/v1/devlead_docs/_project_status.md          |   70 +
- legacy/v1/devlead_docs/_project_tasks.md           |   90 +
- legacy/v1/devlead_docs/dashboard_2026-04-05.html   | 2213 ++++++++++++++++++++
- .../v1/docs}/2026-04-05-devlead-design.md          |   42 +-
- .../plans/2026-04-05-audit-collab-rollover.md      |   10 +-
- .../plans/2026-04-05-devlead-implementation.md     |   22 +-
- .../superpowers/plans/2026-04-05-scope-lock.md     |    2 +-
- {src/devlead =&gt; legacy/v1/src_devlead}/__init__.py |    0
- {src/devlead =&gt; legacy/v1/src_devlead}/__main__.py |    0
- {src/devlead =&gt; legacy/v1/src_devlead}/analyze.py  |    0
- {src/devlead =&gt; legacy/v1/src_devlead}/audit.py    |    2 +-
- {src/devlead =&gt; legacy/v1/src_devlead}/cli.py      |   66 +-
- {src/devlead =&gt; legacy/v1/src_devlead}/collab.py   |    0
- {src/devlead =&gt; legacy/v1/src_devlead}/config.py   |   28 +-
- .../devlead =&gt; legacy/v1/src_devlead}/dashboard.py |   99 +-
- .../v1/src_devlead}/doc_parser.py                  |   39 +
- {src/devlead =&gt; legacy/v1/src_devlead}/doctor.py   |   10 +-
- {src/devlead =&gt; legacy/v1/src_devlead}/effort.py   |    2 +-
- {src/devlead =&gt; legacy/v1/src_devlead}/gap.py      |    6 +-
- .../v1/src_devlead}/governance.py                  |    0
- {src/devlead =&gt; legacy/v1/src_devlead}/hooks.py    |    0
- {src/devlead =&gt; legacy/v1/src_devlead}/init.py     |   13 +-
- .../v1/src_devlead}/kpi_engine.py                  |  155 ++
- legacy/v1/src_devlead/migrate.py                   |  548 +++++
- .../devlead =&gt; legacy/v1/src_devlead}/portfolio.py |    4 +-
- {src/devlead =&gt; legacy/v1/src_devlead}/report.py   |    4 +-
- {src/devlead =&gt; legacy/v1/src_devlead}/rollover.py |    2 +-
- .../v1/src_devlead}/scaffold/__init__.py           |    0
- .../v1/src_devlead}/scaffold/_intake_features.md   |    0
- .../v1/src_devlead}/scaffold/_intake_issues.md     |    0
- .../scaffold/_living_business_objectives.md        |   16 +
- .../src_devlead}/scaffold/_living_distribution.md  |    0
- .../scaffold/_living_standing_instructions.md      |   25 +
- .../v1/src_devlead}/scaffold/_project_roadmap.md   |    0
- .../v1/src_devlead}/scaffold/_project_status.md    |    0
- .../v1/src_devlead}/scaffold/_project_stories.md   |    0
- .../v1/src_devlead}/scaffold/_project_tasks.md     |    0
- .../scaffold/devlead_toml_template.toml            |   24 +-
- legacy/v1/src_devlead/scaffold/hooks_settings.json |   41 +
- {src/devlead =&gt; legacy/v1/src_devlead}/scope.py    |    0
- {src/devlead =&gt; legacy/v1/src_devlead}/serve.py    |    4 +-
- .../v1/src_devlead}/session_history.py             |    0
- .../v1/src_devlead}/state_machine.py               |  210 +-
- {src/devlead =&gt; legacy/v1/src_devlead}/triage.py   |    7 +-
- {src/devlead =&gt; legacy/v1/src_devlead}/ui.py       |    0
- {src/devlead =&gt; legacy/v1/src_devlead}/view.py     |    0
- {src/devlead =&gt; legacy/v1/src_devlead}/workbook.py |  183 +-
- {tests =&gt; legacy/v1/tests}/__init__.py             |    0
- legacy/v1/tests/conftest.py                        |   37 +
- .../v1/tests}/fixtures/_intake_features.md         |    0
- .../v1/tests}/fixtures/_intake_issues.md           |    0
- .../v1/tests}/fixtures/_project_roadmap.md         |    0
- .../v1/tests}/fixtures/_project_status.md          |    0
- .../v1/tests}/fixtures/_project_stories.md         |    0
- .../v1/tests}/fixtures/_project_tasks.md           |    0
- .../v1/tests}/fixtures/kpis/sample_plugin.py       |    0
- .../v1/tests}/fixtures/sample_devlead.toml         |    0
- {tests =&gt; legacy/v1/tests}/test_audit.py           |    0
- {tests =&gt; legacy/v1/tests}/test_audit_cli.py       |    6 +-
- .../v1/tests}/test_audit_integration.py            |    6 +-
- {tests =&gt; legacy/v1/tests}/test_cli_integration.py |   72 +-
- {tests =&gt; legacy/v1/tests}/test_collab.py          |    0
- {tests =&gt; legacy/v1/tests}/test_collab_pipeline.py |    0
- {tests =&gt; legacy/v1/tests}/test_config.py          |    8 +-
- {tests =&gt; legacy/v1/tests}/test_dashboard.py       |    9 +-
- {tests =&gt; legacy/v1/tests}/test_doc_parser.py      |    0
- {tests =&gt; legacy/v1/tests}/test_doctor.py          |   10 +-
- .../v1/tests}/test_file_path_enforcement.py        |   48 +-
- {tests =&gt; legacy/v1/tests}/test_hooks.py           |    4 +-
- {tests =&gt; legacy/v1/tests}/test_init.py            |   14 +-
- {tests =&gt; legacy/v1/tests}/test_kpi_engine.py      |  179 +-
- {tests =&gt; legacy/v1/tests}/test_portfolio.py       |    4 +-
- {tests =&gt; legacy/v1/tests}/test_rollover.py        |    6 +-
- {tests =&gt; legacy/v1/tests}/test_rollover_size.py   |    2 +-
- {tests =&gt; legacy/v1/tests}/test_scope.py           |    0
- .../v1/tests}/test_scope_enforcement.py            |    8 +-
- {tests =&gt; legacy/v1/tests}/test_session_history.py |    2 +-
- {tests =&gt; legacy/v1/tests}/test_smoke.py           |    0
- {tests =&gt; legacy/v1/tests}/test_state_machine.py   |   94 +-
- pyproject.toml                                     |   33 +
- src/devlead/migrate.py                             |  267 ---
- .../scaffold/_living_business_objectives.md        |   22 -
- .../scaffold/_living_standing_instructions.md      |   10 -
- src/devlead/scaffold/hooks_settings.json           |   55 -
- tests/conftest.py                                  |   24 -
- 105 files changed, 4507 insertions(+), 1655 deletions(-)</pre>
+<pre>devlead_docs/_audit_log.jsonl |  5 +++++
+ devlead_docs/_resume.md       | 17 +++++++++++------
+ 2 files changed, 16 insertions(+), 6 deletions(-)</pre>
 
 <p class="meta" style="margin-top: 40px; border-top: 1px solid #e5e7eb; padding-top: 12px;">
 This report was generated by <code>devlead report</code>. It runs real checks, not self-reported status.
