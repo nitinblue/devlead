@@ -294,3 +294,103 @@ User can: see DevLead's BO/TBO/TTO tree as proof the system works
   verify: grep -q "actual_date: 2026" devlead_docs/_project_hierarchy.md
 - [ ] TTO-064: Change management triggered on at least one missed deadline (weight: 25) [functional]
   verify: grep -q "revised_date: 2026" devlead_docs/_project_hierarchy.md
+
+---
+
+## Sprint 2 — DevLead Scale & Enterprise
+
+### BO-005: Multi-project portfolio management (weight: 35)
+- **Acceptance:** A user running DevLead on 5+ projects can see a unified portfolio view — convergence across all projects, cross-project token spend, which project is stuck, which is on track.
+- **start_date:** (not started)
+- **end_date:** (not set)
+- **actual_date:** (pending)
+- **revised_date:** (none)
+- **revision_justification:** (none)
+
+#### TBO-015: Portfolio workspace (weight: 30)
+User can: manage multiple DevLead projects from one place
+
+- [ ] TTO-065: Portfolio config — register multiple project paths in ~/.devlead/portfolio.toml (weight: 20) [functional]
+  verify: echo "not yet built"
+- [ ] TTO-066: devlead portfolio status — convergence summary across all registered projects (weight: 25) [functional]
+  verify: echo "not yet built"
+- [ ] TTO-067: devlead portfolio dashboard — unified HTML with per-project tabs (weight: 25) [functional]
+  verify: echo "not yet built"
+- [ ] TTO-068: Cross-project token spend comparison (weight: 15) [functional]
+  verify: echo "not yet built"
+- [ ] TTO-069: Portfolio-level KPIs — aggregate across projects (weight: 15) [functional]
+  verify: echo "not yet built"
+
+#### TBO-016: Cross-project collaboration (weight: 35)
+User can: share decisions, patterns, and learnings between DevLead projects
+
+- [ ] TTO-070: .collab/ INBOX/OUTBOX pattern for cross-project messaging (weight: 25) [functional]
+  verify: echo "not yet built"
+- [ ] TTO-071: Shared decisions — promote a decision from one project to all projects (weight: 25) [functional]
+  verify: echo "not yet built"
+- [ ] TTO-072: Pattern library — capture reusable patterns from one project, apply to others (weight: 25) [functional]
+  verify: echo "not yet built"
+- [ ] TTO-073: Cross-project dependency tracking — "project A is blocked by project B" (weight: 25) [functional]
+  verify: echo "not yet built"
+
+#### TBO-017: Monthly rollover and archival (weight: 35)
+User can: close a sprint, archive completed work, carry forward open items cleanly
+
+- [ ] TTO-074: devlead rollover — archive done BOs/TBOs/TTOs to _archive/ folder (weight: 20) [functional]
+  verify: echo "not yet built"
+- [ ] TTO-075: Carry-forward — open TTOs move to next sprint with original context (weight: 20) [functional]
+  verify: echo "not yet built"
+- [ ] TTO-076: Sprint retrospective auto-generated from session history + KPIs (weight: 20) [functional]
+  verify: echo "not yet built"
+- [ ] TTO-077: Historical convergence — view past sprints and their final state (weight: 20) [functional]
+  verify: echo "not yet built"
+- [ ] TTO-078: Rollover preserves full audit trail — nothing lost (weight: 20) [functional]
+  verify: echo "not yet built"
+
+### BO-006: DevLead becomes the AI project management standard (weight: 35)
+- **Acceptance:** DevLead is recognized as THE tool for governing AI-assisted development. Featured in AI developer communities. Competitive moat through depth of governance.
+- **start_date:** (not started)
+- **end_date:** (not set)
+- **actual_date:** (pending)
+- **revised_date:** (none)
+- **revision_justification:** (none)
+
+#### TBO-018: Enterprise features (weight: 30)
+User can: use DevLead in a team setting with multiple developers + multiple LLMs
+
+- [ ] TTO-079: Team roles — who can mark TTOs done, who can revise deadlines (weight: 25) [functional]
+  verify: echo "not yet built"
+- [ ] TTO-080: Approval workflows — TBO completion requires reviewer sign-off (weight: 25) [functional]
+  verify: echo "not yet built"
+- [ ] TTO-081: Integration with GitHub Issues/PRs — auto-create issues from TTOs (weight: 25) [functional]
+  verify: echo "not yet built"
+- [ ] TTO-082: Integration with Linear/Jira — sync BO/TBO/TTO to existing PM tools (weight: 25) [functional]
+  verify: echo "not yet built"
+
+#### TBO-019: Advanced governance (weight: 35)
+User can: configure sophisticated rules beyond the basic 5 responsibilities
+
+- [ ] TTO-083: Custom responsibility authoring — user defines their own R7, R8, etc. with triggers + steps (weight: 20) [functional]
+  verify: echo "not yet built"
+- [ ] TTO-084: Conditional routing — if project convergence < 30%, block new feature work (weight: 20) [functional]
+  verify: echo "not yet built"
+- [ ] TTO-085: Budget controls — set token budget per BO, warn/block when exceeded (weight: 20) [functional]
+  verify: echo "not yet built"
+- [ ] TTO-086: Quality gates — TBO can't start until predecessor TBO reaches X% convergence (weight: 20) [functional]
+  verify: echo "not yet built"
+- [ ] TTO-087: Automated retrospectives — DevLead generates "what went well / what didn't" from KPI trends (weight: 20) [functional]
+  verify: echo "not yet built"
+
+#### TBO-020: Analytics and intelligence (weight: 35)
+User can: see patterns, predictions, and recommendations from historical data
+
+- [ ] TTO-088: Velocity prediction — based on historical convergence rate, when will this BO finish? (weight: 20) [functional]
+  verify: echo "not yet built"
+- [ ] TTO-089: Token efficiency scoring — which TBOs consume the most tokens per convergence point? (weight: 20) [functional]
+  verify: echo "not yet built"
+- [ ] TTO-090: LLM comparison — if user switches between Claude/Gemini/Cursor, which performs better? (weight: 20) [functional]
+  verify: echo "not yet built"
+- [ ] TTO-091: Anomaly detection — flag sessions where convergence drops or tokens spike (weight: 20) [functional]
+  verify: echo "not yet built"
+- [ ] TTO-092: Weekly digest email — auto-generated summary of progress, risks, recommendations (weight: 20) [non-functional]
+  verify: echo "not yet built"
