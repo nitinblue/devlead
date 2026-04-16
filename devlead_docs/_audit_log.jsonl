@@ -300,3 +300,4 @@
 {"ts": "2026-04-16T04:32:01Z", "event": "gate_pass", "tool": "Edit", "file": "src/app.py", "cwi": ["FEATURES-0002"], "rule": "intake_trace", "result": "pass"}
 {"ts": "2026-04-16T04:35:25Z", "event": "gate_pass", "tool": "Write", "file": "C:\\Users\\nitin\\plugin-development\\devlead\\src\\devlead\\bootstrap.py", "cwi": ["FEATURES-0002"], "rule": "intake_trace", "result": "pass"}
 {"ts": "2026-04-16T04:39:41Z", "event": "gate_pass", "tool": "Write", "file": "C:\\Users\\nitin\\plugin-development\\devlead\\docs\\devlead-foundations.html", "rule": "intake_trace", "result": "exempt"}
+{"ts": "2026-04-16T04:50:37Z", "event": "gate_pass", "tool": "Write", "file": "C:\\Users\\nitin\\plugin-development\\devlead\\devlead_docs\\_project_hierarchy.md", "rule": "intake_trace", "result": "exempt"}

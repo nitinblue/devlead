@@ -11,406 +11,326 @@
   last_audit: "2026-04-16"
 -->
 
-> The BO -> TBO -> TTO tree with weights. Drives all convergence math.
 > TTO checkboxes are ONLY checked by DevLead verification, NEVER by Claude.
-> Functional TTOs have verify: commands. Non-functional TTOs can be marked by Claude.
+> Functional TTOs have verify: commands. Non-functional can be marked by Claude.
+> Self-correction KPI: K_INCONSISTENCY tracks how often hierarchy drifts from foundations page.
 
 ---
 
-## Sprint 1 — DevLead v2: From Concept to $1000/month
+## Sprint 1 — DevLead Works For Real
 
-### BO-001: DevLead is a well-rounded robust product (weight: 35)
-- **Acceptance:** A non-coder installs DevLead, works with any LLM for 5 sessions, and at the end of each session can open one HTML page that tells them the truth about what happened. The LLM follows the routing table without being reminded. Zero dark code.
+### BO-001: Claude cannot cheat (weight: 30)
+- **Acceptance:** Claude physically cannot write code without a tracked work item. Every edit is traced. Every session ends with proof. The user doesn't need to read Python to verify.
 - **start_date:** 2026-04-16
 - **end_date:** 2026-04-25
 - **actual_date:** (pending)
 - **revised_date:** (none)
 - **revision_justification:** (none)
 
-#### TBO-001: Intent routing works end-to-end (weight: 25)
-User can: say anything and DevLead routes it correctly or stays out of the way
+#### TBO-001: Hard block on untracked work (weight: 25)
+User can: trust that every line of code traces to an intake entry
 
-- [ ] TTO-001: Routing table embedded in CLAUDE.md with all responsibilities (weight: 15) [functional]
-  verify: grep -q "## R1" CLAUDE.md && grep -q "## R2" CLAUDE.md && grep -q "## R4" CLAUDE.md && grep -q "## R5" CLAUDE.md && grep -q "## R6" CLAUDE.md
-- [ ] TTO-002: Fresh session test — Claude follows R2 when asked to code without focus (weight: 25) [functional]
-  verify: echo "requires fresh session test by Nitin"
-- [ ] TTO-003: Fresh session test — Claude follows R1 when asked to add a feature (weight: 25) [functional]
-  verify: echo "requires fresh session test by Nitin"
-- [ ] TTO-004: AGENTS.md generated for Gemini CLI with same routing table (weight: 15) [functional]
-  verify: test -f AGENTS.md && grep -q "## R1" AGENTS.md
-- [ ] TTO-005: Intent classification handles ambiguous inputs gracefully (weight: 10) [functional]
-  verify: echo "requires fresh session test by Nitin"
-- [ ] TTO-006: Adding R7 responsibility = add markdown section, zero code change (weight: 10) [functional]
-  verify: grep -q "To add a new responsibility" devlead_docs/_routing_table.md
-
-#### TBO-002: Work pipeline captures everything from idea to done (weight: 20)
-User can: go from "I have an idea" to tracked, prioritized, decomposed work
-
-- [ ] TTO-007: Scratchpad capture preserves raw user input verbatim (weight: 15) [functional]
-  verify: python -c "from devlead.scratchpad import append_entry, iter_untriaged; from pathlib import Path; append_entry(Path('/tmp/sp.md'),'test','body'); assert len(iter_untriaged(Path('/tmp/sp.md')))>0" && rm /tmp/sp.md
-- [ ] TTO-008: Triage routes to 3 targets — work, decision, fact (weight: 15) [functional]
-  verify: grep -q "intake" src/devlead/cli.py && grep -q "decision" src/devlead/cli.py && grep -q "fact" src/devlead/cli.py
-- [ ] TTO-009: Intake ingest from scratchpad with bidirectional trace (weight: 15) [functional]
-  verify: python -c "from devlead.bridge import ingest_from_scratchpad; print('importable')"
-- [ ] TTO-010: Intake to hierarchy promotion command (weight: 25) [functional]
-  verify: devlead promote --help 2>&1 | grep -q "hierarchy" || echo "not yet built"
-- [ ] TTO-011: Hierarchy convergence computed from real checkbox state (weight: 15) [functional]
-  verify: python -c "from devlead.hierarchy import parse; from pathlib import Path; s=parse(Path('devlead_docs/_project_hierarchy.md')); assert len(s)>0; print(f'{s[0].convergence:.1f}%')"
-- [ ] TTO-012: Definition of Done — verify: commands run by DevLead, not Claude (weight: 15) [functional]
-  verify: grep -c "verify:" devlead_docs/_project_hierarchy.md | grep -q "[2-9][0-9]"
-
-#### TBO-003: Project management dashboard — static HTML, comprehensive (weight: 20)
-User can: open one HTML file and see entire project state without reading code or markdown
-
-- [ ] TTO-013: Tab 1 — Executive Summary: sprint convergence %, BO status cards, deadline heatmap, next best action (weight: 10) [functional]
-  verify: devlead dashboard && grep -q "Executive Summary" docs/dashboard-*.html
-- [ ] TTO-014: Tab 2 — Hierarchy: full BO/TBO/TTO tree with convergence bars, weight distribution, checkbox state (weight: 10) [functional]
-  verify: grep -q "Hierarchy" docs/dashboard-*.html
-- [ ] TTO-015: Tab 3 — KPIs: all 25 KPIs grouped by category with sparklines or trend indicators (weight: 10) [functional]
-  verify: grep -q "KPIs" docs/dashboard-*.html
-- [ ] TTO-016: Tab 4 — Timelines: BO start/end/actual/revised dates, Gantt-style bars, overdue highlighting (weight: 10) [functional]
-  verify: grep -q "Timeline" docs/dashboard-*.html
-- [ ] TTO-017: Tab 5 — Token Economics: tokens per session, tokens per TTO, cost-per-convergence-point, burn rate trend (weight: 10) [functional]
-  verify: grep -q "Token" docs/dashboard-*.html
-- [ ] TTO-018: Tab 6 — Intake: all intake entries with status, origin (forced/normal), actionable items, promotion trace (weight: 8) [functional]
-  verify: grep -q "Intake" docs/dashboard-*.html
-- [ ] TTO-019: Tab 7 — Audit Trail: last 100 events, filterable by event type, gate violations highlighted (weight: 8) [functional]
-  verify: grep -q "Audit" docs/dashboard-*.html
-- [ ] TTO-020: Tab 8 — Definition of Done: every TTO's verify: command with pass/fail result, run timestamp (weight: 10) [functional]
-  verify: grep -q "Definition of Done" docs/dashboard-*.html
-- [ ] TTO-021: Tab 9 — Session History: convergence over time, token spend per session, session-to-session delta (weight: 8) [functional]
-  verify: grep -q "Session History" docs/dashboard-*.html
-- [ ] TTO-022: Tab 10 — Change Management: every BO deadline revision with original date, revised date, justification (weight: 8) [functional]
-  verify: grep -q "Change Management" docs/dashboard-*.html
-- [ ] TTO-023: CSS-only tabs (no JavaScript), self-contained HTML, embedded CSS (weight: 4) [non-functional]
-  verify: grep -q "tab-input" docs/dashboard-*.html && ! grep -q "<script" docs/dashboard-*.html
-- [ ] TTO-024: Token tracking at TTO level — each TTO shows tokens consumed during implementation (weight: 4) [functional]
-  verify: grep -q "tokens" docs/dashboard-*.html
-- [ ] TTO-025: Stop hook auto-generates dashboard + resume at session end (weight: 10) [functional]
-  verify: grep -q "Stop" .claude/settings.json
-
-#### TBO-004: KPI engine computes truth from data (weight: 15)
-User can: see 25 metrics that are computed, never estimated
-
-- [ ] TTO-020: 25 KPIs across 4 categories all compute without error (weight: 30) [functional]
-  verify: devlead kpi 2>&1 | grep -c ":" | awk '{exit ($1 >= 15 ? 0 : 1)}'
-- [ ] TTO-021: Tokenomics KPI tracks cost-per-convergence-point (weight: 25) [functional]
-  verify: devlead kpi 2>&1 | grep -q "Tokenomics"
-- [ ] TTO-022: Session history records convergence + tokens per session (weight: 25) [functional]
-  verify: python -c "from devlead.kpi import record_session; from pathlib import Path; record_session(Path('devlead_docs'), 1000); print('ok')"
-- [ ] TTO-023: K_BYPASS tracks discipline violations as a trend (weight: 20) [functional]
+- [ ] TTO-001: PreToolUse gate exits 2 when no intake entry is in_progress (weight: 30) [functional]
+  verify: devlead focus clear && echo '{"tool_name":"Edit","tool_input":{"file_path":"src/app.py"}}' | devlead gate PreToolUse 2>&1; test $? -eq 2
+- [ ] TTO-002: Gate logs every check (pass/block) to _audit_log.jsonl (weight: 20) [functional]
+  verify: wc -l devlead_docs/_audit_log.jsonl | awk '{exit ($1 > 5 ? 0 : 1)}'
+- [ ] TTO-003: Exempt paths configurable via devlead.toml (weight: 15) [functional]
+  verify: grep -q "exempt_paths" src/devlead/config.py
+- [ ] TTO-004: K_BYPASS KPI tracks discipline violation rate (weight: 20) [functional]
   verify: devlead kpi 2>&1 | grep -q "K_BYPASS"
+- [ ] TTO-005: Enforcement mode configurable — hard/soft/warning (weight: 15) [functional]
+  verify: grep -q "hard\|soft\|warning" src/devlead/config.py
 
-#### TBO-005: Session continuity — zero context loss between sessions (weight: 20)
-User can: close the CLI, reopen tomorrow, and Claude picks up exactly where it left off
+#### TBO-002: Every session ends with proof (weight: 25)
+User can: open one HTML file and see what actually happened
 
-- [ ] TTO-024: _resume.md auto-generated from hierarchy + intake + audit + git (weight: 20) [functional]
-  verify: devlead resume && grep -q "Auto-generated by DevLead" devlead_docs/_resume.md
-- [ ] TTO-025: Resume shows next TTOs to implement with parent BO/TBO (weight: 15) [functional]
-  verify: grep -q "Next TTOs" devlead_docs/_resume.md
-- [ ] TTO-026: Resume shows hierarchy convergence (weight: 15) [functional]
-  verify: grep -q "Hierarchy convergence" devlead_docs/_resume.md
-- [ ] TTO-027: SessionStart hook injects context so LLM reads resume first (weight: 20) [functional]
-  verify: echo '{}' | devlead gate SessionStart 2>&1 | grep -q "resume"
-- [ ] TTO-028: All governance content embedded in CLAUDE.md, not in separate files LLM might skip (weight: 15) [functional]
-  verify: wc -l CLAUDE.md | awk '{exit ($1 > 100 ? 0 : 1)}'
-- [ ] TTO-029: Fresh session test — Claude reads resume and knows what to do without being told (weight: 15) [functional]
-  verify: echo "requires fresh session test by Nitin"
+- [ ] TTO-006: Stop hook auto-runs dashboard + resume + record_session at session end (weight: 35) [functional]
+  verify: grep -q "Stop" .claude/settings.json
+- [ ] TTO-007: Dashboard has 10 tabs with real data (weight: 25) [functional]
+  verify: devlead dashboard && test -f docs/dashboard-*.html
+- [ ] TTO-008: Definition of Done tab runs verify: commands and shows pass/fail (weight: 25) [functional]
+  verify: grep -q "Def of Done" docs/dashboard-*.html
+- [ ] TTO-009: Session history records tokens + convergence per session (weight: 15) [functional]
+  verify: python -c "from devlead.kpi import record_session; from pathlib import Path; record_session(Path('devlead_docs'), 1000)"
 
-### BO-002: Product & Packaging — DevLead works everywhere, installs instantly (weight: 25)
-- **Acceptance:** DevLead governs projects across Claude Code, Gemini CLI, Cursor, Windsurf, Codex, Aider, and any future LLM tool. Non-coder installs in under 60 seconds on any platform. Two tiers: free MD-only and paid Python-enhanced.
-- **start_date:** 2026-04-25
-- **end_date:** 2026-05-01
+#### TBO-003: The LLM's instructions are always truthful (weight: 25)
+User can: trust that CLAUDE.md reflects the actual project state
+
+- [ ] TTO-010: CLAUDE.md 100% derived from devlead_docs/ — zero hardcoded strings (weight: 30) [functional]
+  verify: grep -q "auto-generated from devlead_docs" CLAUDE.md
+- [ ] TTO-011: devlead init regenerates CLAUDE.md from current file state (weight: 20) [functional]
+  verify: devlead init . 2>&1 | grep -q "derived from devlead_docs"
+- [ ] TTO-012: Routing table embedded in CLAUDE.md, not referenced as separate file (weight: 25) [functional]
+  verify: grep -q "## R1" CLAUDE.md && grep -q "## R2" CLAUDE.md
+- [ ] TTO-013: Current convergence + focus shown in CLAUDE.md (weight: 25) [functional]
+  verify: grep -q "convergence" CLAUDE.md
+
+#### TBO-004: Documents stay in sync automatically (weight: 25)
+User can: change one file and all related files update — no manual commands
+
+- [ ] TTO-014: SOT blocks define receives_from/migrates_to on every file (weight: 15) [functional]
+  verify: grep -c "devlead:sot" devlead_docs/*.md | grep -v ":0$" | wc -l | awk '{exit ($1 > 10 ? 0 : 1)}'
+- [ ] TTO-015: DAG propagation engine reads SOT relationships and triggers downstream updates (weight: 30) [functional]
+  verify: echo "not yet built"
+- [ ] TTO-016: Changing _routing_table.md auto-regenerates CLAUDE.md (weight: 20) [functional]
+  verify: echo "not yet built"
+- [ ] TTO-017: Changing _project_hierarchy.md auto-regenerates _resume.md (weight: 20) [functional]
+  verify: echo "not yet built"
+- [ ] TTO-018: K_DRIFT KPI tracks how often files are out of sync (weight: 15) [functional]
+  verify: echo "not yet built"
+
+### BO-002: I always know where my project stands (weight: 25)
+- **Acceptance:** At any moment, the user can see: what % is done, what's overdue, what's next, how many tokens were spent, and whether Claude followed the rules. All computed from data, never from Claude's opinion.
+- **start_date:** 2026-04-16
+- **end_date:** 2026-04-28
 - **actual_date:** (pending)
 - **revised_date:** (none)
 - **revision_justification:** (none)
 
-#### TBO-006: Claude Code — native plugin with full enforcement (weight: 20)
-User can: install DevLead as a Claude Code plugin and get hooks + commands + reports
+#### TBO-005: Work pipeline from idea to done (weight: 30)
+User can: go from "I have an idea" to tracked, decomposed, prioritized work
 
-- [ ] TTO-030: pip install devlead works on clean Windows/Mac/Linux (weight: 20) [functional]
-  verify: pip show devlead 2>&1 | grep -q "Version"
-- [ ] TTO-031: devlead init creates devlead_docs + CLAUDE.md + hooks in one shot (weight: 20) [functional]
-  verify: mkdir -p /tmp/dit && devlead init /tmp/dit && test -f /tmp/dit/CLAUDE.md && test -f /tmp/dit/.claude/settings.json && rm -rf /tmp/dit
-- [ ] TTO-032: Published on Claude Code plugin marketplace (weight: 20) [functional]
-  verify: test -f .claude-plugin/plugin.json && grep -q "0.2" .claude-plugin/plugin.json
-- [ ] TTO-033: SessionStart + PreToolUse + Stop hooks all wired automatically (weight: 20) [functional]
-  verify: grep -q "SessionStart" .claude/settings.json && grep -q "PreToolUse" .claude/settings.json
-- [ ] TTO-034: Idempotent — re-running init on existing project doesn't break anything (weight: 20) [functional]
-  verify: mkdir -p /tmp/dit2 && devlead init /tmp/dit2 && devlead init /tmp/dit2 && rm -rf /tmp/dit2
+- [ ] TTO-019: Scratchpad captures raw input verbatim (weight: 10) [functional]
+  verify: python -c "from devlead.scratchpad import append_entry; from pathlib import Path; append_entry(Path('/tmp/t.md'),'test','body')" && rm /tmp/t.md
+- [ ] TTO-020: Triage routes to 3 targets — work, decision, fact (weight: 10) [functional]
+  verify: grep -q "decision" src/devlead/cli.py && grep -q "fact" src/devlead/cli.py
+- [ ] TTO-021: Intake ingest with bidirectional trace (scratchpad <-> intake) (weight: 15) [functional]
+  verify: python -c "from devlead.bridge import ingest_from_scratchpad; print('ok')"
+- [ ] TTO-022: Intake to hierarchy promotion command (weight: 25) [functional]
+  verify: echo "not yet built"
+- [ ] TTO-023: BO/TBO/TTO hierarchy with weights summing to 100 per parent (weight: 20) [functional]
+  verify: python -c "from devlead.hierarchy import parse; from pathlib import Path; s=parse(Path('devlead_docs/_project_hierarchy.md')); assert len(s)>0"
+- [ ] TTO-024: Convergence computed from verified checkbox state, not Claude marking (weight: 20) [functional]
+  verify: devlead kpi 2>&1 | grep -q "Sprint convergence"
 
-#### TBO-007: Gemini CLI — AGENTS.md with full routing table (weight: 15)
-User can: use DevLead with Gemini CLI, routing table governs via AGENTS.md
+#### TBO-006: Deadlines enforced with change management (weight: 20)
+User can: set deadlines on BOs and be alerted when they slip — no silent failures
 
-- [ ] TTO-035: devlead init --llm gemini generates AGENTS.md instead of CLAUDE.md (weight: 30) [functional]
-  verify: test -f AGENTS.md && grep -q "## R1" AGENTS.md
-- [ ] TTO-036: GEMINI.md tool mapping included (skill tool equivalents for Gemini) (weight: 20) [functional]
-  verify: test -f GEMINI.md || grep -q "gemini" AGENTS.md
-- [ ] TTO-037: Gemini-specific hooks or extensions documented (weight: 20) [non-functional]
-  verify: echo "requires Gemini CLI testing"
-- [ ] TTO-038: Tested end-to-end — Gemini follows routing table for R1 and R2 (weight: 30) [functional]
-  verify: echo "requires manual Gemini CLI test by Nitin"
+- [ ] TTO-025: BOs have start_date, end_date, actual_date, revised_date, justification (weight: 30) [functional]
+  verify: grep -q "start_date" devlead_docs/_project_hierarchy.md && grep -q "revised_date" devlead_docs/_project_hierarchy.md
+- [ ] TTO-026: Dashboard timeline tab shows Gantt bars with overdue highlighting (weight: 30) [functional]
+  verify: grep -q "gantt" docs/dashboard-*.html || grep -q "Timelines" docs/dashboard-*.html
+- [ ] TTO-027: Missed deadline triggers mandatory change management (justification required) (weight: 40) [functional]
+  verify: grep -q "revision_justification" devlead_docs/_routing_table.md
 
-#### TBO-008: Cursor / Windsurf / Copilot — .cursorrules and equivalents (weight: 15)
-User can: use DevLead with Cursor, Windsurf, or GitHub Copilot workspace
+#### TBO-007: 25 KPIs from real data (weight: 20)
+User can: see metrics that are computed, never guessed
 
-- [ ] TTO-039: devlead init --llm cursor generates .cursorrules with routing table (weight: 25) [functional]
-  verify: echo "requires Cursor testing"
-- [ ] TTO-040: devlead init --llm windsurf generates .windsurfrules (weight: 25) [functional]
-  verify: echo "requires Windsurf testing"
-- [ ] TTO-041: devlead init --llm copilot generates .github/copilot-instructions.md (weight: 25) [functional]
-  verify: echo "requires Copilot testing"
-- [ ] TTO-042: Universal: devlead init --llm generic generates AGENTS.md as catch-all (weight: 25) [functional]
-  verify: echo "requires generic LLM testing"
+- [ ] TTO-028: KPI engine reads from audit log + hierarchy + intake (weight: 25) [functional]
+  verify: devlead kpi 2>&1 | grep -c ":" | awk '{exit ($1 >= 15 ? 0 : 1)}'
+- [ ] TTO-029: Token tracking per TTO (mandatory) (weight: 25) [functional]
+  verify: python -c "from devlead.effort import record_effort; from pathlib import Path; record_effort(Path('devlead_docs'),'TTO-001',500)"
+- [ ] TTO-030: Tokenomics KPI — cost per convergence point (weight: 25) [functional]
+  verify: devlead kpi 2>&1 | grep -q "Tokenomics"
+- [ ] TTO-031: K_INCONSISTENCY KPI — tracks self-correction events (weight: 25) [functional]
+  verify: echo "not yet built"
 
-#### TBO-009: Codex / Aider / Open-source LLMs — headless governance (weight: 10)
-User can: use DevLead with any CLI-based LLM tool that reads project files
+#### TBO-008: Intent routing makes Claude follow the plan (weight: 30)
+User can: say anything and DevLead routes it to the right process — or stays out of the way
 
-- [ ] TTO-043: devlead init --llm codex generates CODEX.md with routing table (weight: 30) [functional]
-  verify: echo "requires Codex testing"
-- [ ] TTO-044: devlead init --llm aider generates .aider.conf.yml or equivalent (weight: 30) [functional]
-  verify: echo "requires Aider testing"
-- [ ] TTO-045: Documentation: "How to use DevLead with any LLM" guide (weight: 40) [non-functional]
-  verify: echo "requires guide written"
+- [ ] TTO-032: Routing table defines 5+ responsibilities with triggers + steps (weight: 15) [functional]
+  verify: grep -c "^## R" devlead_docs/_routing_table.md | awk '{exit ($1 >= 5 ? 0 : 1)}'
+- [ ] TTO-033: UserPromptSubmit hook classifies intent and injects matched route (weight: 30) [functional]
+  verify: echo "not yet built"
+- [ ] TTO-034: Adding new responsibility = add markdown section, zero code (weight: 15) [functional]
+  verify: grep -q "To add a new responsibility" devlead_docs/_routing_table.md
+- [ ] TTO-035: Routing tested in fresh session — Claude follows R2 without being told (weight: 25) [functional]
+  verify: echo "requires fresh session test by Nitin"
+- [ ] TTO-036: Routing tested — Claude follows R1 when asked to add a feature (weight: 15) [functional]
+  verify: echo "requires fresh session test by Nitin"
 
-#### TBO-010: MD-only tier — zero-install governance (weight: 15)
-User can: download a zip, drop it in their project, governance is active
+### BO-003: Sessions never start from zero (weight: 20)
+- **Acceptance:** Close the CLI, open it tomorrow. Claude immediately knows: what was done, what's next, what's blocked, and what the rules are. The user says nothing — DevLead tells Claude everything.
+- **start_date:** 2026-04-20
+- **end_date:** 2026-04-28
+- **actual_date:** (pending)
+- **revised_date:** (none)
+- **revision_justification:** (none)
 
-- [ ] TTO-046: devlead_docs/ is fully self-contained, no Python needed for governance (weight: 25) [functional]
-  verify: test -f devlead_docs/_routing_table.md && test -f devlead_docs/_resume.md && test -f devlead_docs/_project_hierarchy.md
-- [ ] TTO-047: Template pack downloadable from GitHub releases as zip (weight: 25) [non-functional]
-  verify: echo "requires GitHub release"
-- [ ] TTO-048: npx devlead-init or equivalent one-liner for non-Python users (weight: 25) [functional]
-  verify: echo "requires npm package or shell script"
-- [ ] TTO-049: README clearly separates "free MD governance" vs "paid Python power tools" (weight: 25) [non-functional]
-  verify: test -f README.md && grep -q "free" README.md
+#### TBO-009: _resume.md is a complete handoff (weight: 40)
+User can: start a session and Claude immediately knows what to do
 
-#### TBO-011: Documentation — a non-coder can self-serve (weight: 15)
-User can: go from "what is this" to "it's running on my project" without help
+- [ ] TTO-037: Resume auto-generated from hierarchy + intake + audit + git (weight: 25) [functional]
+  verify: devlead resume && grep -q "Auto-generated by DevLead" devlead_docs/_resume.md
+- [ ] TTO-038: Resume shows convergence per BO (weight: 15) [functional]
+  verify: grep -q "convergence" devlead_docs/_resume.md
+- [ ] TTO-039: Resume shows next TTOs to implement (weight: 20) [functional]
+  verify: grep -q "Next TTOs" devlead_docs/_resume.md
+- [ ] TTO-040: Resume includes last session's key events from audit log (weight: 20) [functional]
+  verify: grep -q "audit" devlead_docs/_resume.md
+- [ ] TTO-041: SessionStart hook injects resume summary so LLM reads it first (weight: 20) [functional]
+  verify: echo '{}' | devlead gate SessionStart 2>&1 | grep -q "DevLead"
 
-- [ ] TTO-050: README — "Claude says done. Was it?" pitch in first 3 lines (weight: 20) [non-functional]
-  verify: test -f README.md && grep -q "Claude says done" README.md
-- [ ] TTO-051: Install guide per LLM tool (Claude, Gemini, Cursor, generic) (weight: 20) [non-functional]
-  verify: grep -q "Claude Code\|Gemini\|Cursor" README.md || test -f docs/install-guide.md
-- [ ] TTO-052: User guide — "I installed DevLead, now what?" walkthrough (weight: 20) [non-functional]
-  verify: test -f docs/USER_GUIDE.md && wc -l docs/USER_GUIDE.md | awk '{exit ($1 > 50 ? 0 : 1)}'
-- [ ] TTO-053: Example session transcript showing DevLead catching Claude fudging (weight: 20) [non-functional]
-  verify: test -f docs/example-session.md
-- [ ] TTO-054: Video or GIF: install -> first session -> report (weight: 20) [non-functional]
-  verify: echo "requires Nitin to create"
+#### TBO-010: DevLead catches its own mistakes (weight: 30)
+User can: trust that when DevLead finds an inconsistency, it proposes a fix — not a speech
 
-#### TBO-012: Interactive MD editor — local HTML with write-back (weight: 15)
-User can: open a local HTML file and edit DevLead markdown files visually without a text editor
+- [ ] TTO-042: Self-correction: hierarchy inconsistent with foundations page → auto-propose TTO (weight: 30) [functional]
+  verify: echo "not yet built"
+- [ ] TTO-043: K_INCONSISTENCY KPI: count of times Claude was found inconsistent and self-corrected (weight: 25) [functional]
+  verify: echo "not yet built"
+- [ ] TTO-044: devlead doctor command runs coherence checks across all files (weight: 25) [functional]
+  verify: echo "not yet built"
+- [ ] TTO-045: Stale _aware_*.md detected and flagged in dashboard (weight: 20) [functional]
+  verify: echo "not yet built"
 
-- [ ] TTO-055: Static HTML editor loads devlead_docs/*.md files via File System Access API (weight: 15) [functional]
-  verify: echo "requires browser test"
-- [ ] TTO-056: Hierarchy editor — visual BO/TBO/TTO tree with inline edit for titles, weights, dates, status (weight: 20) [functional]
-  verify: echo "requires browser test"
-- [ ] TTO-057: Intake editor — add/edit/prioritize intake entries with form fields, writes back to _intake_*.md (weight: 15) [functional]
-  verify: echo "requires browser test"
-- [ ] TTO-058: Scratchpad editor — capture new entries, triage existing ones, writes to _scratchpad.md (weight: 10) [functional]
-  verify: echo "requires browser test"
-- [ ] TTO-059: Decision log editor — add locked decisions with date and rationale (weight: 10) [functional]
-  verify: echo "requires browser test"
-- [ ] TTO-060: Routing table editor — add/edit responsibilities, triggers, steps (weight: 10) [functional]
-  verify: echo "requires browser test"
-- [ ] TTO-061: Download fallback — for Firefox/Safari, "Save All" exports edited .md files as zip (weight: 10) [functional]
-  verify: echo "requires browser test"
-- [ ] TTO-062: Editor is generated by devlead editor command alongside the dashboard (weight: 10) [functional]
-  verify: echo "requires devlead editor command"
+#### TBO-011: Works with every LLM tool (weight: 30)
+User can: use DevLead with Claude, Gemini, Cursor, Codex — same governance
 
-#### TBO-013: Cross-platform quality (weight: 5)
-User can: trust DevLead works on their machine regardless of OS
+- [ ] TTO-046: devlead init --llm gemini generates AGENTS.md (weight: 20) [functional]
+  verify: echo "not yet built"
+- [ ] TTO-047: devlead init --llm cursor generates .cursorrules (weight: 20) [functional]
+  verify: echo "not yet built"
+- [ ] TTO-048: devlead init --llm generic generates universal AGENTS.md (weight: 20) [functional]
+  verify: echo "not yet built"
+- [ ] TTO-049: MD-only tier works without pip install (weight: 20) [functional]
+  verify: test -f devlead_docs/_routing_table.md && test -f devlead_docs/_resume.md
+- [ ] TTO-050: Tested: Gemini CLI follows routing table for R2 (weight: 20) [functional]
+  verify: echo "requires manual Gemini test"
 
-- [ ] TTO-055: Works on Windows (PowerShell + Git Bash) (weight: 35) [functional]
-  verify: python -c "import devlead; print('ok')"
-- [ ] TTO-056: Works on macOS (zsh) (weight: 35) [functional]
-  verify: echo "requires macOS test"
-- [ ] TTO-057: Works on Linux (bash) (weight: 30) [functional]
-  verify: echo "requires Linux test"
-
-### BO-003: DevLead generates its first $1000/month (weight: 25)
-- **Acceptance:** 10+ paying users or $1000 MRR. Users renew because DevLead saves them from wasted sessions.
+### BO-004: DevLead pays for itself (weight: 25)
+- **Acceptance:** 10+ paying users. Users stay because DevLead saves them from wasted sessions and token burn. Tokenomics report proves ROI.
 - **start_date:** 2026-05-01
 - **end_date:** 2026-05-15
 - **actual_date:** (pending)
 - **revised_date:** (none)
 - **revision_justification:** (none)
 
-#### TBO-009: Pricing that matches value (weight: 25)
-User can: understand what they pay for and feel it's worth it
+#### TBO-012: One-command install that just works (weight: 25)
+User can: go from zero to governed in 60 seconds
 
-- [ ] TTO-042: Free tier: MD-only governance (routing table, hierarchy, scratchpad) (weight: 30) [non-functional]
-  verify: echo "requires pricing page"
-- [ ] TTO-043: Paid tier: Python-enhanced (KPIs, HTML reports, hooks, audit log) (weight: 30) [non-functional]
-  verify: echo "requires pricing page"
-- [ ] TTO-044: Pricing validated with 3 target users before launch (weight: 40) [functional]
-  verify: echo "requires user interviews by Nitin"
+- [ ] TTO-051: pip install devlead on Windows/Mac/Linux (weight: 25) [functional]
+  verify: pip show devlead 2>&1 | grep -q "Version"
+- [ ] TTO-052: devlead init creates everything in one shot (weight: 25) [functional]
+  verify: mkdir -p /tmp/dit && devlead init /tmp/dit && test -f /tmp/dit/CLAUDE.md && rm -rf /tmp/dit
+- [ ] TTO-053: Idempotent — re-run doesn't break anything (weight: 25) [functional]
+  verify: mkdir -p /tmp/dit2 && devlead init /tmp/dit2 && devlead init /tmp/dit2 && rm -rf /tmp/dit2
+- [ ] TTO-054: Published on PyPI + Claude Code marketplace (weight: 25) [functional]
+  verify: echo "requires publishing"
 
-#### TBO-010: Distribution — be where the users are (weight: 25)
-User can: find DevLead without Nitin telling them about it
+#### TBO-013: Documentation a non-coder can follow (weight: 25)
+User can: understand DevLead and start using it without help
 
-- [ ] TTO-045: Published on PyPI (weight: 20) [functional]
-  verify: pip install devlead --dry-run 2>&1 | grep -q "devlead"
-- [ ] TTO-046: Published on Claude Code plugin marketplace (weight: 20) [functional]
-  verify: test -f .claude-plugin/plugin.json
-- [ ] TTO-047: GitHub repo public with stars and README (weight: 20) [non-functional]
-  verify: test -f LICENSE && test -f README.md
-- [ ] TTO-048: Launch post on 3 communities (Claude Discord, AI dev Reddit, Hacker News) (weight: 20) [non-functional]
-  verify: echo "requires Nitin to post"
-- [ ] TTO-049: SEO — "Claude accountability" or "AI governance tool" ranks page 1 (weight: 20) [non-functional]
-  verify: echo "requires time and content"
+- [ ] TTO-055: README — "Claude says done. Was it?" + 3-step install (weight: 25) [non-functional]
+  verify: test -f README.md && grep -q "Claude says done" README.md
+- [ ] TTO-056: User guide with walkthrough (weight: 25) [non-functional]
+  verify: test -f docs/USER_GUIDE.md
+- [ ] TTO-057: Example session showing DevLead catching Claude fudging (weight: 25) [non-functional]
+  verify: test -f docs/example-session.md
+- [ ] TTO-058: Foundations page explains architecture visually (weight: 25) [non-functional]
+  verify: test -f docs/devlead-foundations.html
 
-#### TBO-011: Proof it works — real users, real feedback (weight: 30)
-User can: see testimonials and case studies from actual DevLead users
+#### TBO-014: Proof it works — real users validate (weight: 25)
+User can: see that other people use DevLead and it helped them
 
-- [ ] TTO-050: 5 beta users install DevLead on real projects (weight: 25) [functional]
-  verify: echo "requires beta program by Nitin"
-- [ ] TTO-051: Each beta user runs 3+ sessions and generates reports (weight: 25) [functional]
-  verify: echo "requires beta user data"
-- [ ] TTO-052: Collect 3 testimonials or case studies (weight: 25) [non-functional]
+- [ ] TTO-059: 5 beta users install on real projects (weight: 25) [functional]
+  verify: echo "requires beta program"
+- [ ] TTO-060: Each beta user runs 3+ sessions with reports (weight: 25) [functional]
+  verify: echo "requires beta data"
+- [ ] TTO-061: Iterate on friction within 48 hours (weight: 25) [functional]
+  verify: echo "requires feedback tracking"
+- [ ] TTO-062: 3 testimonials collected (weight: 25) [non-functional]
   verify: echo "requires user feedback"
-- [ ] TTO-053: Iterate on friction points within 48 hours of each feedback (weight: 25) [functional]
-  verify: echo "requires tracking feedback->fix cycle"
 
-#### TBO-012: Retention — users stay because DevLead saves them money (weight: 20)
-User can: see that DevLead reduced their wasted sessions and token spend
+#### TBO-015: Pricing and distribution (weight: 25)
+User can: find DevLead, understand what they pay for, and feel it's worth it
 
-- [ ] TTO-054: Tokenomics report shows before/after DevLead cost comparison (weight: 35) [functional]
+- [ ] TTO-063: Free tier: MD-only governance (weight: 20) [non-functional]
+  verify: echo "requires pricing page"
+- [ ] TTO-064: Paid tier: Python-enhanced with KPIs + reports + hooks (weight: 20) [non-functional]
+  verify: echo "requires pricing page"
+- [ ] TTO-065: GitHub repo public (weight: 20) [non-functional]
+  verify: test -f LICENSE && test -f README.md
+- [ ] TTO-066: Launch on 3 communities (weight: 20) [non-functional]
+  verify: echo "requires Nitin to post"
+- [ ] TTO-067: Tokenomics report shows ROI — users see savings (weight: 20) [functional]
   verify: devlead kpi 2>&1 | grep -q "Tokenomics"
-- [ ] TTO-055: Convergence trend shows projects actually finishing (weight: 35) [functional]
-  verify: devlead kpi 2>&1 | grep -q "Sprint convergence"
-- [ ] TTO-056: Monthly email digest with KPI summary for paying users (weight: 30) [non-functional]
-  verify: echo "requires email infrastructure"
-
-### BO-004: DevLead eats its own dogfood (weight: 15)
-- **Acceptance:** DevLead governs its own development. Every session follows the routing table. Every commit traces to a TTO. The report proves it.
-- **start_date:** 2026-04-16
-- **end_date:** 2026-05-15
-- **actual_date:** (pending)
-- **revised_date:** (none)
-- **revision_justification:** (none)
-
-#### TBO-013: DevLead develops under its own governance (weight: 50)
-User can: look at DevLead's own repo and see the governance in action
-
-- [ ] TTO-057: Every commit message references a TTO ID (weight: 25) [functional]
-  verify: git log --oneline -10 | grep -c "TTO-" | awk '{exit ($1 >= 5 ? 0 : 1)}'
-- [ ] TTO-058: _audit_log.jsonl has real events from real sessions (weight: 25) [functional]
-  verify: wc -l devlead_docs/_audit_log.jsonl | awk '{exit ($1 > 10 ? 0 : 1)}'
-- [ ] TTO-059: Session reports exist for every development session (weight: 25) [functional]
-  verify: ls docs/session-report-*.html | wc -l | awk '{exit ($1 >= 3 ? 0 : 1)}'
-- [ ] TTO-060: K_BYPASS rate trends downward over sessions (weight: 25) [functional]
-  verify: echo "requires 3+ sessions of history"
-
-#### TBO-014: DevLead's own hierarchy is the product demo (weight: 50)
-User can: see DevLead's BO/TBO/TTO tree as proof the system works
-
-- [ ] TTO-061: Hierarchy has 4+ BOs with real deadlines (weight: 25) [functional]
-  verify: grep -c "^### BO-" devlead_docs/_project_hierarchy.md | awk '{exit ($1 >= 4 ? 0 : 1)}'
-- [ ] TTO-062: Convergence percentage is computed and displayed in report (weight: 25) [functional]
-  verify: devlead kpi 2>&1 | grep -q "Sprint convergence"
-- [ ] TTO-063: At least one BO has been completed and marked with actual_date (weight: 25) [functional]
-  verify: grep -q "actual_date: 2026" devlead_docs/_project_hierarchy.md
-- [ ] TTO-064: Change management triggered on at least one missed deadline (weight: 25) [functional]
-  verify: grep -q "revised_date: 2026" devlead_docs/_project_hierarchy.md
 
 ---
 
-## Sprint 2 — DevLead Scale & Enterprise
+## Sprint 2 — DevLead at Scale
 
-### BO-005: Multi-project portfolio management (weight: 35)
-- **Acceptance:** A user running DevLead on 5+ projects can see a unified portfolio view — convergence across all projects, cross-project token spend, which project is stuck, which is on track.
+### BO-005: Multi-project portfolio management (weight: 50)
+- **Acceptance:** User running 5+ projects sees unified portfolio view, cross-project insights, and rollover between sprints.
 - **start_date:** (not started)
 - **end_date:** (not set)
 - **actual_date:** (pending)
 - **revised_date:** (none)
 - **revision_justification:** (none)
 
-#### TBO-015: Portfolio workspace (weight: 30)
-User can: manage multiple DevLead projects from one place
+#### TBO-016: Portfolio workspace (weight: 35)
+User can: see all projects in one dashboard
 
-- [ ] TTO-065: Portfolio config — register multiple project paths in ~/.devlead/portfolio.toml (weight: 20) [functional]
+- [ ] TTO-068: Portfolio config — register projects in ~/.devlead/portfolio.toml (weight: 25) [functional]
   verify: echo "not yet built"
-- [ ] TTO-066: devlead portfolio status — convergence summary across all registered projects (weight: 25) [functional]
+- [ ] TTO-069: devlead portfolio status — convergence across all projects (weight: 25) [functional]
   verify: echo "not yet built"
-- [ ] TTO-067: devlead portfolio dashboard — unified HTML with per-project tabs (weight: 25) [functional]
+- [ ] TTO-070: Portfolio dashboard — unified HTML with per-project tabs (weight: 25) [functional]
   verify: echo "not yet built"
-- [ ] TTO-068: Cross-project token spend comparison (weight: 15) [functional]
-  verify: echo "not yet built"
-- [ ] TTO-069: Portfolio-level KPIs — aggregate across projects (weight: 15) [functional]
+- [ ] TTO-071: Cross-project token comparison (weight: 25) [functional]
   verify: echo "not yet built"
 
-#### TBO-016: Cross-project collaboration (weight: 35)
-User can: share decisions, patterns, and learnings between DevLead projects
+#### TBO-017: Cross-project collaboration (weight: 30)
+User can: share decisions and patterns between projects
 
-- [ ] TTO-070: .collab/ INBOX/OUTBOX pattern for cross-project messaging (weight: 25) [functional]
+- [ ] TTO-072: .collab/ INBOX/OUTBOX for cross-project messaging (weight: 35) [functional]
   verify: echo "not yet built"
-- [ ] TTO-071: Shared decisions — promote a decision from one project to all projects (weight: 25) [functional]
+- [ ] TTO-073: Shared decision promotion across projects (weight: 35) [functional]
   verify: echo "not yet built"
-- [ ] TTO-072: Pattern library — capture reusable patterns from one project, apply to others (weight: 25) [functional]
-  verify: echo "not yet built"
-- [ ] TTO-073: Cross-project dependency tracking — "project A is blocked by project B" (weight: 25) [functional]
+- [ ] TTO-074: Cross-project dependency tracking (weight: 30) [functional]
   verify: echo "not yet built"
 
-#### TBO-017: Monthly rollover and archival (weight: 35)
-User can: close a sprint, archive completed work, carry forward open items cleanly
+#### TBO-018: Sprint rollover (weight: 35)
+User can: close a sprint, archive done work, carry forward open items
 
-- [ ] TTO-074: devlead rollover — archive done BOs/TBOs/TTOs to _archive/ folder (weight: 20) [functional]
+- [ ] TTO-075: devlead rollover archives done BOs/TTOs (weight: 25) [functional]
   verify: echo "not yet built"
-- [ ] TTO-075: Carry-forward — open TTOs move to next sprint with original context (weight: 20) [functional]
+- [ ] TTO-076: Open TTOs carry to next sprint with context (weight: 25) [functional]
   verify: echo "not yet built"
-- [ ] TTO-076: Sprint retrospective auto-generated from session history + KPIs (weight: 20) [functional]
+- [ ] TTO-077: Auto-generated sprint retrospective from KPI trends (weight: 25) [functional]
   verify: echo "not yet built"
-- [ ] TTO-077: Historical convergence — view past sprints and their final state (weight: 20) [functional]
-  verify: echo "not yet built"
-- [ ] TTO-078: Rollover preserves full audit trail — nothing lost (weight: 20) [functional]
+- [ ] TTO-078: Historical sprint view (weight: 25) [functional]
   verify: echo "not yet built"
 
-### BO-006: DevLead becomes the AI project management standard (weight: 35)
-- **Acceptance:** DevLead is recognized as THE tool for governing AI-assisted development. Featured in AI developer communities. Competitive moat through depth of governance.
+### BO-006: DevLead becomes the standard (weight: 50)
+- **Acceptance:** Recognized as THE governance tool for AI-assisted development. Enterprise features. Competitive moat.
 - **start_date:** (not started)
 - **end_date:** (not set)
 - **actual_date:** (pending)
 - **revised_date:** (none)
 - **revision_justification:** (none)
 
-#### TBO-018: Enterprise features (weight: 30)
-User can: use DevLead in a team setting with multiple developers + multiple LLMs
+#### TBO-019: Enterprise (weight: 35)
+User can: use DevLead with teams and integrations
 
-- [ ] TTO-079: Team roles — who can mark TTOs done, who can revise deadlines (weight: 25) [functional]
+- [ ] TTO-079: Team roles — who can mark done, who revises deadlines (weight: 25) [functional]
   verify: echo "not yet built"
-- [ ] TTO-080: Approval workflows — TBO completion requires reviewer sign-off (weight: 25) [functional]
+- [ ] TTO-080: Approval workflows for TBO completion (weight: 25) [functional]
   verify: echo "not yet built"
-- [ ] TTO-081: Integration with GitHub Issues/PRs — auto-create issues from TTOs (weight: 25) [functional]
+- [ ] TTO-081: GitHub Issues/PR integration (weight: 25) [functional]
   verify: echo "not yet built"
-- [ ] TTO-082: Integration with Linear/Jira — sync BO/TBO/TTO to existing PM tools (weight: 25) [functional]
-  verify: echo "not yet built"
-
-#### TBO-019: Advanced governance (weight: 35)
-User can: configure sophisticated rules beyond the basic 5 responsibilities
-
-- [ ] TTO-083: Custom responsibility authoring — user defines their own R7, R8, etc. with triggers + steps (weight: 20) [functional]
-  verify: echo "not yet built"
-- [ ] TTO-084: Conditional routing — if project convergence < 30%, block new feature work (weight: 20) [functional]
-  verify: echo "not yet built"
-- [ ] TTO-085: Budget controls — set token budget per BO, warn/block when exceeded (weight: 20) [functional]
-  verify: echo "not yet built"
-- [ ] TTO-086: Quality gates — TBO can't start until predecessor TBO reaches X% convergence (weight: 20) [functional]
-  verify: echo "not yet built"
-- [ ] TTO-087: Automated retrospectives — DevLead generates "what went well / what didn't" from KPI trends (weight: 20) [functional]
+- [ ] TTO-082: Linear/Jira sync (weight: 25) [functional]
   verify: echo "not yet built"
 
-#### TBO-020: Analytics and intelligence (weight: 35)
-User can: see patterns, predictions, and recommendations from historical data
+#### TBO-020: Advanced governance (weight: 35)
+User can: build sophisticated custom rules
 
-- [ ] TTO-088: Velocity prediction — based on historical convergence rate, when will this BO finish? (weight: 20) [functional]
+- [ ] TTO-083: Custom responsibilities — user-defined R7, R8 (weight: 25) [functional]
   verify: echo "not yet built"
-- [ ] TTO-089: Token efficiency scoring — which TBOs consume the most tokens per convergence point? (weight: 20) [functional]
+- [ ] TTO-084: Budget controls — token limit per BO (weight: 25) [functional]
   verify: echo "not yet built"
-- [ ] TTO-090: LLM comparison — if user switches between Claude/Gemini/Cursor, which performs better? (weight: 20) [functional]
+- [ ] TTO-085: Quality gates — TBO blocked until predecessor completes (weight: 25) [functional]
   verify: echo "not yet built"
-- [ ] TTO-091: Anomaly detection — flag sessions where convergence drops or tokens spike (weight: 20) [functional]
+- [ ] TTO-086: Automated retrospectives from KPI trends (weight: 25) [functional]
   verify: echo "not yet built"
-- [ ] TTO-092: Weekly digest email — auto-generated summary of progress, risks, recommendations (weight: 20) [non-functional]
+
+#### TBO-021: Analytics and intelligence (weight: 30)
+User can: see predictions and patterns
+
+- [ ] TTO-087: Velocity prediction — when will this BO finish? (weight: 25) [functional]
+  verify: echo "not yet built"
+- [ ] TTO-088: LLM comparison — which model performs better? (weight: 25) [functional]
+  verify: echo "not yet built"
+- [ ] TTO-089: Anomaly detection — flag sessions with convergence drops (weight: 25) [functional]
+  verify: echo "not yet built"
+- [ ] TTO-090: Weekly digest email (weight: 25) [non-functional]
   verify: echo "not yet built"

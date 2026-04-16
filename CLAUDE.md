@@ -254,11 +254,11 @@ However: if during BAU work Claude is about to edit a file, R2 still applies. R2
 ### Current project state (auto-derived)
 
 ```
-Sprint: DevLead v2: From Concept to $1000/month — 0.0% converged (0/94 TTOs)
-  BO-001: DevLead is a well-rounded robust product — 0.0%
-  BO-002: Product & Packaging — DevLead works everywhere, in — 0.0%
-  BO-003: DevLead generates its first $1000/month — 0.0%
-  BO-004: DevLead eats its own dogfood — 0.0%
+Sprint: DevLead Works For Real — 0.0% converged (0/67 TTOs)
+  BO-001: Claude cannot cheat — 0.0%
+  BO-002: I always know where my project stands — 0.0%
+  BO-003: Sessions never start from zero — 0.0%
+  BO-004: DevLead pays for itself — 0.0%
 Current focus: FEATURES-0002
 ```
 
