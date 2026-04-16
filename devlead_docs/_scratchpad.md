@@ -534,3 +534,15 @@ whats the status of my project
 nice weather today
 
 ---
+
+## Entry - 2026-04-16 - Mindmap visualization for scratchpad (Nitin 2026-04-16)
+
+Scratchpad entries should be visualizable as a mind map in static HTML.
+Center node = project. Branches = entries by date. Sub-branches = promoted
+targets (intake/decision/fact). SOT migrates_to gives connections.
+Could be a dashboard tab or standalone devlead mindmap command.
+CSS-only for static, minimal JS for expand/collapse.
+
+Source: Nitin idea, 2026-04-16 late session.
+
+---
