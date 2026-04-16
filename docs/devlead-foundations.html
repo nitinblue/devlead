@@ -237,6 +237,38 @@ _resume.md ← derived from hierarchy + intake + audit + git
 <p>The dashboard runs verify commands and shows pass/fail. But it doesn't update the hierarchy checkboxes. A <code>devlead verify</code> command should run all verify commands, check passing TTO boxes, and update convergence. That's DevLead marking work done — not Claude.</p>
 </div>
 
+<div class="card card-yellow">
+<h3>Priority 5: Document DAG Propagation</h3>
+<p>SOT blocks have <code>receives_from</code> and <code>migrates_to</code> fields defining relationships between files. Nothing reads them. When <code>_routing_table.md</code> changes, CLAUDE.md should auto-regenerate. When hierarchy changes, resume should auto-update. The DAG engine reads SOT relationships and triggers downstream updates.</p>
+<p><strong>TTO mapping:</strong> TTO-015 (DAG engine), TTO-016 (routing→CLAUDE.md), TTO-017 (hierarchy→resume), TTO-018 (K_DRIFT KPI)</p>
+</div>
+
+<div class="card card-yellow">
+<h3>Priority 6: Session Experience Analysis</h3>
+<p>DevLead should analyze the conversation itself — not via survey, but by reading session patterns. Frustration signals: how many times did the user say "stop", "wrong", "why". Fudging signals: how many times Claude said "done" vs how many TTOs verified. Session sentiment derived from conversation, not opinion. Feeds K_EXPERIENCE KPI.</p>
+<p><strong>TTO mapping:</strong> TTO-042 (self-correction), TTO-043 (K_INCONSISTENCY KPI)</p>
+</div>
+
+<!-- ============================================ -->
+<h2>Hierarchy ↔ Foundations Coherence</h2>
+
+<div class="card card-accent">
+<table>
+<thead><tr><th>Foundation/Priority</th><th>BO</th><th>TBO</th><th>TTOs</th></tr></thead>
+<tbody>
+<tr><td>F1: CLAUDE.md derived from docs</td><td>BO-001</td><td>TBO-003</td><td>TTO-010, 011, 012, 013</td></tr>
+<tr><td>F2: No code without PM flow</td><td>BO-001</td><td>TBO-001</td><td>TTO-001, 002, 003, 004, 005</td></tr>
+<tr><td>P1: Stop hook</td><td>BO-001</td><td>TBO-002</td><td>TTO-006</td></tr>
+<tr><td>P2: Intent routing</td><td>BO-002</td><td>TBO-008</td><td>TTO-032, 033, 034, 035, 036</td></tr>
+<tr><td>P3: Hierarchy promotion</td><td>BO-002</td><td>TBO-005</td><td>TTO-022</td></tr>
+<tr><td>P4: Verify runner</td><td>BO-001</td><td>TBO-002</td><td>TTO-008</td></tr>
+<tr><td>P5: Document DAG</td><td>BO-001</td><td>TBO-004</td><td>TTO-014, 015, 016, 017, 018</td></tr>
+<tr><td>P6: Session experience</td><td>BO-003</td><td>TBO-010</td><td>TTO-042, 043</td></tr>
+</tbody>
+</table>
+<p class="muted">Every foundation and priority maps to specific TTOs. No gaps.</p>
+</div>
+
 <!-- ============================================ -->
 <h2>The Product Vision</h2>
 
