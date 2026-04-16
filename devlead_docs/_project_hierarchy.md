@@ -52,20 +52,20 @@ Convergence: computed from [x]/[ ] checkbox state x weights, rolling up TTO -> T
 User can: install DevLead and have any LLM self-govern via markdown
 
 - [x] TTO-001: Create _routing_table.md with R1,R2,R4,R5,R6 (weight: 60) [functional]
-- [ ] TTO-002: Add to scaffold + CLAUDE.md read order (weight: 20) [functional]
-- [ ] TTO-003: Wire into bootstrap.py SessionStart context (weight: 20) [functional]
+- [x] TTO-002: Add to scaffold + CLAUDE.md read order (weight: 20) [functional]
+- [x] TTO-003: Wire into bootstrap.py SessionStart context (weight: 20) [functional]
 
 #### TBO-002: Hierarchy with change management (weight: 25)
 User can: track BOs with deadlines, detect slips, enforce revision justification
 
 - [x] TTO-004: Extend _project_hierarchy.md schema with date + change mgmt fields (weight: 50) [functional]
-- [ ] TTO-005: Create hierarchy.py — parse MD into tree, compute convergence (weight: 50) [functional]
+- [x] TTO-005: Create hierarchy.py — parse MD into tree, compute convergence (weight: 50) [functional]
 
 #### TBO-003: KPI engine (weight: 25)
 User can: see computed metrics from real data, not Claude's opinion
 
-- [ ] TTO-006: Create kpi.py — port v1 KPIs for v2 sources (weight: 60) [functional]
-- [ ] TTO-007: Wire into devlead report HTML with dashboard tabs (weight: 40) [non-functional]
+- [x] TTO-006: Create kpi.py — port v1 KPIs for v2 sources (weight: 60) [functional]
+- [x] TTO-007: Wire into devlead report HTML with dashboard tabs (weight: 40) [non-functional]
 
 #### TBO-004: Dogfood (weight: 20)
 User can: see DevLead governing its own development
