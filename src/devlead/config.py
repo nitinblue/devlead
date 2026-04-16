@@ -39,7 +39,7 @@ DEFAULTS: dict = {
         "scratchpad_archive_after_sprints": 1,
     },
     "enforcement": {
-        "mode": "warning",
+        "mode": "hard",
         "exempt_paths": [
             "devlead_docs/**",
             "docs/**",

@@ -58,10 +58,18 @@ def check_pretooluse(hook_input: dict, repo_root: Path) -> dict:
     cwi_ids = [entry.id for entry, _path in in_progress]
 
     if not cwi_ids:
+        mode = cfg.enforcement_mode
         audit.append_event(
-            docs_dir, "gate_warn", tool=tool_name, file=file_path,
-            cwi=[], rule="intake_trace", result="warn", message="no_cwi",
+            docs_dir, "gate_block", tool=tool_name, file=file_path,
+            cwi=[], rule="intake_trace", result="blocked", message="no_cwi",
+            mode=mode,
         )
+        import sys
+        print(_NUDGE, file=sys.stderr)
+        if mode == "hard":
+            sys.exit(2)
+        elif mode == "soft":
+            sys.exit(1)
         return {"continue": True, "systemMessage": _NUDGE}
 
     audit.append_event(
