@@ -93,12 +93,92 @@ def check_session_start(hook_input: dict, repo_root: Path) -> dict:
     return {"continue": True, "systemMessage": context}
 
 
+def check_user_prompt(hook_input: dict, repo_root: Path) -> dict:
+    """UserPromptSubmit: capture every user message + classify intent."""
+    repo_root = Path(repo_root)
+    docs_dir = repo_root / "devlead_docs"
+    if not docs_dir.exists():
+        return {"continue": True}
+
+    prompt = hook_input.get("prompt", "") or hook_input.get("user_prompt", "") or ""
+    if not prompt.strip():
+        return {"continue": True}
+
+    from devlead import scratchpad
+    sp_path = docs_dir / "_scratchpad.md"
+    scratchpad.append_entry(sp_path, "user-input", prompt.strip()[:500])
+
+    route = _match_routing_table(prompt, docs_dir)
+    audit.append_event(docs_dir, "user_prompt", route=route or "none", result="captured")
+
+    if route:
+        return {"continue": True, "systemMessage": route}
+    return {"continue": True}
+
+
+def _match_routing_table(prompt: str, docs_dir: Path) -> str | None:
+    """Match user prompt against routing table triggers. Returns route instructions or None."""
+    rt_path = docs_dir / "_routing_table.md"
+    if not rt_path.exists():
+        return None
+
+    prompt_lower = prompt.lower()
+    text = rt_path.read_text(encoding="utf-8")
+
+    current_r = ""
+    current_triggers: list[str] = []
+    current_steps: list[str] = []
+    in_steps = False
+    best_match = ""
+    best_steps = ""
+
+    for line in text.splitlines():
+        if line.startswith("## R"):
+            if current_r and current_triggers and current_steps:
+                if _triggers_match(prompt_lower, current_triggers):
+                    best_match = current_r
+                    best_steps = "\n".join(current_steps)
+            current_r = line.strip()
+            current_triggers = []
+            current_steps = []
+            in_steps = False
+        elif line.startswith("**Triggers:**"):
+            triggers_text = line.split("**Triggers:**", 1)[1].strip()
+            current_triggers = [t.strip().strip('"').lower() for t in triggers_text.split(",")]
+        elif line.startswith("**Steps:**"):
+            in_steps = True
+        elif line.startswith("**Guard:**"):
+            in_steps = False
+        elif in_steps and line.strip().startswith(("1.", "2.", "3.", "4.", "5.", "6.")):
+            current_steps.append(line.strip())
+
+    if current_r and current_triggers and current_steps:
+        if _triggers_match(prompt_lower, current_triggers):
+            best_match = current_r
+            best_steps = "\n".join(current_steps)
+
+    if best_match:
+        return f"DevLead routing: {best_match} matched. Follow these steps:\n{best_steps}"
+    return None
+
+
+def _triggers_match(prompt_lower: str, triggers: list[str]) -> bool:
+    """Check if any trigger keyword appears in the prompt."""
+    for trigger in triggers:
+        words = [w.strip() for w in trigger.split() if len(w.strip()) > 2]
+        if any(w in prompt_lower for w in words):
+            return True
+    return False
+
+
 def check(hook_name: str, hook_input: dict, repo_root: Path) -> dict:
     """Dispatch by hook name."""
     if hook_name == "PreToolUse":
         return check_pretooluse(hook_input, repo_root)
     if hook_name == "SessionStart":
         return check_session_start(hook_input, repo_root)
+    if hook_name == "UserPromptSubmit":
+        return check_user_prompt(hook_input, repo_root)
     return {"continue": True}
 
 

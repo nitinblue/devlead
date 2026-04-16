@@ -222,6 +222,18 @@ def _wire_hooks(target_dir: Path) -> None:
     if not _has_devlead_hook(pretool_list):
         pretool_list.append(pretool_hook)
 
+    prompt_hook = {
+        "matcher": "",
+        "hooks": [{
+            "type": "command",
+            "command": "python -m devlead gate UserPromptSubmit",
+            "timeout": 5,
+        }],
+    }
+    prompt_list = hooks.setdefault("UserPromptSubmit", [])
+    if not _has_devlead_hook(prompt_list):
+        prompt_list.append(prompt_hook)
+
     settings_path.write_text(
         json.dumps(data, indent=2, ensure_ascii=True) + "\n",
         encoding="utf-8",
