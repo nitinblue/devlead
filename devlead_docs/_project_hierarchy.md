@@ -59,22 +59,34 @@ User can: go from "I have an idea" to tracked, prioritized, decomposed work
 - [ ] TTO-012: Definition of Done — verify: commands run by DevLead, not Claude (weight: 15) [functional]
   verify: grep -c "verify:" devlead_docs/_project_hierarchy.md | grep -q "[2-9][0-9]"
 
-#### TBO-003: Session report is the single source of trust (weight: 20)
-User can: open one HTML file and know whether Claude lied
+#### TBO-003: Project management dashboard — static HTML, comprehensive (weight: 20)
+User can: open one HTML file and see entire project state without reading code or markdown
 
-- [ ] TTO-013: Report checks all installed files exist (weight: 10) [functional]
-  verify: devlead report && grep -q "Installation health" docs/session-report-*.html
-- [ ] TTO-014: Report runs every command and shows pass/fail (weight: 15) [functional]
-  verify: grep -q "Command health" docs/session-report-*.html
-- [ ] TTO-015: Report shows KPIs from real data (weight: 15) [functional]
-  verify: grep -q "KPIs" docs/session-report-*.html
-- [ ] TTO-016: Report shows hierarchy convergence per BO (weight: 10) [functional]
-  verify: grep -q "convergence" docs/session-report-*.html
-- [ ] TTO-017: Report runs verify: commands from hierarchy and shows results (weight: 25) [functional]
-  verify: grep -q "Definition of Done" docs/session-report-*.html
-- [ ] TTO-018: Report shows token usage per session (weight: 10) [functional]
-  verify: grep -q "oken" docs/session-report-*.html
-- [ ] TTO-019: Stop hook auto-generates report + resume at session end (weight: 15) [functional]
+- [ ] TTO-013: Tab 1 — Executive Summary: sprint convergence %, BO status cards, deadline heatmap, next best action (weight: 10) [functional]
+  verify: devlead dashboard && grep -q "Executive Summary" docs/dashboard-*.html
+- [ ] TTO-014: Tab 2 — Hierarchy: full BO/TBO/TTO tree with convergence bars, weight distribution, checkbox state (weight: 10) [functional]
+  verify: grep -q "Hierarchy" docs/dashboard-*.html
+- [ ] TTO-015: Tab 3 — KPIs: all 25 KPIs grouped by category with sparklines or trend indicators (weight: 10) [functional]
+  verify: grep -q "KPIs" docs/dashboard-*.html
+- [ ] TTO-016: Tab 4 — Timelines: BO start/end/actual/revised dates, Gantt-style bars, overdue highlighting (weight: 10) [functional]
+  verify: grep -q "Timeline" docs/dashboard-*.html
+- [ ] TTO-017: Tab 5 — Token Economics: tokens per session, tokens per TTO, cost-per-convergence-point, burn rate trend (weight: 10) [functional]
+  verify: grep -q "Token" docs/dashboard-*.html
+- [ ] TTO-018: Tab 6 — Intake: all intake entries with status, origin (forced/normal), actionable items, promotion trace (weight: 8) [functional]
+  verify: grep -q "Intake" docs/dashboard-*.html
+- [ ] TTO-019: Tab 7 — Audit Trail: last 100 events, filterable by event type, gate violations highlighted (weight: 8) [functional]
+  verify: grep -q "Audit" docs/dashboard-*.html
+- [ ] TTO-020: Tab 8 — Definition of Done: every TTO's verify: command with pass/fail result, run timestamp (weight: 10) [functional]
+  verify: grep -q "Definition of Done" docs/dashboard-*.html
+- [ ] TTO-021: Tab 9 — Session History: convergence over time, token spend per session, session-to-session delta (weight: 8) [functional]
+  verify: grep -q "Session History" docs/dashboard-*.html
+- [ ] TTO-022: Tab 10 — Change Management: every BO deadline revision with original date, revised date, justification (weight: 8) [functional]
+  verify: grep -q "Change Management" docs/dashboard-*.html
+- [ ] TTO-023: CSS-only tabs (no JavaScript), self-contained HTML, embedded CSS (weight: 4) [non-functional]
+  verify: grep -q "tab-input" docs/dashboard-*.html && ! grep -q "<script" docs/dashboard-*.html
+- [ ] TTO-024: Token tracking at TTO level — each TTO shows tokens consumed during implementation (weight: 4) [functional]
+  verify: grep -q "tokens" docs/dashboard-*.html
+- [ ] TTO-025: Stop hook auto-generates dashboard + resume at session end (weight: 10) [functional]
   verify: grep -q "Stop" .claude/settings.json
 
 #### TBO-004: KPI engine computes truth from data (weight: 15)
