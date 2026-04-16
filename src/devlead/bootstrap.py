@@ -18,6 +18,28 @@ SECTION_START = "<!-- devlead:claude-md-start -->"
 SECTION_END = "<!-- devlead:claude-md-end -->"
 
 
+def _load_routing_table() -> str:
+    """Load the routing table content for embedding in CLAUDE.md."""
+    import inspect
+    src_dir = Path(inspect.getfile(lambda: None)).parent
+    # Try project's devlead_docs first, then scaffold template
+    for candidate in [
+        Path.cwd() / "devlead_docs" / "_routing_table.md",
+        src_dir / "scaffold" / "_routing_table.md.tmpl",
+    ]:
+        if candidate.exists():
+            text = candidate.read_text(encoding="utf-8")
+            # Strip the SOT block and header — just the responsibility sections
+            lines = text.splitlines()
+            start = 0
+            for i, line in enumerate(lines):
+                if line.startswith("## R") or line.startswith("## Unmatched"):
+                    start = i
+                    break
+            return "\n".join(lines[start:])
+    return "(routing table not found — run devlead init)"
+
+
 def generate_section() -> str:
     """Return the full CLAUDE.md section text for DevLead governance."""
     return f"""{SECTION_START}
@@ -92,12 +114,13 @@ audit event and injects a systemMessage nudge. Warn-only — never blocks.
 | `_resume.md` | Session bootstrap cursor | |
 | `_scratchpad.md` | Raw untriaged capture inbox | |
 
-### Routing table
+### Routing table — FOLLOW THIS FOR EVERY USER INPUT
 
-`devlead_docs/_routing_table.md` defines DevLead's responsibilities and the
-exact steps for each intent. **Read it every session.** When the user says
-something, classify against the routing table first. If a responsibility
-matches, follow its steps exactly. If not, proceed as normal.
+Before responding to ANY user input, classify the intent against the
+responsibilities below. If a match is found, follow the steps EXACTLY.
+If no match, proceed as business-as-usual.
+
+{_load_routing_table()}
 
 ### SOT blocks
 
