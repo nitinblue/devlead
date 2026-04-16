@@ -57,7 +57,7 @@
 - **Proposed BO:** (needs BO)
 - **Proposed Sprint:** (needs sprint)
 - **Proposed weight:** (needs weight)
-- **Status:** in_progress
+- **Status:** pending
 - **Origin:** normal
 - **Promoted to:** (pending)
 - **Promoted at:** (pending)
