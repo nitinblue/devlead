@@ -171,6 +171,42 @@ def _triggers_match(prompt_lower: str, triggers: list[str]) -> bool:
     return False
 
 
+def check_stop(hook_input: dict, repo_root: Path) -> dict:
+    """Stop hook: auto-generate dashboard + resume + record session at session end."""
+    repo_root = Path(repo_root)
+    docs_dir = repo_root / "devlead_docs"
+    if not docs_dir.exists():
+        return {"continue": True}
+
+    import sys
+    results = []
+
+    try:
+        from devlead import resume
+        resume.refresh(repo_root)
+        results.append("resume: regenerated")
+    except Exception as e:
+        results.append(f"resume: error {e}")
+
+    try:
+        from devlead import dashboard
+        out = dashboard.write_dashboard(repo_root)
+        results.append(f"dashboard: {out.name}")
+    except Exception as e:
+        results.append(f"dashboard: error {e}")
+
+    try:
+        from devlead import kpi
+        kpi.record_session(docs_dir, tokens_used=0)
+        results.append("session: recorded")
+    except Exception as e:
+        results.append(f"session: error {e}")
+
+    audit.append_event(docs_dir, "session_end", result="ok", details="; ".join(results))
+    print(f"DevLead session close-out: {'; '.join(results)}", file=sys.stderr)
+    return {"continue": True}
+
+
 def check(hook_name: str, hook_input: dict, repo_root: Path) -> dict:
     """Dispatch by hook name."""
     if hook_name == "PreToolUse":
@@ -179,6 +215,8 @@ def check(hook_name: str, hook_input: dict, repo_root: Path) -> dict:
         return check_session_start(hook_input, repo_root)
     if hook_name == "UserPromptSubmit":
         return check_user_prompt(hook_input, repo_root)
+    if hook_name == "Stop":
+        return check_stop(hook_input, repo_root)
     return {"continue": True}
 
 

@@ -234,6 +234,18 @@ def _wire_hooks(target_dir: Path) -> None:
     if not _has_devlead_hook(prompt_list):
         prompt_list.append(prompt_hook)
 
+    stop_hook = {
+        "matcher": "",
+        "hooks": [{
+            "type": "command",
+            "command": "python -m devlead gate Stop",
+            "timeout": 30,
+        }],
+    }
+    stop_list = hooks.setdefault("Stop", [])
+    if not _has_devlead_hook(stop_list):
+        stop_list.append(stop_hook)
+
     settings_path.write_text(
         json.dumps(data, indent=2, ensure_ascii=True) + "\n",
         encoding="utf-8",

@@ -462,3 +462,7 @@
 {"ts": "2026-04-16T05:04:11Z", "event": "gate_block", "tool": "", "file": "", "cwi": [], "rule": "intake_trace", "result": "blocked", "message": "no_cwi", "mode": "hard"}
 {"ts": "2026-04-16T05:04:12Z", "event": "gate_pass", "tool": "Write", "file": "C:\\Users\\nitin\\plugin-development\\devlead\\devlead_docs\\_project_hierarchy.md", "rule": "intake_trace", "result": "exempt"}
 {"ts": "2026-04-16T05:04:13Z", "event": "gate_block", "tool": "", "file": "", "cwi": [], "rule": "intake_trace", "result": "blocked", "message": "no_cwi", "mode": "hard"}
+{"ts": "2026-04-16T05:11:10Z", "event": "gate_block", "tool": "Edit", "file": "C:\\Users\\nitin\\plugin-development\\devlead\\src\\devlead\\install.py", "cwi": [], "rule": "intake_trace", "result": "blocked", "message": "no_cwi", "mode": "hard"}
+{"ts": "2026-04-16T05:11:49Z", "event": "focus_change", "intake_id": "FEATURES-0002", "result": "in_progress"}
+{"ts": "2026-04-16T05:11:57Z", "event": "gate_pass", "tool": "Edit", "file": "C:\\Users\\nitin\\plugin-development\\devlead\\src\\devlead\\install.py", "cwi": ["FEATURES-0002"], "rule": "intake_trace", "result": "pass"}
+{"ts": "2026-04-16T05:12:12Z", "event": "gate_pass", "tool": "Edit", "file": "C:\\Users\\nitin\\plugin-development\\devlead\\src\\devlead\\gate.py", "cwi": ["FEATURES-0002"], "rule": "intake_trace", "result": "pass"}
