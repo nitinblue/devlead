@@ -492,3 +492,27 @@ not built yet — that is the mechanism that will actually check boxes.
 Source: Session 4 synthesis, 2026-04-16.
 
 ---
+
+## Entry - 2026-04-16 - Document relationship DAG — auto-propagation on change (Nitin 2026-04-16)
+
+When any devlead_docs/ file changes, related files must auto-update.
+
+The SOT blocks already have receives_from and migrates_to fields.
+These define the DAG edges. What is missing: a propagation engine
+that watches for changes and triggers downstream regeneration.
+
+Examples:
+- _routing_table.md changes -> CLAUDE.md regenerates
+- _project_hierarchy.md changes -> _resume.md regenerates
+- _intake_*.md changes -> _resume.md regenerates
+- _living_decisions.md changes -> CLAUDE.md regenerates
+- Any file changes -> dashboard regenerates
+
+This is a core architectural piece. Without it, files drift from
+each other and the governance layer becomes stale mid-session.
+
+Priority: HIGH — this should be in the foundations page as Foundation 3.
+
+Source: Nitin question, 2026-04-16 late session.
+
+---
