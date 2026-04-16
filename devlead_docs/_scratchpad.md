@@ -338,3 +338,37 @@
   `_intake_features.md` via `--from-scratchpad`.
 
 > **Promoted:** tracked as `FEATURES-0001` in `_intake_features.md`.
+
+## Entry - 2026-04-16 - DevLead responsibility chain and intent routing (Nitin dictation 2026-04-16)
+
+Nitin dictated the core product definition for DevLead. This is the canonical source.
+
+## DevLead has a defined role and responsibility set
+
+Any user intent that resolves to one of DevLead's responsibilities triggers deterministic routing. Unresolved intents pass through to Claude as business-as-usual.
+
+## DevLead responsibilities (load-bearing, Nitin-dictated)
+
+1. **Building the pipeline of work** — BO -> TBO -> TTO mapping. The hierarchy is DevLead's job.
+2. **No coding outside intake context** — All code traces to _intake entries. DevLead enforces this.
+3. **Full ownership of flow, design, architecture, modularity** — DevLead knows the codebase. DevLead knows the design. DevLead knows the module boundaries. Not Claude.
+4. **Delivering business objectives on time** — DevLead is accountable for deadlines, not Claude.
+5. **Full project management suite** — Planning, tracking, prioritization, status, blockers — all DevLead.
+6. **Everything DevLead does generates KPI data** — Every action produces data for KPI generation and reporting.
+
+## Intent routing concept
+
+- User says something -> DevLead classifies intent -> if intent matches a responsibility, DevLead routes to predefined file read/write sequence -> Claude executes
+- If intent does not match any responsibility -> Claude proceeds as normal
+- The responsibility chain is deterministic. Claude does not improvise inside DevLead's scope.
+
+## Non-functional requirements
+
+- Robust KPI generation and reporting framework
+- Look up legacy/v1/ folder for features that were working fine (KPI engine, convergence, dashboard, etc.)
+
+## Source
+
+Nitin verbal dictation, 2026-04-16 session. Captured verbatim into scratchpad per DevLead discipline.
+
+---
