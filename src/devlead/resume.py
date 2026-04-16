@@ -61,9 +61,22 @@ def generate(repo_root: Path) -> str:
     lines.extend(git_lines)
     lines.append("")
 
-    lines.append("## Open blockers")
+    lines.append("## Hierarchy convergence")
     lines.append("")
-    lines.append("(Auto-detected blockers will appear here when DevLead can identify them.)")
+    hierarchy_lines = _get_hierarchy(docs_dir)
+    lines.extend(hierarchy_lines)
+    lines.append("")
+
+    lines.append("## Next TTOs to implement")
+    lines.append("")
+    next_lines = _get_next_ttos(docs_dir)
+    lines.extend(next_lines)
+    lines.append("")
+
+    lines.append("## Plan file")
+    lines.append("")
+    plan_lines = _get_plan_pointer()
+    lines.extend(plan_lines)
     lines.append("")
 
     return "\n".join(lines)
@@ -143,6 +156,46 @@ def _get_recent_audit(docs_dir: Path) -> list[str]:
         return lines
     except Exception as e:
         return [f"(error: {e})"]
+
+
+def _get_hierarchy(docs_dir: Path) -> list[str]:
+    try:
+        from devlead import hierarchy
+        h_path = docs_dir / "_project_hierarchy.md"
+        if not h_path.exists():
+            return ["(no _project_hierarchy.md)"]
+        sprints = hierarchy.parse(h_path)
+        return hierarchy.summary(sprints).splitlines()
+    except Exception as e:
+        return [f"(error: {e})"]
+
+
+def _get_next_ttos(docs_dir: Path) -> list[str]:
+    try:
+        from devlead import hierarchy
+        h_path = docs_dir / "_project_hierarchy.md"
+        if not h_path.exists():
+            return ["(no hierarchy)"]
+        sprints = hierarchy.parse(h_path)
+        todos = []
+        for s in sprints:
+            for bo in s.bos:
+                for tbo in bo.tbos:
+                    for tto in tbo.ttos:
+                        if not tto.done:
+                            todos.append(f"- [ ] {tto.id}: {tto.name} (under {tbo.id} / {bo.id})")
+        return todos if todos else ["All TTOs complete."]
+    except Exception as e:
+        return [f"(error: {e})"]
+
+
+def _get_plan_pointer() -> list[str]:
+    import glob
+    plans = sorted(glob.glob(str(Path.home() / ".claude" / "plans" / "*.md")))
+    if not plans:
+        return ["(no plan files found)"]
+    latest = plans[-1]
+    return [f"Latest plan: `{latest}`", "Read this before starting implementation."]
 
 
 def _get_git_status(repo_root: Path) -> list[str]:
