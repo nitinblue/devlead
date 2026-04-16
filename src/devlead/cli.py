@@ -85,6 +85,8 @@ def main(argv: list[str] | None = None) -> int:
         return _cmd_config(args[1:])
     if cmd == "report":
         return _cmd_report(args[1:])
+    if cmd == "resume":
+        return _cmd_resume(args[1:])
 
     # Unknown command -> exit 0 (warn-only by design).
     print(f"devlead: unknown command '{cmd}' (v2 under construction)", file=sys.stderr)
@@ -526,6 +528,15 @@ def _cmd_config(sub_args: list[str]) -> int:
             else:
                 print(f"  {k} = {v}")
     return 0
+
+def _cmd_resume(sub_args: list[str]) -> int:
+    from devlead import resume
+
+    repo_root = Path(sub_args[0]) if sub_args else Path.cwd()
+    out = resume.refresh(repo_root)
+    print(f"_resume.md regenerated from project state: {out}")
+    return 0
+
 
 def _cmd_report(sub_args: list[str]) -> int:
     from devlead import report

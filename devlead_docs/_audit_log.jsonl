@@ -18,3 +18,9 @@
 {"ts": "2026-04-16T02:02:05Z", "event": "gate_warn", "tool": "Edit", "file": "src/app.py", "cwi": [], "rule": "intake_trace", "result": "warn", "message": "no_cwi"}
 {"ts": "2026-04-16T02:02:05Z", "event": "verify_pass", "result": "ok"}
 {"ts": "2026-04-16T02:02:06Z", "event": "verify_pass", "result": "ok"}
+{"ts": "2026-04-16T02:03:18Z", "event": "gate_warn", "tool": "Edit", "file": "C:\\Users\\nitin\\plugin-development\\devlead\\pyproject.toml", "cwi": [], "rule": "intake_trace", "result": "warn", "message": "no_cwi"}
+{"ts": "2026-04-16T02:03:23Z", "event": "gate_warn", "tool": "Edit", "file": "C:\\Users\\nitin\\plugin-development\\devlead\\pyproject.toml", "cwi": [], "rule": "intake_trace", "result": "warn", "message": "no_cwi"}
+{"ts": "2026-04-16T02:04:17Z", "event": "verify_pass", "result": "ok"}
+{"ts": "2026-04-16T02:08:11Z", "event": "gate_warn", "tool": "Write", "file": "C:\\Users\\nitin\\plugin-development\\devlead\\src\\devlead\\resume.py", "cwi": [], "rule": "intake_trace", "result": "warn", "message": "no_cwi"}
+{"ts": "2026-04-16T02:08:17Z", "event": "gate_warn", "tool": "Edit", "file": "C:\\Users\\nitin\\plugin-development\\devlead\\src\\devlead\\cli.py", "cwi": [], "rule": "intake_trace", "result": "warn", "message": "no_cwi"}
+{"ts": "2026-04-16T02:08:23Z", "event": "gate_warn", "tool": "Edit", "file": "C:\\Users\\nitin\\plugin-development\\devlead\\src\\devlead\\cli.py", "cwi": [], "rule": "intake_trace", "result": "warn", "message": "no_cwi"}
