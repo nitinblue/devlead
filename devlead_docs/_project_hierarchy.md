@@ -105,49 +105,97 @@ User can: close the CLI, reopen tomorrow, and Claude picks up exactly where it l
 - [ ] TTO-029: Fresh session test — Claude reads resume and knows what to do without being told (weight: 15) [functional]
   verify: echo "requires fresh session test by Nitin"
 
-### BO-002: DevLead installs in 60 seconds and just works (weight: 25)
-- **Acceptance:** A non-coder with zero setup runs one command and gets a governed project. Works on Windows, Mac, Linux. Works with Claude Code, Gemini CLI, Cursor.
+### BO-002: Product & Packaging — DevLead works everywhere, installs instantly (weight: 25)
+- **Acceptance:** DevLead governs projects across Claude Code, Gemini CLI, Cursor, Windsurf, Codex, Aider, and any future LLM tool. Non-coder installs in under 60 seconds on any platform. Two tiers: free MD-only and paid Python-enhanced.
 - **start_date:** 2026-04-25
 - **end_date:** 2026-05-01
 - **actual_date:** (pending)
 - **revised_date:** (none)
 - **revision_justification:** (none)
 
-#### TBO-006: One-command install (weight: 35)
-User can: type one command and have governance active
+#### TBO-006: Claude Code — native plugin with full enforcement (weight: 20)
+User can: install DevLead as a Claude Code plugin and get hooks + commands + reports
 
-- [ ] TTO-030: pip install devlead works on clean machine (weight: 25) [functional]
+- [ ] TTO-030: pip install devlead works on clean Windows/Mac/Linux (weight: 20) [functional]
   verify: pip show devlead 2>&1 | grep -q "Version"
-- [ ] TTO-031: devlead init creates devlead_docs + CLAUDE.md + hooks in one shot (weight: 25) [functional]
+- [ ] TTO-031: devlead init creates devlead_docs + CLAUDE.md + hooks in one shot (weight: 20) [functional]
   verify: mkdir -p /tmp/dit && devlead init /tmp/dit && test -f /tmp/dit/CLAUDE.md && test -f /tmp/dit/.claude/settings.json && rm -rf /tmp/dit
-- [ ] TTO-032: devlead init detects LLM tool and generates CLAUDE.md or AGENTS.md accordingly (weight: 25) [functional]
-  verify: python -c "from devlead.bootstrap import generate_section; assert len(generate_section()) > 200"
-- [ ] TTO-033: Idempotent — re-running init on existing project doesn't break anything (weight: 25) [functional]
+- [ ] TTO-032: Published on Claude Code plugin marketplace (weight: 20) [functional]
+  verify: test -f .claude-plugin/plugin.json && grep -q "0.2" .claude-plugin/plugin.json
+- [ ] TTO-033: SessionStart + PreToolUse + Stop hooks all wired automatically (weight: 20) [functional]
+  verify: grep -q "SessionStart" .claude/settings.json && grep -q "PreToolUse" .claude/settings.json
+- [ ] TTO-034: Idempotent — re-running init on existing project doesn't break anything (weight: 20) [functional]
   verify: mkdir -p /tmp/dit2 && devlead init /tmp/dit2 && devlead init /tmp/dit2 && rm -rf /tmp/dit2
 
-#### TBO-007: Works without Python (MD-only tier) (weight: 30)
-User can: copy devlead_docs/ into any project and get governance without pip
+#### TBO-007: Gemini CLI — AGENTS.md with full routing table (weight: 15)
+User can: use DevLead with Gemini CLI, routing table governs via AGENTS.md
 
-- [ ] TTO-034: devlead_docs/ folder is self-contained — no Python imports needed for governance (weight: 30) [functional]
+- [ ] TTO-035: devlead init --llm gemini generates AGENTS.md instead of CLAUDE.md (weight: 30) [functional]
+  verify: test -f AGENTS.md && grep -q "## R1" AGENTS.md
+- [ ] TTO-036: GEMINI.md tool mapping included (skill tool equivalents for Gemini) (weight: 20) [functional]
+  verify: test -f GEMINI.md || grep -q "gemini" AGENTS.md
+- [ ] TTO-037: Gemini-specific hooks or extensions documented (weight: 20) [non-functional]
+  verify: echo "requires Gemini CLI testing"
+- [ ] TTO-038: Tested end-to-end — Gemini follows routing table for R1 and R2 (weight: 30) [functional]
+  verify: echo "requires manual Gemini CLI test by Nitin"
+
+#### TBO-008: Cursor / Windsurf / Copilot — .cursorrules and equivalents (weight: 15)
+User can: use DevLead with Cursor, Windsurf, or GitHub Copilot workspace
+
+- [ ] TTO-039: devlead init --llm cursor generates .cursorrules with routing table (weight: 25) [functional]
+  verify: echo "requires Cursor testing"
+- [ ] TTO-040: devlead init --llm windsurf generates .windsurfrules (weight: 25) [functional]
+  verify: echo "requires Windsurf testing"
+- [ ] TTO-041: devlead init --llm copilot generates .github/copilot-instructions.md (weight: 25) [functional]
+  verify: echo "requires Copilot testing"
+- [ ] TTO-042: Universal: devlead init --llm generic generates AGENTS.md as catch-all (weight: 25) [functional]
+  verify: echo "requires generic LLM testing"
+
+#### TBO-009: Codex / Aider / Open-source LLMs — headless governance (weight: 10)
+User can: use DevLead with any CLI-based LLM tool that reads project files
+
+- [ ] TTO-043: devlead init --llm codex generates CODEX.md with routing table (weight: 30) [functional]
+  verify: echo "requires Codex testing"
+- [ ] TTO-044: devlead init --llm aider generates .aider.conf.yml or equivalent (weight: 30) [functional]
+  verify: echo "requires Aider testing"
+- [ ] TTO-045: Documentation: "How to use DevLead with any LLM" guide (weight: 40) [non-functional]
+  verify: echo "requires guide written"
+
+#### TBO-010: MD-only tier — zero-install governance (weight: 15)
+User can: download a zip, drop it in their project, governance is active
+
+- [ ] TTO-046: devlead_docs/ is fully self-contained, no Python needed for governance (weight: 25) [functional]
   verify: test -f devlead_docs/_routing_table.md && test -f devlead_docs/_resume.md && test -f devlead_docs/_project_hierarchy.md
-- [ ] TTO-035: Template pack downloadable from GitHub as a zip (weight: 20) [non-functional]
-  verify: echo "requires GitHub setup"
-- [ ] TTO-036: README explains MD-only vs Python-enhanced tiers clearly (weight: 25) [non-functional]
-  verify: test -f README.md && wc -l README.md | awk '{exit ($1 > 30 ? 0 : 1)}'
-- [ ] TTO-037: Governance rules work when pasted into Cursor rules or Windsurf config (weight: 25) [functional]
-  verify: echo "requires manual test with Cursor"
+- [ ] TTO-047: Template pack downloadable from GitHub releases as zip (weight: 25) [non-functional]
+  verify: echo "requires GitHub release"
+- [ ] TTO-048: npx devlead-init or equivalent one-liner for non-Python users (weight: 25) [functional]
+  verify: echo "requires npm package or shell script"
+- [ ] TTO-049: README clearly separates "free MD governance" vs "paid Python power tools" (weight: 25) [non-functional]
+  verify: test -f README.md && grep -q "free" README.md
 
-#### TBO-008: Documentation a non-coder can follow (weight: 35)
-User can: read the README and know what DevLead does, why they need it, and how to start
+#### TBO-011: Documentation — a non-coder can self-serve (weight: 15)
+User can: go from "what is this" to "it's running on my project" without help
 
-- [ ] TTO-038: README — "Claude says done. Was it?" pitch + 3-step install + what happens next (weight: 30) [non-functional]
+- [ ] TTO-050: README — "Claude says done. Was it?" pitch in first 3 lines (weight: 20) [non-functional]
   verify: test -f README.md && grep -q "Claude says done" README.md
-- [ ] TTO-039: User guide — "I installed DevLead, now what?" with screenshots (weight: 30) [non-functional]
+- [ ] TTO-051: Install guide per LLM tool (Claude, Gemini, Cursor, generic) (weight: 20) [non-functional]
+  verify: grep -q "Claude Code\|Gemini\|Cursor" README.md || test -f docs/install-guide.md
+- [ ] TTO-052: User guide — "I installed DevLead, now what?" walkthrough (weight: 20) [non-functional]
   verify: test -f docs/USER_GUIDE.md && wc -l docs/USER_GUIDE.md | awk '{exit ($1 > 50 ? 0 : 1)}'
-- [ ] TTO-040: Example session transcript — shows DevLead catching Claude fudging (weight: 20) [non-functional]
+- [ ] TTO-053: Example session transcript showing DevLead catching Claude fudging (weight: 20) [non-functional]
   verify: test -f docs/example-session.md
-- [ ] TTO-041: Video or GIF showing install + first session + report (weight: 20) [non-functional]
+- [ ] TTO-054: Video or GIF: install -> first session -> report (weight: 20) [non-functional]
   verify: echo "requires Nitin to create"
+
+#### TBO-012: Cross-platform quality (weight: 10)
+User can: trust DevLead works on their machine regardless of OS
+
+- [ ] TTO-055: Works on Windows (PowerShell + Git Bash) (weight: 35) [functional]
+  verify: python -c "import devlead; print('ok')"
+- [ ] TTO-056: Works on macOS (zsh) (weight: 35) [functional]
+  verify: echo "requires macOS test"
+- [ ] TTO-057: Works on Linux (bash) (weight: 30) [functional]
+  verify: echo "requires Linux test"
 
 ### BO-003: DevLead generates its first $1000/month (weight: 25)
 - **Acceptance:** 10+ paying users or $1000 MRR. Users renew because DevLead saves them from wasted sessions.
