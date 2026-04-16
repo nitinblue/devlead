@@ -74,76 +74,70 @@ The v1 codebase is archived untouched under `legacy/v1/`. It is **not** to be im
 - Next work happens only after the next design section is dictated and locked.
 
 <!-- devlead:claude-md-start -->
-## DevLead governance — read every session
+## DevLead governance — auto-generated from devlead_docs/
 
-This project uses **DevLead**, a governance tool that is the single channel
-between you (the LLM) and the codebase. Every task traces through DevLead's
-document store. These rules are non-negotiable.
+<!-- This section is derived from devlead_docs/ files. Do not hand-edit. -->
+<!-- Run `devlead init` or `devlead refresh-claude-md` to regenerate. -->
 
 ### Session start — mandatory read order
 
-At the start of **every** session, before doing anything else, read these files
-in this exact order:
+Read these files in order before doing anything else:
 
-1. `devlead_docs/_resume.md` — thin bootstrap cursor (~30-50 lines): current
-   focus, read order, next action, open blockers.
-2. `devlead_docs/_intake_*.md` — scan for entries with `status: in_progress`.
-   Those are the current focus. Run `/devlead focus show` to list them.
-3. `devlead_docs/_aware_features.md` and `_aware_design.md` — auto-derived
-   snapshots of what the code actually does right now.
-4. `devlead_docs/_scratchpad.md` — raw untriaged capture from prior sessions.
-5. `devlead_docs/_living_decisions.md` — canonical locked-decisions archive.
+1. `devlead_docs/_resume.md`
+2. `devlead_docs/_routing_table.md`
+3. `devlead_docs/_intake_features.md`
+4. `devlead_docs/_intake_bugs.md`
+5. `devlead_docs/_aware_features.md`
+6. `devlead_docs/_aware_design.md`
+7. `devlead_docs/_scratchpad.md`
+8. `devlead_docs/_living_decisions.md`
 
 Then — and only then — begin work.
 
-### Dev work discipline — no code without intake trace
+### Dev work discipline
 
-**Hard rule:** every code change (edit, new file, bug fix, refactor) must
-originate from an entry in `devlead_docs/_intake_*.md`. No exceptions.
+**2026-04-14 - Dev work discipline (all code traces to intake)**
 
-- **New feature:** capture to `_scratchpad.md` → triage → ingest into
-  `_intake_features.md` → implement.
-- **Bug noticed mid-task:** STOP. Append to `_scratchpad.md`. Run
-  `/devlead ingest --from-scratchpad <needle> --into _intake_bugs.md`.
-  Only then fix it.
-- **User forces work without pre-existing intake:** create the intake entry
-  FIRST with `--forced` flag, THEN do the work. Never refuse, never skip.
+- Edit/Write is HARD BLOCKED (exit 2) when no intake entry has `status: in_progress`.
+- To unblock: run `/devlead focus <intake-id>`.
+- To create a forced entry: `/devlead ingest --from-scratchpad <needle> --into _intake_features.md --forced`.
 
-### Enforcement gate
+### Enforcement
 
-The discipline rule is backed by `/devlead gate`. When a `PreToolUse` hook
-fires without an `in_progress` intake entry, the gate writes a `gate_warn`
-audit event and injects a systemMessage nudge. Warn-only — never blocks.
+DevLead gate runs on every Edit/Write via PreToolUse hook.
+- **Default mode: hard** — exit 2 blocks the tool call. Claude cannot proceed.
+- Configurable via `devlead.toml` `[enforcement] mode = "hard"|"soft"|"warning"`.
+- Exempt paths: devlead_docs/**, docs/**, *.md, commands/**, tests/**.
 
 ### Available commands
 
 | Command | What it does |
 |---------|-------------|
-| `/devlead init` | Install DevLead on a project |
-| `/devlead scratchpad` | List raw capture entries |
-| `/devlead scratchpad archive` | Archive promoted entries |
-| `/devlead intake` | List all intake file entries |
-| `/devlead triage` | Walk scratchpad for routing |
-| `/devlead ingest <plan> --into <file>` | Ingest a plugin plan into intake |
-| `/devlead promote <needle> --to intake\|decision\|fact` | Route scratchpad entries |
-| `/devlead focus [show\|clear\|<id>]` | Set/show/clear current work focus |
-| `/devlead awareness` | Refresh `_aware_*.md` from code |
-| `/devlead gate <HookName>` | Run enforcement gate (stdin JSON) |
-| `/devlead migrate <src> <heading> --to <dest>` | Hash-checked content migration |
-| `/devlead verify-links` | Check cross-references for broken refs |
-| `/devlead audit recent [N]` | Print recent audit events |
-| `/devlead config show` | Show resolved config |
+| `/devlead audit` | Inspect the DevLead audit log |
+| `/devlead awareness` | Refresh DevLead self-awareness files (_aware_*.md) |
+| `/devlead config` | Show the resolved DevLead configuration |
+| `/devlead focus` | Set, show, or clear the current focus by flipping intake entry status |
+| `/devlead gate` | Run the DevLead PreToolUse enforcement gate (warn-only) |
+| `/devlead ingest` | Ingest a plugin's output plan/spec into a DevLead intake file |
+| `/devlead init` | Install DevLead on the current project — creates devlead_docs/ with scaffolding and seeds the canonical source of truth. |
+| `/devlead intake` | List current intake file entries |
+| `/devlead migrate` | Hash-checked, reversible content migration between devlead_docs/ files |
+| `/devlead promote` | Promote a scratchpad entry to an intake file, a decision log, or a living file |
+| `/devlead scratchpad` | Append a raw capture entry to devlead_docs/_scratchpad.md - verbatim triage inbox, zero information loss. |
+| `/devlead triage` | Walk untriaged _scratchpad.md entries and route each to its canonical home |
+| `/devlead verify-links` | Walk cross-references in devlead_docs/ and report broken refs + orphans |
 
 ### File categories in devlead_docs/
 
-| Prefix | Role | Examples |
-|--------|------|---------|
-| `_intake_*` | Work backlog (features, bugs) | `_intake_features.md` |
-| `_living_*` | Curated intent docs (decisions, goals) | `_living_decisions.md` |
-| `_aware_*` | Auto-derived from code (regenerated) | `_aware_features.md` |
-| `_project_*` | Project state (hierarchy, status) | `_project_hierarchy.md` |
-| `_resume.md` | Session bootstrap cursor | |
-| `_scratchpad.md` | Raw untriaged capture inbox | |
+| Prefix | Role | Files |
+|--------|------|-------|
+| `_intake_*` | Work backlog | _intake_bugs.md, _intake_features.md |
+| `_living_*` | Curated intent docs | _living_decisions.md, _living_design.md |
+| `_aware_*` | Auto-derived from code | _aware_design.md, _aware_features.md |
+| `_project_*` | Project state | _project_hierarchy.md, _project_status.md |
+| `_resume.md` | Session bootstrap (auto-generated) | |
+| `_scratchpad.md` | Raw capture inbox | |
+| `_routing_table.md` | Intent routing (the brain) | |
 
 ### Routing table — FOLLOW THIS FOR EVERY USER INPUT
 
@@ -257,9 +251,15 @@ If the user's intent does not match any responsibility above, Claude proceeds no
 
 However: if during BAU work Claude is about to edit a file, R2 still applies. R2 is always active, not just when explicitly triggered.
 
-### SOT blocks
+### Current project state (auto-derived)
 
-Every file in `devlead_docs/` opens with a `<!-- devlead:sot ... -->` metadata
-block declaring its purpose, owner, lineage, and lifetime. DevLead reads these
-to understand the file's role. Do not remove them.
+```
+Sprint: DevLead v2: From Concept to $1000/month — 0.0% converged (0/94 TTOs)
+  BO-001: DevLead is a well-rounded robust product — 0.0%
+  BO-002: Product & Packaging — DevLead works everywhere, in — 0.0%
+  BO-003: DevLead generates its first $1000/month — 0.0%
+  BO-004: DevLead eats its own dogfood — 0.0%
+Current focus: FEATURES-0002
+```
+
 <!-- devlead:claude-md-end -->

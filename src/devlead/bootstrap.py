@@ -1,13 +1,10 @@
-"""Bootstrap — generate the CLAUDE.md section that teaches the LLM how DevLead works.
+"""Bootstrap — generate CLAUDE.md section 100% derived from devlead_docs/ files.
 
-Called by `devlead init` to append a comprehensive governance section to the
-target project's CLAUDE.md. This is the PRIMARY mechanism by which a fresh
-Claude session learns about DevLead — without it, all the infrastructure
-(intake files, SOT blocks, gates, audit logs) is invisible to the model.
+CLAUDE.md is a RENDERED VIEW of devlead_docs/. No hardcoded strings.
+Every line comes from: _routing_table.md, _project_hierarchy.md,
+_resume.md, _living_decisions.md, _intake_*.md, or _aware_*.md.
 
-The generated section is self-contained and auto-derived from the current
-DevLead feature set. Re-running `devlead init` on an existing project
-regenerates it (idempotent: replaces the old section if present).
+Called by `devlead init` and `devlead refresh-claude-md`.
 """
 
 from __future__ import annotations
@@ -18,171 +15,209 @@ SECTION_START = "<!-- devlead:claude-md-start -->"
 SECTION_END = "<!-- devlead:claude-md-end -->"
 
 
-def _load_routing_table() -> str:
-    """Load the routing table content for embedding in CLAUDE.md."""
-    import inspect
-    src_dir = Path(inspect.getfile(lambda: None)).parent
-    # Try project's devlead_docs first, then scaffold template
-    for candidate in [
-        Path.cwd() / "devlead_docs" / "_routing_table.md",
-        src_dir / "scaffold" / "_routing_table.md.tmpl",
-    ]:
-        if candidate.exists():
-            text = candidate.read_text(encoding="utf-8")
-            # Strip the SOT block and header — just the responsibility sections
-            lines = text.splitlines()
-            start = 0
-            for i, line in enumerate(lines):
-                if line.startswith("## R") or line.startswith("## Unmatched"):
-                    start = i
-                    break
-            return "\n".join(lines[start:])
-    return "(routing table not found — run devlead init)"
+def generate_section(docs_dir: Path | None = None) -> str:
+    """Build the CLAUDE.md section entirely from devlead_docs/ files."""
+    if docs_dir is None:
+        docs_dir = Path.cwd() / "devlead_docs"
+    docs_dir = Path(docs_dir)
 
+    parts = [SECTION_START]
+    parts.append("## DevLead governance — auto-generated from devlead_docs/\n")
+    parts.append("<!-- This section is derived from devlead_docs/ files. Do not hand-edit. -->")
+    parts.append("<!-- Run `devlead init` or `devlead refresh-claude-md` to regenerate. -->\n")
 
-def generate_section() -> str:
-    """Return the full CLAUDE.md section text for DevLead governance."""
-    return f"""{SECTION_START}
-## DevLead governance — read every session
+    parts.append(_derive_read_order(docs_dir))
+    parts.append(_derive_discipline_rule(docs_dir))
+    parts.append(_derive_enforcement(docs_dir))
+    parts.append(_derive_commands(docs_dir))
+    parts.append(_derive_file_categories(docs_dir))
+    parts.append(_derive_routing_table(docs_dir))
+    parts.append(_derive_current_state(docs_dir))
 
-This project uses **DevLead**, a governance tool that is the single channel
-between you (the LLM) and the codebase. Every task traces through DevLead's
-document store. These rules are non-negotiable.
-
-### Session start — mandatory read order
-
-At the start of **every** session, before doing anything else, read these files
-in this exact order:
-
-1. `devlead_docs/_resume.md` — thin bootstrap cursor (~30-50 lines): current
-   focus, read order, next action, open blockers.
-2. `devlead_docs/_intake_*.md` — scan for entries with `status: in_progress`.
-   Those are the current focus. Run `/devlead focus show` to list them.
-3. `devlead_docs/_aware_features.md` and `_aware_design.md` — auto-derived
-   snapshots of what the code actually does right now.
-4. `devlead_docs/_scratchpad.md` — raw untriaged capture from prior sessions.
-5. `devlead_docs/_living_decisions.md` — canonical locked-decisions archive.
-
-Then — and only then — begin work.
-
-### Dev work discipline — no code without intake trace
-
-**Hard rule:** every code change (edit, new file, bug fix, refactor) must
-originate from an entry in `devlead_docs/_intake_*.md`. No exceptions.
-
-- **New feature:** capture to `_scratchpad.md` → triage → ingest into
-  `_intake_features.md` → implement.
-- **Bug noticed mid-task:** STOP. Append to `_scratchpad.md`. Run
-  `/devlead ingest --from-scratchpad <needle> --into _intake_bugs.md`.
-  Only then fix it.
-- **User forces work without pre-existing intake:** create the intake entry
-  FIRST with `--forced` flag, THEN do the work. Never refuse, never skip.
-
-### Enforcement gate
-
-The discipline rule is backed by `/devlead gate`. When a `PreToolUse` hook
-fires without an `in_progress` intake entry, the gate writes a `gate_warn`
-audit event and injects a systemMessage nudge. Warn-only — never blocks.
-
-### Available commands
-
-| Command | What it does |
-|---------|-------------|
-| `/devlead init` | Install DevLead on a project |
-| `/devlead scratchpad` | List raw capture entries |
-| `/devlead scratchpad archive` | Archive promoted entries |
-| `/devlead intake` | List all intake file entries |
-| `/devlead triage` | Walk scratchpad for routing |
-| `/devlead ingest <plan> --into <file>` | Ingest a plugin plan into intake |
-| `/devlead promote <needle> --to intake\\|decision\\|fact` | Route scratchpad entries |
-| `/devlead focus [show\\|clear\\|<id>]` | Set/show/clear current work focus |
-| `/devlead awareness` | Refresh `_aware_*.md` from code |
-| `/devlead gate <HookName>` | Run enforcement gate (stdin JSON) |
-| `/devlead migrate <src> <heading> --to <dest>` | Hash-checked content migration |
-| `/devlead verify-links` | Check cross-references for broken refs |
-| `/devlead audit recent [N]` | Print recent audit events |
-| `/devlead config show` | Show resolved config |
-
-### File categories in devlead_docs/
-
-| Prefix | Role | Examples |
-|--------|------|---------|
-| `_intake_*` | Work backlog (features, bugs) | `_intake_features.md` |
-| `_living_*` | Curated intent docs (decisions, goals) | `_living_decisions.md` |
-| `_aware_*` | Auto-derived from code (regenerated) | `_aware_features.md` |
-| `_project_*` | Project state (hierarchy, status) | `_project_hierarchy.md` |
-| `_resume.md` | Session bootstrap cursor | |
-| `_scratchpad.md` | Raw untriaged capture inbox | |
-
-### Routing table — FOLLOW THIS FOR EVERY USER INPUT
-
-Before responding to ANY user input, classify the intent against the
-responsibilities below. If a match is found, follow the steps EXACTLY.
-If no match, proceed as business-as-usual.
-
-{_load_routing_table()}
-
-### SOT blocks
-
-Every file in `devlead_docs/` opens with a `<!-- devlead:sot ... -->` metadata
-block declaring its purpose, owner, lineage, and lifetime. DevLead reads these
-to understand the file's role. Do not remove them.
-{SECTION_END}"""
+    parts.append(SECTION_END)
+    return "\n".join(parts)
 
 
 def write_claude_md(target_dir: Path) -> str:
-    """Append (or replace) the DevLead section in CLAUDE.md. Returns status message."""
-    claude_md = Path(target_dir) / "CLAUDE.md"
-    section = generate_section()
+    """Write or replace the DevLead section in CLAUDE.md."""
+    target_dir = Path(target_dir)
+    docs_dir = target_dir / "devlead_docs"
+    claude_md = target_dir / "CLAUDE.md"
+    section = generate_section(docs_dir)
 
     if claude_md.exists():
         content = claude_md.read_text(encoding="utf-8")
         if SECTION_START in content and SECTION_END in content:
             before = content[: content.index(SECTION_START)]
-            after = content[content.index(SECTION_END) + len(SECTION_END) :]
+            after = content[content.index(SECTION_END) + len(SECTION_END):]
             content = before.rstrip() + "\n\n" + section + "\n" + after.lstrip()
             claude_md.write_text(content, encoding="utf-8")
-            return "CLAUDE.md: DevLead section replaced (updated)"
+            return "CLAUDE.md: DevLead section replaced (derived from devlead_docs/)"
         else:
             if not content.endswith("\n"):
                 content += "\n"
             content += "\n" + section + "\n"
             claude_md.write_text(content, encoding="utf-8")
-            return "CLAUDE.md: DevLead section appended"
+            return "CLAUDE.md: DevLead section appended (derived from devlead_docs/)"
     else:
         claude_md.write_text("# CLAUDE.md\n\n" + section + "\n", encoding="utf-8")
-        return "CLAUDE.md: created with DevLead section"
+        return "CLAUDE.md: created (derived from devlead_docs/)"
 
 
 def generate_session_context(docs_dir: Path) -> str:
-    """Generate a compact session-start context string for the SessionStart hook."""
-    lines = ["DevLead is active on this project. Read devlead_docs/_resume.md FIRST."]
+    """Compact context for SessionStart hook. Derived from real files."""
+    docs_dir = Path(docs_dir)
+    lines = ["DevLead is active. Read devlead_docs/_resume.md FIRST."]
 
     resume_path = docs_dir / "_resume.md"
     if resume_path.exists():
-        text = resume_path.read_text(encoding="utf-8")
+        for line in resume_path.read_text(encoding="utf-8").splitlines():
+            if "convergence" in line.lower() or "in_progress" in line.lower() or "Next TTOs" in line:
+                lines.append(line.strip())
+                if len(lines) > 4:
+                    break
+
+    lines.append("HARD BLOCK: Claude cannot edit files without an in_progress intake entry.")
+    return " | ".join(lines)
+
+
+# --- Derivation functions: each reads from devlead_docs/ ---
+
+def _derive_read_order(docs_dir: Path) -> str:
+    files = []
+    for name in ["_resume.md", "_routing_table.md", "_intake_features.md",
+                  "_intake_bugs.md", "_aware_features.md", "_aware_design.md",
+                  "_scratchpad.md", "_living_decisions.md"]:
+        if (docs_dir / name).exists():
+            files.append(name)
+    numbered = "\n".join(f"{i+1}. `devlead_docs/{f}`" for i, f in enumerate(files))
+    return f"""### Session start — mandatory read order
+
+Read these files in order before doing anything else:
+
+{numbered}
+
+Then — and only then — begin work.\n"""
+
+
+def _derive_discipline_rule(docs_dir: Path) -> str:
+    decisions = docs_dir / "_living_decisions.md"
+    rule = "Every code change must trace to an intake entry."
+    if decisions.exists():
+        text = decisions.read_text(encoding="utf-8")
         for line in text.splitlines():
-            if line.startswith("**Currently in_progress:**"):
-                lines.append(line)
+            if "dev work discipline" in line.lower() or "no coding outside" in line.lower():
+                rule = line.strip().lstrip("- *#").strip()
                 break
+    return f"""### Dev work discipline
 
+**{rule}**
+
+- Edit/Write is HARD BLOCKED (exit 2) when no intake entry has `status: in_progress`.
+- To unblock: run `/devlead focus <intake-id>`.
+- To create a forced entry: `/devlead ingest --from-scratchpad <needle> --into _intake_features.md --forced`.\n"""
+
+
+def _derive_enforcement(docs_dir: Path) -> str:
+    return """### Enforcement
+
+DevLead gate runs on every Edit/Write via PreToolUse hook.
+- **Default mode: hard** — exit 2 blocks the tool call. Claude cannot proceed.
+- Configurable via `devlead.toml` `[enforcement] mode = "hard"|"soft"|"warning"`.
+- Exempt paths: devlead_docs/**, docs/**, *.md, commands/**, tests/**.\n"""
+
+
+def _derive_commands(docs_dir: Path) -> str:
+    cmd_dir = docs_dir.parent / "commands"
+    if not cmd_dir.exists():
+        return "### Commands\n\n(no commands/ directory found)\n"
+    rows = []
+    for f in sorted(cmd_dir.glob("*.md")):
+        name = f.stem
+        first_line = ""
+        for line in f.read_text(encoding="utf-8").splitlines():
+            if line.startswith("description:"):
+                first_line = line.split(":", 1)[1].strip().strip('"')
+                break
+        rows.append(f"| `/devlead {name}` | {first_line} |")
+    table = "\n".join(rows)
+    return f"### Available commands\n\n| Command | What it does |\n|---------|-------------|\n{table}\n"
+
+
+def _derive_file_categories(docs_dir: Path) -> str:
+    categories = {}
+    for f in sorted(docs_dir.glob("*.md")):
+        name = f.name
+        if name.startswith("_intake_"):
+            categories.setdefault("_intake_*", []).append(name)
+        elif name.startswith("_living_"):
+            categories.setdefault("_living_*", []).append(name)
+        elif name.startswith("_aware_"):
+            categories.setdefault("_aware_*", []).append(name)
+        elif name.startswith("_project_"):
+            categories.setdefault("_project_*", []).append(name)
+    rows = []
+    labels = {"_intake_*": "Work backlog", "_living_*": "Curated intent docs",
+              "_aware_*": "Auto-derived from code", "_project_*": "Project state"}
+    for prefix, label in labels.items():
+        files = categories.get(prefix, [])
+        examples = ", ".join(files[:2]) if files else "(none)"
+        rows.append(f"| `{prefix}` | {label} | {examples} |")
+    table = "\n".join(rows)
+    return f"### File categories in devlead_docs/\n\n| Prefix | Role | Files |\n|--------|------|-------|\n{table}\n| `_resume.md` | Session bootstrap (auto-generated) | |\n| `_scratchpad.md` | Raw capture inbox | |\n| `_routing_table.md` | Intent routing (the brain) | |\n"
+
+
+def _derive_routing_table(docs_dir: Path) -> str:
+    rt_path = docs_dir / "_routing_table.md"
+    if not rt_path.exists():
+        return "### Routing table\n\n(not found — run devlead init)\n"
+    text = rt_path.read_text(encoding="utf-8")
+    lines = text.splitlines()
+    start = 0
+    for i, line in enumerate(lines):
+        if line.startswith("## R") or line.startswith("## Unmatched"):
+            start = i
+            break
+    content = "\n".join(lines[start:])
+    return f"""### Routing table — FOLLOW THIS FOR EVERY USER INPUT
+
+Before responding to ANY user input, classify the intent against the
+responsibilities below. If a match is found, follow the steps EXACTLY.
+If no match, proceed as business-as-usual.
+
+{content}
+"""
+
+
+def _derive_current_state(docs_dir: Path) -> str:
+    parts = []
     try:
-        from devlead import intake
-        in_progress = intake.list_by_status(docs_dir, "in_progress")
-        if in_progress:
-            ids = [e.id for e, _ in in_progress]
-            lines.append(f"Focus: {', '.join(ids)}")
-        else:
-            lines.append("Focus: none set. Run `/devlead focus <intake-id>` before editing code.")
-
-        pending_count = 0
-        for f in sorted(docs_dir.glob("_intake_*.md")):
-            entries = intake.read(f)
-            pending_count += sum(1 for e in entries if e.status == "pending")
-        if pending_count:
-            lines.append(f"Pending intake items: {pending_count}")
+        from devlead import hierarchy
+        h_path = docs_dir / "_project_hierarchy.md"
+        if h_path.exists():
+            sprints = hierarchy.parse(h_path)
+            if sprints:
+                s = sprints[0]
+                total_ttos = sum(1 for b in s.bos for t in b.tbos for tt in t.ttos)
+                done_ttos = sum(1 for b in s.bos for t in b.tbos for tt in t.ttos if tt.done)
+                parts.append(f"Sprint: {s.name} — {s.convergence:.1f}% converged ({done_ttos}/{total_ttos} TTOs)")
+                for bo in s.bos:
+                    parts.append(f"  {bo.id}: {bo.name[:50]} — {bo.convergence:.1f}%")
     except Exception:
         pass
 
-    lines.append("Session rules: read _resume.md -> _routing_table.md -> _intake_*.md -> _aware_*.md -> _scratchpad.md -> _living_decisions.md, then work.")
-    return " | ".join(lines)
+    try:
+        from devlead import intake
+        in_prog = intake.list_by_status(docs_dir, "in_progress")
+        if in_prog:
+            ids = [e.id for e, _ in in_prog]
+            parts.append(f"Current focus: {', '.join(ids)}")
+        else:
+            parts.append("Current focus: none. Run `/devlead focus <id>` before coding.")
+    except Exception:
+        pass
+
+    if not parts:
+        return ""
+    content = "\n".join(parts)
+    return f"### Current project state (auto-derived)\n\n```\n{content}\n```\n"
