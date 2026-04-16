@@ -92,6 +92,13 @@ audit event and injects a systemMessage nudge. Warn-only — never blocks.
 | `_resume.md` | Session bootstrap cursor | |
 | `_scratchpad.md` | Raw untriaged capture inbox | |
 
+### Routing table
+
+`devlead_docs/_routing_table.md` defines DevLead's responsibilities and the
+exact steps for each intent. **Read it every session.** When the user says
+something, classify against the routing table first. If a responsibility
+matches, follow its steps exactly. If not, proceed as normal.
+
 ### SOT blocks
 
 Every file in `devlead_docs/` opens with a `<!-- devlead:sot ... -->` metadata
@@ -154,5 +161,5 @@ def generate_session_context(docs_dir: Path) -> str:
     except Exception:
         pass
 
-    lines.append("Session rules: read _resume.md -> _intake_*.md -> _aware_*.md -> _scratchpad.md -> _living_decisions.md, then work.")
+    lines.append("Session rules: read _resume.md -> _routing_table.md -> _intake_*.md -> _aware_*.md -> _scratchpad.md -> _living_decisions.md, then work.")
     return " | ".join(lines)
