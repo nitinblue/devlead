@@ -34,6 +34,7 @@ Commands:
   migrate list                        List all recorded migrations
   audit recent [N]                    Print the last N events from _audit_log.jsonl
   verify-links                        Walk cross-references and report broken refs + orphans
+  dashboard                           Generate project management dashboard (HTML)
   config show                         Pretty-print the resolved devlead.toml + defaults
   --version                           Show version and exit
 
@@ -81,6 +82,11 @@ def main(argv: list[str] | None = None) -> int:
         return _cmd_migrate(args[1:])
     if cmd == "verify-links":
         return _cmd_verify_links(args[1:])
+    if cmd == "dashboard":
+        from devlead import dashboard
+        out = dashboard.write_dashboard(Path(args[1]) if len(args) > 1 else Path.cwd())
+        print(f"Dashboard: {out}")
+        return 0
     if cmd == "config":
         return _cmd_config(args[1:])
     if cmd == "report":
@@ -503,6 +509,15 @@ def _cmd_verify_links(sub_args: list[str]) -> int:
     if report.ok and not report.orphans:
         print("verify-links: all references valid, no orphans.")
     return 0 if report.ok else 1
+
+
+def _cmd_dashboard(sub_args: list[str]) -> int:
+    from devlead import dashboard
+
+    repo_root = Path(sub_args[0]) if sub_args else Path.cwd()
+    out_path = dashboard.write_dashboard(repo_root)
+    print(f"Dashboard written to: {out_path}")
+    return 0
 
 
 def _cmd_config(sub_args: list[str]) -> int:

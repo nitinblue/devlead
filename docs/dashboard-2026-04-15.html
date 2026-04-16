@@ -1,0 +1,500 @@
+<!DOCTYPE html>
+<html lang="en"><head><meta charset="utf-8"><title>DevLead Dashboard</title><style>:root {
+    --bg: #0f1117; --card: #1a1d27; --border: #2a2d3a; --text: #e0e0e0;
+    --muted: #888; --accent: #6c5ce7; --green: #27ae60; --yellow: #f39c12;
+    --red: #e74c3c; --blue: #3498db;
+}
+*{box-sizing:border-box;margin:0;padding:0}
+body{background:var(--bg);color:var(--text);font-family:'Segoe UI',system-ui,sans-serif;padding:24px;max-width:1200px;margin:0 auto}
+h1{color:var(--accent);margin-bottom:4px;font-size:1.6rem}
+.subtitle{color:var(--muted);margin-bottom:20px;font-size:.9rem}
+.tab-input{display:none}
+.tab-bar{display:flex;flex-wrap:wrap;gap:4px;margin-bottom:16px;border-bottom:2px solid var(--border);padding-bottom:8px}
+.tab-label{padding:8px 14px;background:var(--card);border:1px solid var(--border);border-radius:6px 6px 0 0;cursor:pointer;font-size:.85rem;color:var(--muted);transition:all .2s}
+.tab-label:hover{color:var(--text);background:var(--border)}
+.tab-panel{display:none;background:var(--card);border:1px solid var(--border);border-radius:0 0 8px 8px;padding:20px}
+.card{background:var(--bg);border:1px solid var(--border);border-radius:8px;padding:16px;margin-bottom:12px}
+.hero{font-size:3rem;font-weight:bold;color:var(--accent);text-align:center;padding:20px 0}
+.hero small{font-size:1rem;color:var(--muted);display:block}
+table{width:100%;border-collapse:collapse;font-size:.85rem}
+th,td{text-align:left;padding:8px 10px;border-bottom:1px solid var(--border)}
+th{color:var(--accent);font-weight:600}
+.bar-bg{background:var(--border);border-radius:4px;height:14px;overflow:hidden;width:100%}
+.bar-fill{height:100%;border-radius:4px;transition:width .3s}
+.fill-accent{background:var(--accent)}
+.fill-green{background:var(--green)}
+.fill-red{background:var(--red)}
+.fill-yellow{background:var(--yellow)}
+.warn{color:var(--red);font-weight:600}
+.ok{color:var(--green)}
+.indent-1{margin-left:24px}
+.indent-2{margin-left:48px}
+.badge{display:inline-block;padding:2px 8px;border-radius:4px;font-size:.75rem;font-weight:600}
+.badge-done{background:var(--green);color:#fff}
+.badge-pending{background:var(--border);color:var(--muted)}
+.badge-progress{background:var(--yellow);color:#000}
+.badge-pass{background:var(--green);color:#fff}
+.badge-fail{background:var(--red);color:#fff}
+
+#tab-summary:checked ~ .tab-panels #panel-summary { display: block; }
+#tab-summary:checked ~ .tab-bar label[for='tab-summary'] { background: var(--accent); color: #fff; border-color: var(--accent); }
+#tab-hierarchy:checked ~ .tab-panels #panel-hierarchy { display: block; }
+#tab-hierarchy:checked ~ .tab-bar label[for='tab-hierarchy'] { background: var(--accent); color: #fff; border-color: var(--accent); }
+#tab-kpis:checked ~ .tab-panels #panel-kpis { display: block; }
+#tab-kpis:checked ~ .tab-bar label[for='tab-kpis'] { background: var(--accent); color: #fff; border-color: var(--accent); }
+#tab-timelines:checked ~ .tab-panels #panel-timelines { display: block; }
+#tab-timelines:checked ~ .tab-bar label[for='tab-timelines'] { background: var(--accent); color: #fff; border-color: var(--accent); }
+#tab-tokens:checked ~ .tab-panels #panel-tokens { display: block; }
+#tab-tokens:checked ~ .tab-bar label[for='tab-tokens'] { background: var(--accent); color: #fff; border-color: var(--accent); }
+#tab-intake:checked ~ .tab-panels #panel-intake { display: block; }
+#tab-intake:checked ~ .tab-bar label[for='tab-intake'] { background: var(--accent); color: #fff; border-color: var(--accent); }
+#tab-audit:checked ~ .tab-panels #panel-audit { display: block; }
+#tab-audit:checked ~ .tab-bar label[for='tab-audit'] { background: var(--accent); color: #fff; border-color: var(--accent); }
+#tab-dod:checked ~ .tab-panels #panel-dod { display: block; }
+#tab-dod:checked ~ .tab-bar label[for='tab-dod'] { background: var(--accent); color: #fff; border-color: var(--accent); }
+#tab-sessions:checked ~ .tab-panels #panel-sessions { display: block; }
+#tab-sessions:checked ~ .tab-bar label[for='tab-sessions'] { background: var(--accent); color: #fff; border-color: var(--accent); }
+#tab-changes:checked ~ .tab-panels #panel-changes { display: block; }
+#tab-changes:checked ~ .tab-bar label[for='tab-changes'] { background: var(--accent); color: #fff; border-color: var(--accent); }</style></head><body><h1>DevLead v2 Dashboard</h1><div class="subtitle">Generated 2026-04-16 04:13 UTC</div><input type="radio" name="tabs" id="tab-summary" checked class="tab-input">
+<input type="radio" name="tabs" id="tab-hierarchy" class="tab-input">
+<input type="radio" name="tabs" id="tab-kpis" class="tab-input">
+<input type="radio" name="tabs" id="tab-timelines" class="tab-input">
+<input type="radio" name="tabs" id="tab-tokens" class="tab-input">
+<input type="radio" name="tabs" id="tab-intake" class="tab-input">
+<input type="radio" name="tabs" id="tab-audit" class="tab-input">
+<input type="radio" name="tabs" id="tab-dod" class="tab-input">
+<input type="radio" name="tabs" id="tab-sessions" class="tab-input">
+<input type="radio" name="tabs" id="tab-changes" class="tab-input">
+<div class="tab-bar">
+<label for="tab-summary" class="tab-label">Executive Summary</label>
+<label for="tab-hierarchy" class="tab-label">Hierarchy</label>
+<label for="tab-kpis" class="tab-label">KPIs</label>
+<label for="tab-timelines" class="tab-label">Timelines</label>
+<label for="tab-tokens" class="tab-label">Token Economics</label>
+<label for="tab-intake" class="tab-label">Intake</label>
+<label for="tab-audit" class="tab-label">Audit Trail</label>
+<label for="tab-dod" class="tab-label">Definition of Done</label>
+<label for="tab-sessions" class="tab-label">Session History</label>
+<label for="tab-changes" class="tab-label">Change Management</label>
+</div>
+<div class="tab-panels">
+<div class="tab-panel" id="panel-summary"><div class="hero">0.0%<small>Sprint Convergence</small></div><div class="card"><strong>BO-001: DevLead is a well-rounded robust product</strong><br>Deadline: 2026-04-25<br><div class="bar-bg" style="width:100%"><div class="bar-fill fill-red" style="width:0.0%"></div></div> 0.0%</div><div class="card"><strong>BO-002: Product &amp; Packaging — DevLead works everywhere, installs instantly</strong><br>Deadline: 2026-05-01<br><div class="bar-bg" style="width:100%"><div class="bar-fill fill-red" style="width:0.0%"></div></div> 0.0%</div><div class="card"><strong>BO-003: DevLead generates its first $1000/month</strong><br>Deadline: 2026-05-15<br><div class="bar-bg" style="width:100%"><div class="bar-fill fill-red" style="width:0.0%"></div></div> 0.0%</div><div class="card"><strong>BO-004: DevLead eats its own dogfood</strong><br>Deadline: 2026-05-15<br><div class="bar-bg" style="width:100%"><div class="bar-fill fill-red" style="width:0.0%"></div></div> 0.0%</div><div class="card"><strong>BO-005: Multi-project portfolio management</strong><br>Deadline: (not set)<br><div class="bar-bg" style="width:100%"><div class="bar-fill fill-red" style="width:0.0%"></div></div> 0.0%</div><div class="card"><strong>BO-006: DevLead becomes the AI project management standard</strong><br>Deadline: (not set)<br><div class="bar-bg" style="width:100%"><div class="bar-fill fill-red" style="width:0.0%"></div></div> 0.0%</div><div class="card"><strong>Next Action:</strong> Complete 1 in-progress item(s)</div><div class="card"><strong>Pipeline</strong><br>BOs: 0/6 done &bull; TBOs: 0/25 done &bull; TTOs: 0/122 done</div></div>
+<div class="tab-panel" id="panel-hierarchy"><h3 style="color:var(--accent);margin-bottom:12px">DevLead v2: From Concept to $1000/month</h3>
+<div class="card"><strong>BO-001: DevLead is a well-rounded robust product</strong> (weight 35) &mdash; 0.0%<br><div class="bar-bg" style="width:60%"><div class="bar-fill fill-red" style="width:0.0%"></div></div><br>Deadline: 2026-04-25</div>
+<div class="card indent-1"><strong>TBO-001: Intent routing works end-to-end</strong> (weight 25) &mdash; 0.0%<br><div class="bar-bg" style="width:50%"><div class="bar-fill fill-red" style="width:0.0%"></div></div></div>
+<div class="card indent-2">&#9744; <strong>TTO-001</strong>: Routing table embedded in CLAUDE.md with all responsibilities (weight 15) [functional] <span class="badge badge-pending">pending</span></div>
+<div class="card indent-2">&#9744; <strong>TTO-002</strong>: Fresh session test — Claude follows R2 when asked to code without focus (weight 25) [functional] <span class="badge badge-pending">pending</span></div>
+<div class="card indent-2">&#9744; <strong>TTO-003</strong>: Fresh session test — Claude follows R1 when asked to add a feature (weight 25) [functional] <span class="badge badge-pending">pending</span></div>
+<div class="card indent-2">&#9744; <strong>TTO-004</strong>: AGENTS.md generated for Gemini CLI with same routing table (weight 15) [functional] <span class="badge badge-pending">pending</span></div>
+<div class="card indent-2">&#9744; <strong>TTO-005</strong>: Intent classification handles ambiguous inputs gracefully (weight 10) [functional] <span class="badge badge-pending">pending</span></div>
+<div class="card indent-2">&#9744; <strong>TTO-006</strong>: Adding R7 responsibility = add markdown section, zero code change (weight 10) [functional] <span class="badge badge-pending">pending</span></div>
+<div class="card indent-1"><strong>TBO-002: Work pipeline captures everything from idea to done</strong> (weight 20) &mdash; 0.0%<br><div class="bar-bg" style="width:50%"><div class="bar-fill fill-red" style="width:0.0%"></div></div></div>
+<div class="card indent-2">&#9744; <strong>TTO-007</strong>: Scratchpad capture preserves raw user input verbatim (weight 15) [functional] <span class="badge badge-pending">pending</span></div>
+<div class="card indent-2">&#9744; <strong>TTO-008</strong>: Triage routes to 3 targets — work, decision, fact (weight 15) [functional] <span class="badge badge-pending">pending</span></div>
+<div class="card indent-2">&#9744; <strong>TTO-009</strong>: Intake ingest from scratchpad with bidirectional trace (weight 15) [functional] <span class="badge badge-pending">pending</span></div>
+<div class="card indent-2">&#9744; <strong>TTO-010</strong>: Intake to hierarchy promotion command (weight 25) [functional] <span class="badge badge-pending">pending</span></div>
+<div class="card indent-2">&#9744; <strong>TTO-011</strong>: Hierarchy convergence computed from real checkbox state (weight 15) [functional] <span class="badge badge-pending">pending</span></div>
+<div class="card indent-2">&#9744; <strong>TTO-012</strong>: Definition of Done — verify: commands run by DevLead, not Claude (weight 15) [functional] <span class="badge badge-pending">pending</span></div>
+<div class="card indent-1"><strong>TBO-003: Project management dashboard — static HTML, comprehensive</strong> (weight 20) &mdash; 0.0%<br><div class="bar-bg" style="width:50%"><div class="bar-fill fill-red" style="width:0.0%"></div></div></div>
+<div class="card indent-2">&#9744; <strong>TTO-013</strong>: Tab 1 — Executive Summary: sprint convergence %, BO status cards, deadline heatmap, next best action (weight 10) [functional] <span class="badge badge-pending">pending</span></div>
+<div class="card indent-2">&#9744; <strong>TTO-014</strong>: Tab 2 — Hierarchy: full BO/TBO/TTO tree with convergence bars, weight distribution, checkbox state (weight 10) [functional] <span class="badge badge-pending">pending</span></div>
+<div class="card indent-2">&#9744; <strong>TTO-015</strong>: Tab 3 — KPIs: all 25 KPIs grouped by category with sparklines or trend indicators (weight 10) [functional] <span class="badge badge-pending">pending</span></div>
+<div class="card indent-2">&#9744; <strong>TTO-016</strong>: Tab 4 — Timelines: BO start/end/actual/revised dates, Gantt-style bars, overdue highlighting (weight 10) [functional] <span class="badge badge-pending">pending</span></div>
+<div class="card indent-2">&#9744; <strong>TTO-017</strong>: Tab 5 — Token Economics: tokens per session, tokens per TTO, cost-per-convergence-point, burn rate trend (weight 10) [functional] <span class="badge badge-pending">pending</span></div>
+<div class="card indent-2">&#9744; <strong>TTO-018</strong>: Tab 6 — Intake: all intake entries with status, origin (forced/normal), actionable items, promotion trace (weight 8) [functional] <span class="badge badge-pending">pending</span></div>
+<div class="card indent-2">&#9744; <strong>TTO-019</strong>: Tab 7 — Audit Trail: last 100 events, filterable by event type, gate violations highlighted (weight 8) [functional] <span class="badge badge-pending">pending</span></div>
+<div class="card indent-2">&#9744; <strong>TTO-020</strong>: Tab 8 — Definition of Done: every TTO&#x27;s verify: command with pass/fail result, run timestamp (weight 10) [functional] <span class="badge badge-pending">pending</span></div>
+<div class="card indent-2">&#9744; <strong>TTO-021</strong>: Tab 9 — Session History: convergence over time, token spend per session, session-to-session delta (weight 8) [functional] <span class="badge badge-pending">pending</span></div>
+<div class="card indent-2">&#9744; <strong>TTO-022</strong>: Tab 10 — Change Management: every BO deadline revision with original date, revised date, justification (weight 8) [functional] <span class="badge badge-pending">pending</span></div>
+<div class="card indent-2">&#9744; <strong>TTO-023</strong>: CSS-only tabs (no JavaScript), self-contained HTML, embedded CSS (weight 4) [non-functional] <span class="badge badge-pending">pending</span></div>
+<div class="card indent-2">&#9744; <strong>TTO-024</strong>: Token tracking at TTO level — each TTO shows tokens consumed during implementation (weight 4) [functional] <span class="badge badge-pending">pending</span></div>
+<div class="card indent-2">&#9744; <strong>TTO-025</strong>: Stop hook auto-generates dashboard + resume at session end (weight 10) [functional] <span class="badge badge-pending">pending</span></div>
+<div class="card indent-1"><strong>TBO-004: KPI engine computes truth from data</strong> (weight 15) &mdash; 0.0%<br><div class="bar-bg" style="width:50%"><div class="bar-fill fill-red" style="width:0.0%"></div></div></div>
+<div class="card indent-2">&#9744; <strong>TTO-020</strong>: 25 KPIs across 4 categories all compute without error (weight 30) [functional] <span class="badge badge-pending">pending</span></div>
+<div class="card indent-2">&#9744; <strong>TTO-021</strong>: Tokenomics KPI tracks cost-per-convergence-point (weight 25) [functional] <span class="badge badge-pending">pending</span></div>
+<div class="card indent-2">&#9744; <strong>TTO-022</strong>: Session history records convergence + tokens per session (weight 25) [functional] <span class="badge badge-pending">pending</span></div>
+<div class="card indent-2">&#9744; <strong>TTO-023</strong>: K_BYPASS tracks discipline violations as a trend (weight 20) [functional] <span class="badge badge-pending">pending</span></div>
+<div class="card indent-1"><strong>TBO-005: Session continuity — zero context loss between sessions</strong> (weight 20) &mdash; 0.0%<br><div class="bar-bg" style="width:50%"><div class="bar-fill fill-red" style="width:0.0%"></div></div></div>
+<div class="card indent-2">&#9744; <strong>TTO-024</strong>: _resume.md auto-generated from hierarchy + intake + audit + git (weight 20) [functional] <span class="badge badge-pending">pending</span></div>
+<div class="card indent-2">&#9744; <strong>TTO-025</strong>: Resume shows next TTOs to implement with parent BO/TBO (weight 15) [functional] <span class="badge badge-pending">pending</span></div>
+<div class="card indent-2">&#9744; <strong>TTO-026</strong>: Resume shows hierarchy convergence (weight 15) [functional] <span class="badge badge-pending">pending</span></div>
+<div class="card indent-2">&#9744; <strong>TTO-027</strong>: SessionStart hook injects context so LLM reads resume first (weight 20) [functional] <span class="badge badge-pending">pending</span></div>
+<div class="card indent-2">&#9744; <strong>TTO-028</strong>: All governance content embedded in CLAUDE.md, not in separate files LLM might skip (weight 15) [functional] <span class="badge badge-pending">pending</span></div>
+<div class="card indent-2">&#9744; <strong>TTO-029</strong>: Fresh session test — Claude reads resume and knows what to do without being told (weight 15) [functional] <span class="badge badge-pending">pending</span></div>
+<div class="card"><strong>BO-002: Product &amp; Packaging — DevLead works everywhere, installs instantly</strong> (weight 25) &mdash; 0.0%<br><div class="bar-bg" style="width:60%"><div class="bar-fill fill-red" style="width:0.0%"></div></div><br>Deadline: 2026-05-01</div>
+<div class="card indent-1"><strong>TBO-006: Claude Code — native plugin with full enforcement</strong> (weight 20) &mdash; 0.0%<br><div class="bar-bg" style="width:50%"><div class="bar-fill fill-red" style="width:0.0%"></div></div></div>
+<div class="card indent-2">&#9744; <strong>TTO-030</strong>: pip install devlead works on clean Windows/Mac/Linux (weight 20) [functional] <span class="badge badge-pending">pending</span></div>
+<div class="card indent-2">&#9744; <strong>TTO-031</strong>: devlead init creates devlead_docs + CLAUDE.md + hooks in one shot (weight 20) [functional] <span class="badge badge-pending">pending</span></div>
+<div class="card indent-2">&#9744; <strong>TTO-032</strong>: Published on Claude Code plugin marketplace (weight 20) [functional] <span class="badge badge-pending">pending</span></div>
+<div class="card indent-2">&#9744; <strong>TTO-033</strong>: SessionStart + PreToolUse + Stop hooks all wired automatically (weight 20) [functional] <span class="badge badge-pending">pending</span></div>
+<div class="card indent-2">&#9744; <strong>TTO-034</strong>: Idempotent — re-running init on existing project doesn&#x27;t break anything (weight 20) [functional] <span class="badge badge-pending">pending</span></div>
+<div class="card indent-1"><strong>TBO-007: Gemini CLI — AGENTS.md with full routing table</strong> (weight 15) &mdash; 0.0%<br><div class="bar-bg" style="width:50%"><div class="bar-fill fill-red" style="width:0.0%"></div></div></div>
+<div class="card indent-2">&#9744; <strong>TTO-035</strong>: devlead init --llm gemini generates AGENTS.md instead of CLAUDE.md (weight 30) [functional] <span class="badge badge-pending">pending</span></div>
+<div class="card indent-2">&#9744; <strong>TTO-036</strong>: GEMINI.md tool mapping included (skill tool equivalents for Gemini) (weight 20) [functional] <span class="badge badge-pending">pending</span></div>
+<div class="card indent-2">&#9744; <strong>TTO-037</strong>: Gemini-specific hooks or extensions documented (weight 20) [non-functional] <span class="badge badge-pending">pending</span></div>
+<div class="card indent-2">&#9744; <strong>TTO-038</strong>: Tested end-to-end — Gemini follows routing table for R1 and R2 (weight 30) [functional] <span class="badge badge-pending">pending</span></div>
+<div class="card indent-1"><strong>TBO-008: Cursor / Windsurf / Copilot — .cursorrules and equivalents</strong> (weight 15) &mdash; 0.0%<br><div class="bar-bg" style="width:50%"><div class="bar-fill fill-red" style="width:0.0%"></div></div></div>
+<div class="card indent-2">&#9744; <strong>TTO-039</strong>: devlead init --llm cursor generates .cursorrules with routing table (weight 25) [functional] <span class="badge badge-pending">pending</span></div>
+<div class="card indent-2">&#9744; <strong>TTO-040</strong>: devlead init --llm windsurf generates .windsurfrules (weight 25) [functional] <span class="badge badge-pending">pending</span></div>
+<div class="card indent-2">&#9744; <strong>TTO-041</strong>: devlead init --llm copilot generates .github/copilot-instructions.md (weight 25) [functional] <span class="badge badge-pending">pending</span></div>
+<div class="card indent-2">&#9744; <strong>TTO-042</strong>: Universal: devlead init --llm generic generates AGENTS.md as catch-all (weight 25) [functional] <span class="badge badge-pending">pending</span></div>
+<div class="card indent-1"><strong>TBO-009: Codex / Aider / Open-source LLMs — headless governance</strong> (weight 10) &mdash; 0.0%<br><div class="bar-bg" style="width:50%"><div class="bar-fill fill-red" style="width:0.0%"></div></div></div>
+<div class="card indent-2">&#9744; <strong>TTO-043</strong>: devlead init --llm codex generates CODEX.md with routing table (weight 30) [functional] <span class="badge badge-pending">pending</span></div>
+<div class="card indent-2">&#9744; <strong>TTO-044</strong>: devlead init --llm aider generates .aider.conf.yml or equivalent (weight 30) [functional] <span class="badge badge-pending">pending</span></div>
+<div class="card indent-2">&#9744; <strong>TTO-045</strong>: Documentation: &quot;How to use DevLead with any LLM&quot; guide (weight 40) [non-functional] <span class="badge badge-pending">pending</span></div>
+<div class="card indent-1"><strong>TBO-010: MD-only tier — zero-install governance</strong> (weight 15) &mdash; 0.0%<br><div class="bar-bg" style="width:50%"><div class="bar-fill fill-red" style="width:0.0%"></div></div></div>
+<div class="card indent-2">&#9744; <strong>TTO-046</strong>: devlead_docs/ is fully self-contained, no Python needed for governance (weight 25) [functional] <span class="badge badge-pending">pending</span></div>
+<div class="card indent-2">&#9744; <strong>TTO-047</strong>: Template pack downloadable from GitHub releases as zip (weight 25) [non-functional] <span class="badge badge-pending">pending</span></div>
+<div class="card indent-2">&#9744; <strong>TTO-048</strong>: npx devlead-init or equivalent one-liner for non-Python users (weight 25) [functional] <span class="badge badge-pending">pending</span></div>
+<div class="card indent-2">&#9744; <strong>TTO-049</strong>: README clearly separates &quot;free MD governance&quot; vs &quot;paid Python power tools&quot; (weight 25) [non-functional] <span class="badge badge-pending">pending</span></div>
+<div class="card indent-1"><strong>TBO-011: Documentation — a non-coder can self-serve</strong> (weight 15) &mdash; 0.0%<br><div class="bar-bg" style="width:50%"><div class="bar-fill fill-red" style="width:0.0%"></div></div></div>
+<div class="card indent-2">&#9744; <strong>TTO-050</strong>: README — &quot;Claude says done. Was it?&quot; pitch in first 3 lines (weight 20) [non-functional] <span class="badge badge-pending">pending</span></div>
+<div class="card indent-2">&#9744; <strong>TTO-051</strong>: Install guide per LLM tool (Claude, Gemini, Cursor, generic) (weight 20) [non-functional] <span class="badge badge-pending">pending</span></div>
+<div class="card indent-2">&#9744; <strong>TTO-052</strong>: User guide — &quot;I installed DevLead, now what?&quot; walkthrough (weight 20) [non-functional] <span class="badge badge-pending">pending</span></div>
+<div class="card indent-2">&#9744; <strong>TTO-053</strong>: Example session transcript showing DevLead catching Claude fudging (weight 20) [non-functional] <span class="badge badge-pending">pending</span></div>
+<div class="card indent-2">&#9744; <strong>TTO-054</strong>: Video or GIF: install -&gt; first session -&gt; report (weight 20) [non-functional] <span class="badge badge-pending">pending</span></div>
+<div class="card indent-1"><strong>TBO-012: Interactive MD editor — local HTML with write-back</strong> (weight 15) &mdash; 0.0%<br><div class="bar-bg" style="width:50%"><div class="bar-fill fill-red" style="width:0.0%"></div></div></div>
+<div class="card indent-2">&#9744; <strong>TTO-055</strong>: Static HTML editor loads devlead_docs/*.md files via File System Access API (weight 15) [functional] <span class="badge badge-pending">pending</span></div>
+<div class="card indent-2">&#9744; <strong>TTO-056</strong>: Hierarchy editor — visual BO/TBO/TTO tree with inline edit for titles, weights, dates, status (weight 20) [functional] <span class="badge badge-pending">pending</span></div>
+<div class="card indent-2">&#9744; <strong>TTO-057</strong>: Intake editor — add/edit/prioritize intake entries with form fields, writes back to _intake_*.md (weight 15) [functional] <span class="badge badge-pending">pending</span></div>
+<div class="card indent-2">&#9744; <strong>TTO-058</strong>: Scratchpad editor — capture new entries, triage existing ones, writes to _scratchpad.md (weight 10) [functional] <span class="badge badge-pending">pending</span></div>
+<div class="card indent-2">&#9744; <strong>TTO-059</strong>: Decision log editor — add locked decisions with date and rationale (weight 10) [functional] <span class="badge badge-pending">pending</span></div>
+<div class="card indent-2">&#9744; <strong>TTO-060</strong>: Routing table editor — add/edit responsibilities, triggers, steps (weight 10) [functional] <span class="badge badge-pending">pending</span></div>
+<div class="card indent-2">&#9744; <strong>TTO-061</strong>: Download fallback — for Firefox/Safari, &quot;Save All&quot; exports edited .md files as zip (weight 10) [functional] <span class="badge badge-pending">pending</span></div>
+<div class="card indent-2">&#9744; <strong>TTO-062</strong>: Editor is generated by devlead editor command alongside the dashboard (weight 10) [functional] <span class="badge badge-pending">pending</span></div>
+<div class="card indent-1"><strong>TBO-013: Cross-platform quality</strong> (weight 5) &mdash; 0.0%<br><div class="bar-bg" style="width:50%"><div class="bar-fill fill-red" style="width:0.0%"></div></div></div>
+<div class="card indent-2">&#9744; <strong>TTO-055</strong>: Works on Windows (PowerShell + Git Bash) (weight 35) [functional] <span class="badge badge-pending">pending</span></div>
+<div class="card indent-2">&#9744; <strong>TTO-056</strong>: Works on macOS (zsh) (weight 35) [functional] <span class="badge badge-pending">pending</span></div>
+<div class="card indent-2">&#9744; <strong>TTO-057</strong>: Works on Linux (bash) (weight 30) [functional] <span class="badge badge-pending">pending</span></div>
+<div class="card"><strong>BO-003: DevLead generates its first $1000/month</strong> (weight 25) &mdash; 0.0%<br><div class="bar-bg" style="width:60%"><div class="bar-fill fill-red" style="width:0.0%"></div></div><br>Deadline: 2026-05-15</div>
+<div class="card indent-1"><strong>TBO-009: Pricing that matches value</strong> (weight 25) &mdash; 0.0%<br><div class="bar-bg" style="width:50%"><div class="bar-fill fill-red" style="width:0.0%"></div></div></div>
+<div class="card indent-2">&#9744; <strong>TTO-042</strong>: Free tier: MD-only governance (routing table, hierarchy, scratchpad) (weight 30) [non-functional] <span class="badge badge-pending">pending</span></div>
+<div class="card indent-2">&#9744; <strong>TTO-043</strong>: Paid tier: Python-enhanced (KPIs, HTML reports, hooks, audit log) (weight 30) [non-functional] <span class="badge badge-pending">pending</span></div>
+<div class="card indent-2">&#9744; <strong>TTO-044</strong>: Pricing validated with 3 target users before launch (weight 40) [functional] <span class="badge badge-pending">pending</span></div>
+<div class="card indent-1"><strong>TBO-010: Distribution — be where the users are</strong> (weight 25) &mdash; 0.0%<br><div class="bar-bg" style="width:50%"><div class="bar-fill fill-red" style="width:0.0%"></div></div></div>
+<div class="card indent-2">&#9744; <strong>TTO-045</strong>: Published on PyPI (weight 20) [functional] <span class="badge badge-pending">pending</span></div>
+<div class="card indent-2">&#9744; <strong>TTO-046</strong>: Published on Claude Code plugin marketplace (weight 20) [functional] <span class="badge badge-pending">pending</span></div>
+<div class="card indent-2">&#9744; <strong>TTO-047</strong>: GitHub repo public with stars and README (weight 20) [non-functional] <span class="badge badge-pending">pending</span></div>
+<div class="card indent-2">&#9744; <strong>TTO-048</strong>: Launch post on 3 communities (Claude Discord, AI dev Reddit, Hacker News) (weight 20) [non-functional] <span class="badge badge-pending">pending</span></div>
+<div class="card indent-2">&#9744; <strong>TTO-049</strong>: SEO — &quot;Claude accountability&quot; or &quot;AI governance tool&quot; ranks page 1 (weight 20) [non-functional] <span class="badge badge-pending">pending</span></div>
+<div class="card indent-1"><strong>TBO-011: Proof it works — real users, real feedback</strong> (weight 30) &mdash; 0.0%<br><div class="bar-bg" style="width:50%"><div class="bar-fill fill-red" style="width:0.0%"></div></div></div>
+<div class="card indent-2">&#9744; <strong>TTO-050</strong>: 5 beta users install DevLead on real projects (weight 25) [functional] <span class="badge badge-pending">pending</span></div>
+<div class="card indent-2">&#9744; <strong>TTO-051</strong>: Each beta user runs 3+ sessions and generates reports (weight 25) [functional] <span class="badge badge-pending">pending</span></div>
+<div class="card indent-2">&#9744; <strong>TTO-052</strong>: Collect 3 testimonials or case studies (weight 25) [non-functional] <span class="badge badge-pending">pending</span></div>
+<div class="card indent-2">&#9744; <strong>TTO-053</strong>: Iterate on friction points within 48 hours of each feedback (weight 25) [functional] <span class="badge badge-pending">pending</span></div>
+<div class="card indent-1"><strong>TBO-012: Retention — users stay because DevLead saves them money</strong> (weight 20) &mdash; 0.0%<br><div class="bar-bg" style="width:50%"><div class="bar-fill fill-red" style="width:0.0%"></div></div></div>
+<div class="card indent-2">&#9744; <strong>TTO-054</strong>: Tokenomics report shows before/after DevLead cost comparison (weight 35) [functional] <span class="badge badge-pending">pending</span></div>
+<div class="card indent-2">&#9744; <strong>TTO-055</strong>: Convergence trend shows projects actually finishing (weight 35) [functional] <span class="badge badge-pending">pending</span></div>
+<div class="card indent-2">&#9744; <strong>TTO-056</strong>: Monthly email digest with KPI summary for paying users (weight 30) [non-functional] <span class="badge badge-pending">pending</span></div>
+<div class="card"><strong>BO-004: DevLead eats its own dogfood</strong> (weight 15) &mdash; 0.0%<br><div class="bar-bg" style="width:60%"><div class="bar-fill fill-red" style="width:0.0%"></div></div><br>Deadline: 2026-05-15</div>
+<div class="card indent-1"><strong>TBO-013: DevLead develops under its own governance</strong> (weight 50) &mdash; 0.0%<br><div class="bar-bg" style="width:50%"><div class="bar-fill fill-red" style="width:0.0%"></div></div></div>
+<div class="card indent-2">&#9744; <strong>TTO-057</strong>: Every commit message references a TTO ID (weight 25) [functional] <span class="badge badge-pending">pending</span></div>
+<div class="card indent-2">&#9744; <strong>TTO-058</strong>: _audit_log.jsonl has real events from real sessions (weight 25) [functional] <span class="badge badge-pending">pending</span></div>
+<div class="card indent-2">&#9744; <strong>TTO-059</strong>: Session reports exist for every development session (weight 25) [functional] <span class="badge badge-pending">pending</span></div>
+<div class="card indent-2">&#9744; <strong>TTO-060</strong>: K_BYPASS rate trends downward over sessions (weight 25) [functional] <span class="badge badge-pending">pending</span></div>
+<div class="card indent-1"><strong>TBO-014: DevLead&#x27;s own hierarchy is the product demo</strong> (weight 50) &mdash; 0.0%<br><div class="bar-bg" style="width:50%"><div class="bar-fill fill-red" style="width:0.0%"></div></div></div>
+<div class="card indent-2">&#9744; <strong>TTO-061</strong>: Hierarchy has 4+ BOs with real deadlines (weight 25) [functional] <span class="badge badge-pending">pending</span></div>
+<div class="card indent-2">&#9744; <strong>TTO-062</strong>: Convergence percentage is computed and displayed in report (weight 25) [functional] <span class="badge badge-pending">pending</span></div>
+<div class="card indent-2">&#9744; <strong>TTO-063</strong>: At least one BO has been completed and marked with actual_date (weight 25) [functional] <span class="badge badge-pending">pending</span></div>
+<div class="card indent-2">&#9744; <strong>TTO-064</strong>: Change management triggered on at least one missed deadline (weight 25) [functional] <span class="badge badge-pending">pending</span></div>
+<h3 style="color:var(--accent);margin-bottom:12px">DevLead Scale &amp; Enterprise</h3>
+<div class="card"><strong>BO-005: Multi-project portfolio management</strong> (weight 35) &mdash; 0.0%<br><div class="bar-bg" style="width:60%"><div class="bar-fill fill-red" style="width:0.0%"></div></div><br>Deadline: (not set)</div>
+<div class="card indent-1"><strong>TBO-015: Portfolio workspace</strong> (weight 30) &mdash; 0.0%<br><div class="bar-bg" style="width:50%"><div class="bar-fill fill-red" style="width:0.0%"></div></div></div>
+<div class="card indent-2">&#9744; <strong>TTO-065</strong>: Portfolio config — register multiple project paths in ~/.devlead/portfolio.toml (weight 20) [functional] <span class="badge badge-pending">pending</span></div>
+<div class="card indent-2">&#9744; <strong>TTO-066</strong>: devlead portfolio status — convergence summary across all registered projects (weight 25) [functional] <span class="badge badge-pending">pending</span></div>
+<div class="card indent-2">&#9744; <strong>TTO-067</strong>: devlead portfolio dashboard — unified HTML with per-project tabs (weight 25) [functional] <span class="badge badge-pending">pending</span></div>
+<div class="card indent-2">&#9744; <strong>TTO-068</strong>: Cross-project token spend comparison (weight 15) [functional] <span class="badge badge-pending">pending</span></div>
+<div class="card indent-2">&#9744; <strong>TTO-069</strong>: Portfolio-level KPIs — aggregate across projects (weight 15) [functional] <span class="badge badge-pending">pending</span></div>
+<div class="card indent-1"><strong>TBO-016: Cross-project collaboration</strong> (weight 35) &mdash; 0.0%<br><div class="bar-bg" style="width:50%"><div class="bar-fill fill-red" style="width:0.0%"></div></div></div>
+<div class="card indent-2">&#9744; <strong>TTO-070</strong>: .collab/ INBOX/OUTBOX pattern for cross-project messaging (weight 25) [functional] <span class="badge badge-pending">pending</span></div>
+<div class="card indent-2">&#9744; <strong>TTO-071</strong>: Shared decisions — promote a decision from one project to all projects (weight 25) [functional] <span class="badge badge-pending">pending</span></div>
+<div class="card indent-2">&#9744; <strong>TTO-072</strong>: Pattern library — capture reusable patterns from one project, apply to others (weight 25) [functional] <span class="badge badge-pending">pending</span></div>
+<div class="card indent-2">&#9744; <strong>TTO-073</strong>: Cross-project dependency tracking — &quot;project A is blocked by project B&quot; (weight 25) [functional] <span class="badge badge-pending">pending</span></div>
+<div class="card indent-1"><strong>TBO-017: Monthly rollover and archival</strong> (weight 35) &mdash; 0.0%<br><div class="bar-bg" style="width:50%"><div class="bar-fill fill-red" style="width:0.0%"></div></div></div>
+<div class="card indent-2">&#9744; <strong>TTO-074</strong>: devlead rollover — archive done BOs/TBOs/TTOs to _archive/ folder (weight 20) [functional] <span class="badge badge-pending">pending</span></div>
+<div class="card indent-2">&#9744; <strong>TTO-075</strong>: Carry-forward — open TTOs move to next sprint with original context (weight 20) [functional] <span class="badge badge-pending">pending</span></div>
+<div class="card indent-2">&#9744; <strong>TTO-076</strong>: Sprint retrospective auto-generated from session history + KPIs (weight 20) [functional] <span class="badge badge-pending">pending</span></div>
+<div class="card indent-2">&#9744; <strong>TTO-077</strong>: Historical convergence — view past sprints and their final state (weight 20) [functional] <span class="badge badge-pending">pending</span></div>
+<div class="card indent-2">&#9744; <strong>TTO-078</strong>: Rollover preserves full audit trail — nothing lost (weight 20) [functional] <span class="badge badge-pending">pending</span></div>
+<div class="card"><strong>BO-006: DevLead becomes the AI project management standard</strong> (weight 35) &mdash; 0.0%<br><div class="bar-bg" style="width:60%"><div class="bar-fill fill-red" style="width:0.0%"></div></div><br>Deadline: (not set)</div>
+<div class="card indent-1"><strong>TBO-018: Enterprise features</strong> (weight 30) &mdash; 0.0%<br><div class="bar-bg" style="width:50%"><div class="bar-fill fill-red" style="width:0.0%"></div></div></div>
+<div class="card indent-2">&#9744; <strong>TTO-079</strong>: Team roles — who can mark TTOs done, who can revise deadlines (weight 25) [functional] <span class="badge badge-pending">pending</span></div>
+<div class="card indent-2">&#9744; <strong>TTO-080</strong>: Approval workflows — TBO completion requires reviewer sign-off (weight 25) [functional] <span class="badge badge-pending">pending</span></div>
+<div class="card indent-2">&#9744; <strong>TTO-081</strong>: Integration with GitHub Issues/PRs — auto-create issues from TTOs (weight 25) [functional] <span class="badge badge-pending">pending</span></div>
+<div class="card indent-2">&#9744; <strong>TTO-082</strong>: Integration with Linear/Jira — sync BO/TBO/TTO to existing PM tools (weight 25) [functional] <span class="badge badge-pending">pending</span></div>
+<div class="card indent-1"><strong>TBO-019: Advanced governance</strong> (weight 35) &mdash; 0.0%<br><div class="bar-bg" style="width:50%"><div class="bar-fill fill-red" style="width:0.0%"></div></div></div>
+<div class="card indent-2">&#9744; <strong>TTO-083</strong>: Custom responsibility authoring — user defines their own R7, R8, etc. with triggers + steps (weight 20) [functional] <span class="badge badge-pending">pending</span></div>
+<div class="card indent-2">&#9744; <strong>TTO-084</strong>: Conditional routing — if project convergence &lt; 30%, block new feature work (weight 20) [functional] <span class="badge badge-pending">pending</span></div>
+<div class="card indent-2">&#9744; <strong>TTO-085</strong>: Budget controls — set token budget per BO, warn/block when exceeded (weight 20) [functional] <span class="badge badge-pending">pending</span></div>
+<div class="card indent-2">&#9744; <strong>TTO-086</strong>: Quality gates — TBO can&#x27;t start until predecessor TBO reaches X% convergence (weight 20) [functional] <span class="badge badge-pending">pending</span></div>
+<div class="card indent-2">&#9744; <strong>TTO-087</strong>: Automated retrospectives — DevLead generates &quot;what went well / what didn&#x27;t&quot; from KPI trends (weight 20) [functional] <span class="badge badge-pending">pending</span></div>
+<div class="card indent-1"><strong>TBO-020: Analytics and intelligence</strong> (weight 35) &mdash; 0.0%<br><div class="bar-bg" style="width:50%"><div class="bar-fill fill-red" style="width:0.0%"></div></div></div>
+<div class="card indent-2">&#9744; <strong>TTO-088</strong>: Velocity prediction — based on historical convergence rate, when will this BO finish? (weight 20) [functional] <span class="badge badge-pending">pending</span></div>
+<div class="card indent-2">&#9744; <strong>TTO-089</strong>: Token efficiency scoring — which TBOs consume the most tokens per convergence point? (weight 20) [functional] <span class="badge badge-pending">pending</span></div>
+<div class="card indent-2">&#9744; <strong>TTO-090</strong>: LLM comparison — if user switches between Claude/Gemini/Cursor, which performs better? (weight 20) [functional] <span class="badge badge-pending">pending</span></div>
+<div class="card indent-2">&#9744; <strong>TTO-091</strong>: Anomaly detection — flag sessions where convergence drops or tokens spike (weight 20) [functional] <span class="badge badge-pending">pending</span></div>
+<div class="card indent-2">&#9744; <strong>TTO-092</strong>: Weekly digest email — auto-generated summary of progress, risks, recommendations (weight 20) [non-functional] <span class="badge badge-pending">pending</span></div></div>
+<div class="tab-panel" id="panel-kpis"><h3 style="color:var(--accent);margin:16px 0 8px">LLM Effectiveness</h3>
+<table><tr><th>Metric</th><th>Value</th><th>Detail</th></tr>
+<tr class="warn"><td>K_BYPASS (discipline bypass)</td><td>39.3%</td><td>24 warns / 61 gate checks</td></tr>
+<tr class="warn"><td>Forced work rate</td><td>92.3%</td><td>12 forced / 13 total intake</td></tr>
+<tr><td>Gate coverage</td><td>61</td><td>61 total gate checks lifetime</td></tr>
+<tr class="warn"><td>Definition of Done</td><td>2</td><td>2 intake entries with 0 actionable items</td></tr>
+<tr><td>Next Best Action</td><td>&amp;mdash;</td><td>Complete 1 in-progress item(s)</td></tr>
+</table>
+<h3 style="color:var(--accent);margin:16px 0 8px">Delivery</h3>
+<table><tr><th>Metric</th><th>Value</th><th>Detail</th></tr>
+<tr><td>Intake throughput</td><td>92.3%</td><td>12 done / 13 total</td></tr>
+<tr class="warn"><td>BO on-time rate</td><td>0.0%</td><td>0 on time / 6 total BOs</td></tr>
+<tr><td>Deadline revisions</td><td>0</td><td>0 BOs have revised dates</td></tr>
+<tr><td>Backlog depth</td><td>0</td><td>0 pending intake entries</td></tr>
+<tr><td>In-flight work</td><td>1</td><td>1 intake entries in_progress</td></tr>
+<tr><td>Bug-to-feature ratio</td><td>0.00</td><td>0 bugs / 13 features</td></tr>
+</table>
+<h3 style="color:var(--accent);margin:16px 0 8px">Project Health</h3>
+<table><tr><th>Metric</th><th>Value</th><th>Detail</th></tr>
+<tr><td>Traceability</td><td>100.0%</td><td>All 122 TTOs linked to BOs by definition in v2</td></tr>
+<tr><td>Audit coverage</td><td>79</td><td>79 total audit events</td></tr>
+<tr><td>Coverage gap</td><td>0</td><td>0 of 8 core files missing</td></tr>
+<tr><td>Intake staleness</td><td>0</td><td>0 items pending</td></tr>
+</table>
+<h3 style="color:var(--accent);margin:16px 0 8px">Business Convergence</h3>
+<table><tr><th>Metric</th><th>Value</th><th>Detail</th></tr>
+<tr><td>Sprint convergence</td><td>0.0%</td><td>Weighted rollup from hierarchy checkboxes</td></tr>
+<tr><td>BO convergence: BO-001</td><td>0.0%</td><td>Weighted TBO-&gt;TTO rollup</td></tr>
+<tr><td>BO convergence: BO-002</td><td>0.0%</td><td>Weighted TBO-&gt;TTO rollup</td></tr>
+<tr><td>BO convergence: BO-003</td><td>0.0%</td><td>Weighted TBO-&gt;TTO rollup</td></tr>
+<tr><td>BO convergence: BO-004</td><td>0.0%</td><td>Weighted TBO-&gt;TTO rollup</td></tr>
+<tr><td>BO convergence: BO-005</td><td>0.0%</td><td>Weighted TBO-&gt;TTO rollup</td></tr>
+<tr><td>BO convergence: BO-006</td><td>0.0%</td><td>Weighted TBO-&gt;TTO rollup</td></tr>
+<tr><td>TBO coverage</td><td>100.0%</td><td>% of BOs that have TBOs defined</td></tr>
+<tr><td>Going in Circles</td><td>0</td><td>0 zero-convergence-delta sessions in last 0</td></tr>
+<tr><td>Tokenomics</td><td>0</td><td>no session history</td></tr>
+<tr><td>Total tokens spent</td><td>0</td><td>0 tokens across 0 recorded sessions</td></tr>
+</table></div>
+<div class="tab-panel" id="panel-timelines"><table><tr><th>Business Objective</th><th>Start</th><th>End</th><th>Actual</th><th>Revised</th><th>Progress</th><th>Revision Note</th></tr><tr><td>BO-001: DevLead is a well-rounded robust product</td><td>2026-04-16</td><td>2026-04-25</td><td>(pending)</td><td>(none)</td><td><div class="bar-bg" style="width:80px"><div class="bar-fill fill-accent" style="width:0.0%"></div></div> 0%</td><td>(none)</td></tr>
+<tr><td>BO-002: Product &amp; Packaging — DevLead works everywhere, installs instantly</td><td>2026-04-25</td><td>2026-05-01</td><td>(pending)</td><td>(none)</td><td><div class="bar-bg" style="width:80px"><div class="bar-fill fill-accent" style="width:0.0%"></div></div> 0%</td><td>(none)</td></tr>
+<tr><td>BO-003: DevLead generates its first $1000/month</td><td>2026-05-01</td><td>2026-05-15</td><td>(pending)</td><td>(none)</td><td><div class="bar-bg" style="width:80px"><div class="bar-fill fill-accent" style="width:0.0%"></div></div> 0%</td><td>(none)</td></tr>
+<tr><td>BO-004: DevLead eats its own dogfood</td><td>2026-04-16</td><td>2026-05-15</td><td>(pending)</td><td>(none)</td><td><div class="bar-bg" style="width:80px"><div class="bar-fill fill-accent" style="width:0.0%"></div></div> 0%</td><td>(none)</td></tr>
+<tr><td>BO-005: Multi-project portfolio management</td><td>(not started)</td><td>(not set)</td><td>(pending)</td><td>(none)</td><td><div class="bar-bg" style="width:80px"><div class="bar-fill fill-accent" style="width:0.0%"></div></div> 0%</td><td>(none)</td></tr>
+<tr><td>BO-006: DevLead becomes the AI project management standard</td><td>(not started)</td><td>(not set)</td><td>(pending)</td><td>(none)</td><td><div class="bar-bg" style="width:80px"><div class="bar-fill fill-accent" style="width:0.0%"></div></div> 0%</td><td>(none)</td></tr></table></div>
+<div class="tab-panel" id="panel-tokens"><div class="card"><strong>Total Token Spend:</strong> 0</div>
+<p>(no token data)</p></div>
+<div class="tab-panel" id="panel-intake"><table><tr><th>ID</th><th>Title</th><th>Status</th><th>Origin</th><th>Actions</th><th>File</th></tr><tr><td>FEATURES-0001</td><td>Scratchpad to intake conversion + dev-work discipline</td><td><span class="badge badge-done">done</span></td><td><span class="badge badge-progress">forced</span></td><td>0</td><td>_intake_features.md</td></tr>
+<tr><td>FEATURES-0002</td><td>Self-awareness framework (reduce CLAUDE.md reliance)</td><td><span class="badge badge-progress">in_progress</span></td><td><span class="badge badge-pending">normal</span></td><td>0</td><td>_intake_features.md</td></tr>
+<tr><td>FEATURES-0003</td><td>Memory cohesion and enforcement design analysis (depth phase kickoff)</td><td><span class="badge badge-done">done</span></td><td><span class="badge badge-progress">forced</span></td><td>14</td><td>_intake_features.md</td></tr>
+<tr><td>FEATURES-0004</td><td>Level-2 enforcement gate (devlead gate PreToolUse)</td><td><span class="badge badge-done">done</span></td><td><span class="badge badge-progress">forced</span></td><td>7</td><td>_intake_features.md</td></tr>
+<tr><td>FEATURES-0005</td><td>SOT declaration blocks (Proposal A)</td><td><span class="badge badge-done">done</span></td><td><span class="badge badge-progress">forced</span></td><td>5</td><td>_intake_features.md</td></tr>
+<tr><td>FEATURES-0006</td><td>Migration protocol /devlead migrate (Proposal C)</td><td><span class="badge badge-done">done</span></td><td><span class="badge badge-progress">forced</span></td><td>5</td><td>_intake_features.md</td></tr>
+<tr><td>FEATURES-0007</td><td>Lineage metadata on intake entries (Proposal B)</td><td><span class="badge badge-done">done</span></td><td><span class="badge badge-progress">forced</span></td><td>4</td><td>_intake_features.md</td></tr>
+<tr><td>FEATURES-0008</td><td>/devlead verify-links cross-reference walker</td><td><span class="badge badge-done">done</span></td><td><span class="badge badge-progress">forced</span></td><td>5</td><td>_intake_features.md</td></tr>
+<tr><td>FEATURES-0009</td><td>devlead.toml config loader (stdlib tomllib)</td><td><span class="badge badge-done">done</span></td><td><span class="badge badge-progress">forced</span></td><td>5</td><td>_intake_features.md</td></tr>
+<tr><td>FEATURES-0010</td><td>Audit log writes from all commands</td><td><span class="badge badge-done">done</span></td><td><span class="badge badge-progress">forced</span></td><td>5</td><td>_intake_features.md</td></tr>
+<tr><td>FEATURES-0011</td><td>Scratchpad archival rule (L8, Q7)</td><td><span class="badge badge-done">done</span></td><td><span class="badge badge-progress">forced</span></td><td>5</td><td>_intake_features.md</td></tr>
+<tr><td>FEATURES-0012</td><td>Lazy living-file creation (L11)</td><td><span class="badge badge-done">done</span></td><td><span class="badge badge-progress">forced</span></td><td>4</td><td>_intake_features.md</td></tr>
+<tr><td>FEATURES-0013</td><td>Shake-the-tree dogfood test (Session 4 planned)</td><td><span class="badge badge-done">done</span></td><td><span class="badge badge-progress">forced</span></td><td>6</td><td>_intake_features.md</td></tr></table></div>
+<div class="tab-panel" id="panel-audit"><table><tr><th>Timestamp</th><th>Event</th><th>Tool</th><th>File</th><th>Result</th></tr><tr><td>2026-04-16T01:14:08Z</td><td>gate_pass</td><td>Edit</td><td>src/devlead/cli.py</td><td>pass</td></tr>
+<tr><td>2026-04-16T01:14:08Z</td><td>gate_pass</td><td>Edit</td><td>devlead_docs/_scratchpad.md</td><td>exempt</td></tr>
+<tr><td>2026-04-16T01:14:30Z</td><td>gate_pass</td><td>Write</td><td>src/foo.py</td><td>pass</td></tr>
+<tr><td>2026-04-16T01:15:39Z</td><td>gate_pass</td><td>Edit</td><td>README.md</td><td>exempt</td></tr>
+<tr><td>2026-04-16T01:30:49Z</td><td>verify_broken</td><td></td><td></td><td>broken</td></tr>
+<tr><td>2026-04-16T01:31:16Z</td><td>verify_pass</td><td></td><td></td><td>ok</td></tr>
+<tr><td>2026-04-16T01:32:06Z</td><td>verify_pass</td><td></td><td></td><td>ok</td></tr>
+<tr><td>2026-04-16T01:38:21Z</td><td>session_start</td><td></td><td></td><td>ok</td></tr>
+<tr><td>2026-04-16T01:53:25Z</td><td>gate_pass</td><td>Write</td><td>C:\Users\nitin\.claude\projects\C--Users-nitin-plugin-development-devlead\memory\feedback_honesty_over_completeness.md</td><td>exempt</td></tr>
+<tr><td>2026-04-16T01:53:38Z</td><td>gate_pass</td><td>Edit</td><td>C:\Users\nitin\.claude\projects\C--Users-nitin-plugin-development-devlead\memory\MEMORY.md</td><td>exempt</td></tr>
+<tr class="warn"><td>2026-04-16T01:58:00Z</td><td>gate_warn</td><td>Write</td><td>C:\Users\nitin\plugin-development\devlead\src\devlead\report.py</td><td>warn</td></tr>
+<tr class="warn"><td>2026-04-16T01:58:06Z</td><td>gate_warn</td><td>Edit</td><td>C:\Users\nitin\plugin-development\devlead\src\devlead\cli.py</td><td>warn</td></tr>
+<tr class="warn"><td>2026-04-16T01:58:11Z</td><td>gate_warn</td><td>Edit</td><td>C:\Users\nitin\plugin-development\devlead\src\devlead\cli.py</td><td>warn</td></tr>
+<tr><td>2026-04-16T01:58:22Z</td><td>verify_pass</td><td></td><td></td><td>ok</td></tr>
+<tr><td>2026-04-16T02:01:08Z</td><td>gate_pass</td><td>Edit</td><td>C:\Users\nitin\plugin-development\devlead\devlead_docs\_resume.md</td><td>exempt</td></tr>
+<tr><td>2026-04-16T02:01:29Z</td><td>gate_pass</td><td>Edit</td><td>C:\Users\nitin\plugin-development\devlead\devlead_docs\_resume.md</td><td>exempt</td></tr>
+<tr><td>2026-04-16T02:02:04Z</td><td>session_start</td><td></td><td></td><td>ok</td></tr>
+<tr class="warn"><td>2026-04-16T02:02:05Z</td><td>gate_warn</td><td>Edit</td><td>src/app.py</td><td>warn</td></tr>
+<tr><td>2026-04-16T02:02:05Z</td><td>verify_pass</td><td></td><td></td><td>ok</td></tr>
+<tr><td>2026-04-16T02:02:06Z</td><td>verify_pass</td><td></td><td></td><td>ok</td></tr>
+<tr class="warn"><td>2026-04-16T02:03:18Z</td><td>gate_warn</td><td>Edit</td><td>C:\Users\nitin\plugin-development\devlead\pyproject.toml</td><td>warn</td></tr>
+<tr class="warn"><td>2026-04-16T02:03:23Z</td><td>gate_warn</td><td>Edit</td><td>C:\Users\nitin\plugin-development\devlead\pyproject.toml</td><td>warn</td></tr>
+<tr><td>2026-04-16T02:04:17Z</td><td>verify_pass</td><td></td><td></td><td>ok</td></tr>
+<tr class="warn"><td>2026-04-16T02:08:11Z</td><td>gate_warn</td><td>Write</td><td>C:\Users\nitin\plugin-development\devlead\src\devlead\resume.py</td><td>warn</td></tr>
+<tr class="warn"><td>2026-04-16T02:08:17Z</td><td>gate_warn</td><td>Edit</td><td>C:\Users\nitin\plugin-development\devlead\src\devlead\cli.py</td><td>warn</td></tr>
+<tr class="warn"><td>2026-04-16T02:08:23Z</td><td>gate_warn</td><td>Edit</td><td>C:\Users\nitin\plugin-development\devlead\src\devlead\cli.py</td><td>warn</td></tr>
+<tr><td>2026-04-16T02:12:13Z</td><td>gate_pass</td><td>Write</td><td>C:\Users\nitin\.claude\projects\C--Users-nitin-plugin-development-devlead\memory\user_nitin.md</td><td>exempt</td></tr>
+<tr><td>2026-04-16T02:12:28Z</td><td>gate_pass</td><td>Write</td><td>C:\Users\nitin\.claude\projects\C--Users-nitin-plugin-development-devlead\memory\feedback_ground_truth.md</td><td>exempt</td></tr>
+<tr><td>2026-04-16T02:12:37Z</td><td>gate_pass</td><td>Write</td><td>C:\Users\nitin\.claude\projects\C--Users-nitin-plugin-development-devlead\memory\feedback_honesty_over_completeness.md</td><td>exempt</td></tr>
+<tr><td>2026-04-16T02:12:50Z</td><td>gate_pass</td><td>Write</td><td>C:\Users\nitin\.claude\projects\C--Users-nitin-plugin-development-devlead\memory\MEMORY.md</td><td>exempt</td></tr>
+<tr><td>2026-04-16T02:25:51Z</td><td>gate_pass</td><td>Write</td><td>C:\Users\nitin\.claude\projects\C--Users-nitin-plugin-development-devlead\memory\project_devlead_product_definition.md</td><td>exempt</td></tr>
+<tr><td>2026-04-16T02:26:03Z</td><td>gate_pass</td><td>Write</td><td>C:\Users\nitin\.claude\projects\C--Users-nitin-plugin-development-devlead\memory\MEMORY.md</td><td>exempt</td></tr>
+<tr><td>2026-04-16T02:32:32Z</td><td>gate_pass</td><td>Write</td><td>C:\Users\nitin\.claude\projects\C--Users-nitin-plugin-development-devlead\memory\feedback_ground_truth.md</td><td>exempt</td></tr>
+<tr><td>2026-04-16T02:42:03Z</td><td>gate_pass</td><td>Write</td><td>C:\Users\nitin\.claude\plans\glittery-dancing-pike.md</td><td>exempt</td></tr>
+<tr><td>2026-04-16T02:43:18Z</td><td>gate_pass</td><td>Write</td><td>C:\Users\nitin\plugin-development\devlead\devlead_docs\_routing_table.md</td><td>exempt</td></tr>
+<tr class="warn"><td>2026-04-16T02:43:39Z</td><td>gate_warn</td><td>Edit</td><td>C:\Users\nitin\plugin-development\devlead\src\devlead\install.py</td><td>warn</td></tr>
+<tr><td>2026-04-16T02:44:13Z</td><td>gate_pass</td><td>Write</td><td>C:\Users\nitin\plugin-development\devlead\devlead_docs\_project_hierarchy.md</td><td>exempt</td></tr>
+<tr class="warn"><td>2026-04-16T02:44:40Z</td><td>gate_warn</td><td>Edit</td><td>C:\Users\nitin\plugin-development\devlead\src\devlead\bootstrap.py</td><td>warn</td></tr>
+<tr class="warn"><td>2026-04-16T02:44:46Z</td><td>gate_warn</td><td>Edit</td><td>C:\Users\nitin\plugin-development\devlead\src\devlead\bootstrap.py</td><td>warn</td></tr>
+<tr class="warn"><td>2026-04-16T02:45:14Z</td><td>gate_warn</td><td>Write</td><td>C:\Users\nitin\plugin-development\devlead\src\devlead\hierarchy.py</td><td>warn</td></tr>
+<tr class="warn"><td>2026-04-16T02:45:32Z</td><td>gate_warn</td><td>Edit</td><td>C:\Users\nitin\plugin-development\devlead\src\devlead\hierarchy.py</td><td>warn</td></tr>
+<tr class="warn"><td>2026-04-16T02:45:48Z</td><td>gate_warn</td><td>Edit</td><td>C:\Users\nitin\plugin-development\devlead\src\devlead\hierarchy.py</td><td>warn</td></tr>
+<tr class="warn"><td>2026-04-16T02:46:17Z</td><td>gate_warn</td><td>Edit</td><td>C:\Users\nitin\plugin-development\devlead\src\devlead\hierarchy.py</td><td>warn</td></tr>
+<tr class="warn"><td>2026-04-16T02:48:26Z</td><td>gate_warn</td><td>Edit</td><td>C:\Users\nitin\plugin-development\devlead\src\devlead\resume.py</td><td>warn</td></tr>
+<tr class="warn"><td>2026-04-16T02:48:37Z</td><td>gate_warn</td><td>Edit</td><td>C:\Users\nitin\plugin-development\devlead\src\devlead\resume.py</td><td>warn</td></tr>
+<tr class="warn"><td>2026-04-16T02:53:38Z</td><td>gate_warn</td><td>Write</td><td>C:\Users\nitin\plugin-development\devlead\src\devlead\kpi.py</td><td>warn</td></tr>
+<tr class="warn"><td>2026-04-16T02:53:45Z</td><td>gate_warn</td><td>Edit</td><td>C:\Users\nitin\plugin-development\devlead\src\devlead\cli.py</td><td>warn</td></tr>
+<tr class="warn"><td>2026-04-16T02:53:52Z</td><td>gate_warn</td><td>Edit</td><td>C:\Users\nitin\plugin-development\devlead\src\devlead\cli.py</td><td>warn</td></tr>
+<tr class="warn"><td>2026-04-16T02:54:15Z</td><td>gate_warn</td><td>Edit</td><td>C:\Users\nitin\plugin-development\devlead\src\devlead\report.py</td><td>warn</td></tr>
+<tr class="warn"><td>2026-04-16T02:54:34Z</td><td>gate_warn</td><td>Edit</td><td>C:\Users\nitin\plugin-development\devlead\src\devlead\report.py</td><td>warn</td></tr>
+<tr><td>2026-04-16T02:54:49Z</td><td>verify_pass</td><td></td><td></td><td>ok</td></tr>
+<tr class="warn"><td>2026-04-16T02:59:21Z</td><td>gate_warn</td><td>Write</td><td>C:\Users\nitin\plugin-development\devlead\src\devlead\kpi.py</td><td>warn</td></tr>
+<tr><td>2026-04-16T02:59:38Z</td><td>verify_pass</td><td></td><td></td><td>ok</td></tr>
+<tr><td>2026-04-16T02:59:55Z</td><td>gate_pass</td><td>Edit</td><td>C:\Users\nitin\plugin-development\devlead\devlead_docs\_project_hierarchy.md</td><td>exempt</td></tr>
+<tr><td>2026-04-16T03:00:01Z</td><td>gate_pass</td><td>Edit</td><td>C:\Users\nitin\plugin-development\devlead\devlead_docs\_project_hierarchy.md</td><td>exempt</td></tr>
+<tr><td>2026-04-16T03:00:07Z</td><td>gate_pass</td><td>Edit</td><td>C:\Users\nitin\plugin-development\devlead\devlead_docs\_project_hierarchy.md</td><td>exempt</td></tr>
+<tr><td>2026-04-16T03:01:39Z</td><td>gate_pass</td><td>Write</td><td>C:\Users\nitin\plugin-development\devlead\devlead_docs\_project_hierarchy.md</td><td>exempt</td></tr>
+<tr><td>2026-04-16T03:01:57Z</td><td>verify_pass</td><td></td><td></td><td>ok</td></tr>
+<tr><td>2026-04-16T03:03:15Z</td><td>awareness_refresh</td><td></td><td></td><td>ok</td></tr>
+<tr><td>2026-04-16T03:03:30Z</td><td>verify_pass</td><td></td><td></td><td>ok</td></tr>
+<tr><td>2026-04-16T03:07:29Z</td><td>gate_pass</td><td>Write</td><td>C:\Users\nitin\plugin-development\devlead\devlead_docs\_project_hierarchy.md</td><td>exempt</td></tr>
+<tr><td>2026-04-16T03:07:49Z</td><td>verify_pass</td><td></td><td></td><td>ok</td></tr>
+<tr><td>2026-04-16T03:12:54Z</td><td>gate_pass</td><td>Edit</td><td>C:\Users\nitin\plugin-development\devlead\src\devlead\bootstrap.py</td><td>pass</td></tr>
+<tr><td>2026-04-16T03:13:05Z</td><td>gate_pass</td><td>Edit</td><td>C:\Users\nitin\plugin-development\devlead\src\devlead\bootstrap.py</td><td>pass</td></tr>
+<tr><td>2026-04-16T03:18:48Z</td><td>verify_pass</td><td></td><td></td><td>ok</td></tr>
+<tr><td>2026-04-16T03:27:53Z</td><td>gate_pass</td><td>Write</td><td>C:\Users\nitin\plugin-development\devlead\devlead_docs\_project_hierarchy.md</td><td>exempt</td></tr>
+<tr><td>2026-04-16T03:28:16Z</td><td>verify_pass</td><td></td><td></td><td>ok</td></tr>
+<tr><td>2026-04-16T03:29:42Z</td><td>gate_pass</td><td>Edit</td><td>C:\Users\nitin\plugin-development\devlead\devlead_docs\_project_hierarchy.md</td><td>exempt</td></tr>
+<tr><td>2026-04-16T03:35:05Z</td><td>gate_pass</td><td>Edit</td><td>C:\Users\nitin\plugin-development\devlead\devlead_docs\_project_hierarchy.md</td><td>exempt</td></tr>
+<tr><td>2026-04-16T03:36:18Z</td><td>gate_pass</td><td>Edit</td><td>C:\Users\nitin\plugin-development\devlead\src\devlead\hierarchy.py</td><td>pass</td></tr>
+<tr><td>2026-04-16T03:37:45Z</td><td>gate_pass</td><td>Write</td><td>C:\Users\nitin\plugin-development\devlead\src\devlead\effort.py</td><td>pass</td></tr>
+<tr><td>2026-04-16T03:40:01Z</td><td>gate_pass</td><td>Edit</td><td>C:\Users\nitin\plugin-development\devlead\devlead_docs\_project_hierarchy.md</td><td>exempt</td></tr>
+<tr><td>2026-04-16T03:41:40Z</td><td>gate_pass</td><td>Edit</td><td>C:\Users\nitin\plugin-development\devlead\devlead_docs\_project_hierarchy.md</td><td>exempt</td></tr>
+<tr><td>2026-04-16T03:43:18Z</td><td>verify_pass</td><td></td><td></td><td>ok</td></tr>
+<tr><td>2026-04-16T03:48:02Z</td><td>gate_pass</td><td>Write</td><td>C:\Users\nitin\plugin-development\devlead\src\devlead\dashboard.py</td><td>pass</td></tr>
+<tr><td>2026-04-16T03:48:11Z</td><td>gate_pass</td><td>Edit</td><td>C:\Users\nitin\plugin-development\devlead\src\devlead\dashboard.py</td><td>pass</td></tr>
+<tr><td>2026-04-16T03:48:16Z</td><td>gate_pass</td><td>Edit</td><td>C:\Users\nitin\plugin-development\devlead\src\devlead\cli.py</td><td>pass</td></tr>
+<tr><td>2026-04-16T03:48:20Z</td><td>gate_pass</td><td>Edit</td><td>C:\Users\nitin\plugin-development\devlead\src\devlead\cli.py</td><td>pass</td></tr>
+<tr><td>2026-04-16T03:48:25Z</td><td>gate_pass</td><td>Edit</td><td>C:\Users\nitin\plugin-development\devlead\src\devlead\cli.py</td><td>pass</td></tr></table></div>
+<div class="tab-panel" id="panel-dod"><p style="color:var(--muted);margin-bottom:12px">Run at 2026-04-16 03:48 UTC</p><table><tr><th>TTO</th><th>Result</th><th>Command</th><th>Output</th></tr><tr><td>TTO-001</td><td><span class="badge badge-pass">PASS</span></td><td><code>grep -q &quot;## R1&quot; CLAUDE.md &amp;&amp; grep -q &quot;## R2&quot; CLAUDE.md &amp;&amp; grep -q &quot;## R4&quot; CLAUDE.md &amp;&amp; grep -q &quot;## R5&quot; CLAUDE.md &amp;&amp; grep</code></td><td></td></tr>
+<tr><td>TTO-002</td><td><span class="badge badge-pass">PASS</span></td><td><code>echo &quot;requires fresh session test by Nitin&quot;</code></td><td>&quot;requires fresh session test by Nitin&quot;</td></tr>
+<tr><td>TTO-003</td><td><span class="badge badge-pass">PASS</span></td><td><code>echo &quot;requires fresh session test by Nitin&quot;</code></td><td>&quot;requires fresh session test by Nitin&quot;</td></tr>
+<tr><td>TTO-004</td><td><span class="badge badge-fail">FAIL</span></td><td><code>test -f AGENTS.md &amp;&amp; grep -q &quot;## R1&quot; AGENTS.md</code></td><td></td></tr>
+<tr><td>TTO-005</td><td><span class="badge badge-pass">PASS</span></td><td><code>echo &quot;requires fresh session test by Nitin&quot;</code></td><td>&quot;requires fresh session test by Nitin&quot;</td></tr>
+<tr><td>TTO-006</td><td><span class="badge badge-pass">PASS</span></td><td><code>grep -q &quot;To add a new responsibility&quot; devlead_docs/_routing_table.md</code></td><td></td></tr>
+<tr><td>TTO-007</td><td><span class="badge badge-fail">FAIL</span></td><td><code>python -c &quot;from devlead.scratchpad import append_entry, iter_untriaged; from pathlib import Path; append_entry(Path(&#x27;/tm</code></td><td>Traceback (most recent call last):</td></tr>
+<tr><td>TTO-008</td><td><span class="badge badge-pass">PASS</span></td><td><code>grep -q &quot;intake&quot; src/devlead/cli.py &amp;&amp; grep -q &quot;decision&quot; src/devlead/cli.py &amp;&amp; grep -q &quot;fact&quot; src/devlead/cli.py</code></td><td></td></tr>
+<tr><td>TTO-009</td><td><span class="badge badge-pass">PASS</span></td><td><code>python -c &quot;from devlead.bridge import ingest_from_scratchpad; print(&#x27;importable&#x27;)&quot;</code></td><td>importable</td></tr>
+<tr><td>TTO-010</td><td><span class="badge badge-pass">PASS</span></td><td><code>devlead promote --help 2&gt;&amp;1 | grep -q &quot;hierarchy&quot; || echo &quot;not yet built&quot;</code></td><td>&quot;not yet built&quot;</td></tr>
+<tr><td>TTO-011</td><td><span class="badge badge-pass">PASS</span></td><td><code>python -c &quot;from devlead.hierarchy import parse; from pathlib import Path; s=parse(Path(&#x27;devlead_docs/_project_hierarchy.</code></td><td>0.0%</td></tr>
+<tr><td>TTO-012</td><td><span class="badge badge-pass">PASS</span></td><td><code>grep -c &quot;verify:&quot; devlead_docs/_project_hierarchy.md | grep -q &quot;[2-9][0-9]&quot;</code></td><td></td></tr>
+<tr><td>TTO-013</td><td><span class="badge badge-fail">FAIL</span></td><td><code>devlead dashboard &amp;&amp; grep -q &quot;Executive Summary&quot; docs/dashboard-*.html</code></td><td>(timed out after 10s)</td></tr>
+<tr><td>TTO-014</td><td><span class="badge badge-fail">FAIL</span></td><td><code>grep -q &quot;Hierarchy&quot; docs/dashboard-*.html</code></td><td></td></tr>
+<tr><td>TTO-015</td><td><span class="badge badge-fail">FAIL</span></td><td><code>grep -q &quot;KPIs&quot; docs/dashboard-*.html</code></td><td></td></tr>
+<tr><td>TTO-016</td><td><span class="badge badge-fail">FAIL</span></td><td><code>grep -q &quot;Timeline&quot; docs/dashboard-*.html</code></td><td></td></tr>
+<tr><td>TTO-017</td><td><span class="badge badge-fail">FAIL</span></td><td><code>grep -q &quot;Token&quot; docs/dashboard-*.html</code></td><td></td></tr>
+<tr><td>TTO-018</td><td><span class="badge badge-fail">FAIL</span></td><td><code>grep -q &quot;Intake&quot; docs/dashboard-*.html</code></td><td></td></tr>
+<tr><td>TTO-019</td><td><span class="badge badge-fail">FAIL</span></td><td><code>grep -q &quot;Audit&quot; docs/dashboard-*.html</code></td><td></td></tr>
+<tr><td>TTO-020</td><td><span class="badge badge-fail">FAIL</span></td><td><code>grep -q &quot;Definition of Done&quot; docs/dashboard-*.html</code></td><td></td></tr>
+<tr><td>TTO-021</td><td><span class="badge badge-fail">FAIL</span></td><td><code>grep -q &quot;Session History&quot; docs/dashboard-*.html</code></td><td></td></tr>
+<tr><td>TTO-022</td><td><span class="badge badge-fail">FAIL</span></td><td><code>grep -q &quot;Change Management&quot; docs/dashboard-*.html</code></td><td></td></tr>
+<tr><td>TTO-023</td><td><span class="badge badge-fail">FAIL</span></td><td><code>grep -q &quot;tab-input&quot; docs/dashboard-*.html &amp;&amp; ! grep -q &quot;&lt;script&quot; docs/dashboard-*.html</code></td><td></td></tr>
+<tr><td>TTO-024</td><td><span class="badge badge-fail">FAIL</span></td><td><code>grep -q &quot;tokens&quot; docs/dashboard-*.html</code></td><td></td></tr>
+<tr><td>TTO-025</td><td><span class="badge badge-fail">FAIL</span></td><td><code>grep -q &quot;Stop&quot; .claude/settings.json</code></td><td></td></tr>
+<tr><td>TTO-020</td><td><span class="badge badge-fail">FAIL</span></td><td><code>devlead kpi 2&gt;&amp;1 | grep -c &quot;:&quot; | awk &#x27;{exit ($1 &gt;= 15 ? 0 : 1)}&#x27;</code></td><td></td></tr>
+<tr><td>TTO-021</td><td><span class="badge badge-fail">FAIL</span></td><td><code>devlead kpi 2&gt;&amp;1 | grep -q &quot;Tokenomics&quot;</code></td><td></td></tr>
+<tr><td>TTO-022</td><td><span class="badge badge-fail">FAIL</span></td><td><code>python -c &quot;from devlead.kpi import record_session; from pathlib import Path; record_session(Path(&#x27;devlead_docs&#x27;), 1000);</code></td><td></td></tr>
+<tr><td>TTO-023</td><td><span class="badge badge-fail">FAIL</span></td><td><code>devlead kpi 2&gt;&amp;1 | grep -q &quot;K_BYPASS&quot;</code></td><td></td></tr>
+<tr><td>TTO-024</td><td><span class="badge badge-fail">FAIL</span></td><td><code>devlead resume &amp;&amp; grep -q &quot;Auto-generated by DevLead&quot; devlead_docs/_resume.md</code></td><td></td></tr>
+<tr><td>TTO-025</td><td><span class="badge badge-fail">FAIL</span></td><td><code>grep -q &quot;Next TTOs&quot; devlead_docs/_resume.md</code></td><td></td></tr>
+<tr><td>TTO-026</td><td><span class="badge badge-fail">FAIL</span></td><td><code>grep -q &quot;Hierarchy convergence&quot; devlead_docs/_resume.md</code></td><td></td></tr>
+<tr><td>TTO-027</td><td><span class="badge badge-fail">FAIL</span></td><td><code>echo &#x27;{}&#x27; | devlead gate SessionStart 2&gt;&amp;1 | grep -q &quot;resume&quot;</code></td><td></td></tr>
+<tr><td>TTO-028</td><td><span class="badge badge-fail">FAIL</span></td><td><code>wc -l CLAUDE.md | awk &#x27;{exit ($1 &gt; 100 ? 0 : 1)}&#x27;</code></td><td></td></tr>
+<tr><td>TTO-029</td><td><span class="badge badge-fail">FAIL</span></td><td><code>echo &quot;requires fresh session test by Nitin&quot;</code></td><td></td></tr>
+<tr><td>TTO-030</td><td><span class="badge badge-fail">FAIL</span></td><td><code>pip show devlead 2&gt;&amp;1 | grep -q &quot;Version&quot;</code></td><td></td></tr>
+<tr><td>TTO-031</td><td><span class="badge badge-fail">FAIL</span></td><td><code>mkdir -p /tmp/dit &amp;&amp; devlead init /tmp/dit &amp;&amp; test -f /tmp/dit/CLAUDE.md &amp;&amp; test -f /tmp/dit/.claude/settings.json &amp;&amp; rm</code></td><td></td></tr>
+<tr><td>TTO-032</td><td><span class="badge badge-fail">FAIL</span></td><td><code>test -f .claude-plugin/plugin.json &amp;&amp; grep -q &quot;0.2&quot; .claude-plugin/plugin.json</code></td><td></td></tr>
+<tr><td>TTO-033</td><td><span class="badge badge-fail">FAIL</span></td><td><code>grep -q &quot;SessionStart&quot; .claude/settings.json &amp;&amp; grep -q &quot;PreToolUse&quot; .claude/settings.json</code></td><td></td></tr>
+<tr><td>TTO-034</td><td><span class="badge badge-fail">FAIL</span></td><td><code>mkdir -p /tmp/dit2 &amp;&amp; devlead init /tmp/dit2 &amp;&amp; devlead init /tmp/dit2 &amp;&amp; rm -rf /tmp/dit2</code></td><td></td></tr>
+<tr><td>TTO-035</td><td><span class="badge badge-fail">FAIL</span></td><td><code>test -f AGENTS.md &amp;&amp; grep -q &quot;## R1&quot; AGENTS.md</code></td><td></td></tr>
+<tr><td>TTO-036</td><td><span class="badge badge-fail">FAIL</span></td><td><code>test -f GEMINI.md || grep -q &quot;gemini&quot; AGENTS.md</code></td><td></td></tr>
+<tr><td>TTO-037</td><td><span class="badge badge-fail">FAIL</span></td><td><code>echo &quot;requires Gemini CLI testing&quot;</code></td><td></td></tr>
+<tr><td>TTO-038</td><td><span class="badge badge-fail">FAIL</span></td><td><code>echo &quot;requires manual Gemini CLI test by Nitin&quot;</code></td><td></td></tr>
+<tr><td>TTO-039</td><td><span class="badge badge-fail">FAIL</span></td><td><code>echo &quot;requires Cursor testing&quot;</code></td><td></td></tr>
+<tr><td>TTO-040</td><td><span class="badge badge-fail">FAIL</span></td><td><code>echo &quot;requires Windsurf testing&quot;</code></td><td></td></tr>
+<tr><td>TTO-041</td><td><span class="badge badge-fail">FAIL</span></td><td><code>echo &quot;requires Copilot testing&quot;</code></td><td></td></tr>
+<tr><td>TTO-042</td><td><span class="badge badge-fail">FAIL</span></td><td><code>echo &quot;requires generic LLM testing&quot;</code></td><td></td></tr>
+<tr><td>TTO-043</td><td><span class="badge badge-fail">FAIL</span></td><td><code>echo &quot;requires Codex testing&quot;</code></td><td></td></tr>
+<tr><td>TTO-044</td><td><span class="badge badge-fail">FAIL</span></td><td><code>echo &quot;requires Aider testing&quot;</code></td><td></td></tr>
+<tr><td>TTO-045</td><td><span class="badge badge-fail">FAIL</span></td><td><code>echo &quot;requires guide written&quot;</code></td><td></td></tr>
+<tr><td>TTO-046</td><td><span class="badge badge-fail">FAIL</span></td><td><code>test -f devlead_docs/_routing_table.md &amp;&amp; test -f devlead_docs/_resume.md &amp;&amp; test -f devlead_docs/_project_hierarchy.md</code></td><td></td></tr>
+<tr><td>TTO-047</td><td><span class="badge badge-fail">FAIL</span></td><td><code>echo &quot;requires GitHub release&quot;</code></td><td></td></tr>
+<tr><td>TTO-048</td><td><span class="badge badge-fail">FAIL</span></td><td><code>echo &quot;requires npm package or shell script&quot;</code></td><td></td></tr>
+<tr><td>TTO-049</td><td><span class="badge badge-fail">FAIL</span></td><td><code>test -f README.md &amp;&amp; grep -q &quot;free&quot; README.md</code></td><td></td></tr>
+<tr><td>TTO-050</td><td><span class="badge badge-fail">FAIL</span></td><td><code>test -f README.md &amp;&amp; grep -q &quot;Claude says done&quot; README.md</code></td><td></td></tr>
+<tr><td>TTO-051</td><td><span class="badge badge-fail">FAIL</span></td><td><code>grep -q &quot;Claude Code\|Gemini\|Cursor&quot; README.md || test -f docs/install-guide.md</code></td><td></td></tr>
+<tr><td>TTO-052</td><td><span class="badge badge-fail">FAIL</span></td><td><code>test -f docs/USER_GUIDE.md &amp;&amp; wc -l docs/USER_GUIDE.md | awk &#x27;{exit ($1 &gt; 50 ? 0 : 1)}&#x27;</code></td><td></td></tr>
+<tr><td>TTO-053</td><td><span class="badge badge-fail">FAIL</span></td><td><code>test -f docs/example-session.md</code></td><td></td></tr>
+<tr><td>TTO-054</td><td><span class="badge badge-fail">FAIL</span></td><td><code>echo &quot;requires Nitin to create&quot;</code></td><td></td></tr>
+<tr><td>TTO-055</td><td><span class="badge badge-fail">FAIL</span></td><td><code>echo &quot;requires browser test&quot;</code></td><td></td></tr>
+<tr><td>TTO-056</td><td><span class="badge badge-fail">FAIL</span></td><td><code>echo &quot;requires browser test&quot;</code></td><td></td></tr>
+<tr><td>TTO-057</td><td><span class="badge badge-fail">FAIL</span></td><td><code>echo &quot;requires browser test&quot;</code></td><td></td></tr>
+<tr><td>TTO-058</td><td><span class="badge badge-fail">FAIL</span></td><td><code>echo &quot;requires browser test&quot;</code></td><td></td></tr>
+<tr><td>TTO-059</td><td><span class="badge badge-fail">FAIL</span></td><td><code>echo &quot;requires browser test&quot;</code></td><td></td></tr>
+<tr><td>TTO-060</td><td><span class="badge badge-fail">FAIL</span></td><td><code>echo &quot;requires browser test&quot;</code></td><td></td></tr>
+<tr><td>TTO-061</td><td><span class="badge badge-fail">FAIL</span></td><td><code>echo &quot;requires browser test&quot;</code></td><td></td></tr>
+<tr><td>TTO-062</td><td><span class="badge badge-fail">FAIL</span></td><td><code>echo &quot;requires devlead editor command&quot;</code></td><td></td></tr>
+<tr><td>TTO-055</td><td><span class="badge badge-fail">FAIL</span></td><td><code>python -c &quot;import devlead; print(&#x27;ok&#x27;)&quot;</code></td><td></td></tr>
+<tr><td>TTO-056</td><td><span class="badge badge-fail">FAIL</span></td><td><code>echo &quot;requires macOS test&quot;</code></td><td></td></tr>
+<tr><td>TTO-057</td><td><span class="badge badge-fail">FAIL</span></td><td><code>echo &quot;requires Linux test&quot;</code></td><td></td></tr>
+<tr><td>TTO-042</td><td><span class="badge badge-fail">FAIL</span></td><td><code>echo &quot;requires pricing page&quot;</code></td><td></td></tr>
+<tr><td>TTO-043</td><td><span class="badge badge-fail">FAIL</span></td><td><code>echo &quot;requires pricing page&quot;</code></td><td></td></tr>
+<tr><td>TTO-044</td><td><span class="badge badge-fail">FAIL</span></td><td><code>echo &quot;requires user interviews by Nitin&quot;</code></td><td></td></tr>
+<tr><td>TTO-045</td><td><span class="badge badge-fail">FAIL</span></td><td><code>pip install devlead --dry-run 2&gt;&amp;1 | grep -q &quot;devlead&quot;</code></td><td></td></tr>
+<tr><td>TTO-046</td><td><span class="badge badge-fail">FAIL</span></td><td><code>test -f .claude-plugin/plugin.json</code></td><td></td></tr>
+<tr><td>TTO-047</td><td><span class="badge badge-fail">FAIL</span></td><td><code>test -f LICENSE &amp;&amp; test -f README.md</code></td><td></td></tr>
+<tr><td>TTO-048</td><td><span class="badge badge-fail">FAIL</span></td><td><code>echo &quot;requires Nitin to post&quot;</code></td><td></td></tr>
+<tr><td>TTO-049</td><td><span class="badge badge-fail">FAIL</span></td><td><code>echo &quot;requires time and content&quot;</code></td><td></td></tr>
+<tr><td>TTO-050</td><td><span class="badge badge-fail">FAIL</span></td><td><code>echo &quot;requires beta program by Nitin&quot;</code></td><td></td></tr>
+<tr><td>TTO-051</td><td><span class="badge badge-fail">FAIL</span></td><td><code>echo &quot;requires beta user data&quot;</code></td><td></td></tr>
+<tr><td>TTO-052</td><td><span class="badge badge-fail">FAIL</span></td><td><code>echo &quot;requires user feedback&quot;</code></td><td></td></tr>
+<tr><td>TTO-053</td><td><span class="badge badge-fail">FAIL</span></td><td><code>echo &quot;requires tracking feedback-&gt;fix cycle&quot;</code></td><td></td></tr>
+<tr><td>TTO-054</td><td><span class="badge badge-fail">FAIL</span></td><td><code>devlead kpi 2&gt;&amp;1 | grep -q &quot;Tokenomics&quot;</code></td><td></td></tr>
+<tr><td>TTO-055</td><td><span class="badge badge-fail">FAIL</span></td><td><code>devlead kpi 2&gt;&amp;1 | grep -q &quot;Sprint convergence&quot;</code></td><td></td></tr>
+<tr><td>TTO-056</td><td><span class="badge badge-fail">FAIL</span></td><td><code>echo &quot;requires email infrastructure&quot;</code></td><td></td></tr>
+<tr><td>TTO-057</td><td><span class="badge badge-fail">FAIL</span></td><td><code>git log --oneline -10 | grep -c &quot;TTO-&quot; | awk &#x27;{exit ($1 &gt;= 5 ? 0 : 1)}&#x27;</code></td><td></td></tr>
+<tr><td>TTO-058</td><td><span class="badge badge-fail">FAIL</span></td><td><code>wc -l devlead_docs/_audit_log.jsonl | awk &#x27;{exit ($1 &gt; 10 ? 0 : 1)}&#x27;</code></td><td></td></tr>
+<tr><td>TTO-059</td><td><span class="badge badge-fail">FAIL</span></td><td><code>ls docs/session-report-*.html | wc -l | awk &#x27;{exit ($1 &gt;= 3 ? 0 : 1)}&#x27;</code></td><td></td></tr>
+<tr><td>TTO-060</td><td><span class="badge badge-fail">FAIL</span></td><td><code>echo &quot;requires 3+ sessions of history&quot;</code></td><td></td></tr>
+<tr><td>TTO-061</td><td><span class="badge badge-fail">FAIL</span></td><td><code>grep -c &quot;^### BO-&quot; devlead_docs/_project_hierarchy.md | awk &#x27;{exit ($1 &gt;= 4 ? 0 : 1)}&#x27;</code></td><td></td></tr>
+<tr><td>TTO-062</td><td><span class="badge badge-fail">FAIL</span></td><td><code>devlead kpi 2&gt;&amp;1 | grep -q &quot;Sprint convergence&quot;</code></td><td></td></tr>
+<tr><td>TTO-063</td><td><span class="badge badge-fail">FAIL</span></td><td><code>grep -q &quot;actual_date: 2026&quot; devlead_docs/_project_hierarchy.md</code></td><td></td></tr>
+<tr><td>TTO-064</td><td><span class="badge badge-fail">FAIL</span></td><td><code>grep -q &quot;revised_date: 2026&quot; devlead_docs/_project_hierarchy.md</code></td><td></td></tr>
+<tr><td>TTO-065</td><td><span class="badge badge-fail">FAIL</span></td><td><code>echo &quot;not yet built&quot;</code></td><td></td></tr>
+<tr><td>TTO-066</td><td><span class="badge badge-fail">FAIL</span></td><td><code>echo &quot;not yet built&quot;</code></td><td></td></tr>
+<tr><td>TTO-067</td><td><span class="badge badge-fail">FAIL</span></td><td><code>echo &quot;not yet built&quot;</code></td><td></td></tr>
+<tr><td>TTO-068</td><td><span class="badge badge-fail">FAIL</span></td><td><code>echo &quot;not yet built&quot;</code></td><td></td></tr>
+<tr><td>TTO-069</td><td><span class="badge badge-fail">FAIL</span></td><td><code>echo &quot;not yet built&quot;</code></td><td></td></tr>
+<tr><td>TTO-070</td><td><span class="badge badge-fail">FAIL</span></td><td><code>echo &quot;not yet built&quot;</code></td><td></td></tr>
+<tr><td>TTO-071</td><td><span class="badge badge-fail">FAIL</span></td><td><code>echo &quot;not yet built&quot;</code></td><td></td></tr>
+<tr><td>TTO-072</td><td><span class="badge badge-fail">FAIL</span></td><td><code>echo &quot;not yet built&quot;</code></td><td></td></tr>
+<tr><td>TTO-073</td><td><span class="badge badge-fail">FAIL</span></td><td><code>echo &quot;not yet built&quot;</code></td><td></td></tr>
+<tr><td>TTO-074</td><td><span class="badge badge-fail">FAIL</span></td><td><code>echo &quot;not yet built&quot;</code></td><td></td></tr>
+<tr><td>TTO-075</td><td><span class="badge badge-fail">FAIL</span></td><td><code>echo &quot;not yet built&quot;</code></td><td></td></tr>
+<tr><td>TTO-076</td><td><span class="badge badge-fail">FAIL</span></td><td><code>echo &quot;not yet built&quot;</code></td><td></td></tr>
+<tr><td>TTO-077</td><td><span class="badge badge-fail">FAIL</span></td><td><code>echo &quot;not yet built&quot;</code></td><td></td></tr>
+<tr><td>TTO-078</td><td><span class="badge badge-fail">FAIL</span></td><td><code>echo &quot;not yet built&quot;</code></td><td></td></tr>
+<tr><td>TTO-079</td><td><span class="badge badge-fail">FAIL</span></td><td><code>echo &quot;not yet built&quot;</code></td><td></td></tr>
+<tr><td>TTO-080</td><td><span class="badge badge-fail">FAIL</span></td><td><code>echo &quot;not yet built&quot;</code></td><td></td></tr>
+<tr><td>TTO-081</td><td><span class="badge badge-fail">FAIL</span></td><td><code>echo &quot;not yet built&quot;</code></td><td></td></tr>
+<tr><td>TTO-082</td><td><span class="badge badge-fail">FAIL</span></td><td><code>echo &quot;not yet built&quot;</code></td><td></td></tr>
+<tr><td>TTO-083</td><td><span class="badge badge-fail">FAIL</span></td><td><code>echo &quot;not yet built&quot;</code></td><td></td></tr>
+<tr><td>TTO-084</td><td><span class="badge badge-fail">FAIL</span></td><td><code>echo &quot;not yet built&quot;</code></td><td></td></tr>
+<tr><td>TTO-085</td><td><span class="badge badge-fail">FAIL</span></td><td><code>echo &quot;not yet built&quot;</code></td><td></td></tr>
+<tr><td>TTO-086</td><td><span class="badge badge-fail">FAIL</span></td><td><code>echo &quot;not yet built&quot;</code></td><td></td></tr>
+<tr><td>TTO-087</td><td><span class="badge badge-fail">FAIL</span></td><td><code>echo &quot;not yet built&quot;</code></td><td></td></tr>
+<tr><td>TTO-088</td><td><span class="badge badge-fail">FAIL</span></td><td><code>echo &quot;not yet built&quot;</code></td><td></td></tr>
+<tr><td>TTO-089</td><td><span class="badge badge-fail">FAIL</span></td><td><code>echo &quot;not yet built&quot;</code></td><td></td></tr>
+<tr><td>TTO-090</td><td><span class="badge badge-fail">FAIL</span></td><td><code>echo &quot;not yet built&quot;</code></td><td></td></tr>
+<tr><td>TTO-091</td><td><span class="badge badge-fail">FAIL</span></td><td><code>echo &quot;not yet built&quot;</code></td><td></td></tr>
+<tr><td>TTO-092</td><td><span class="badge badge-fail">FAIL</span></td><td><code>echo &quot;not yet built&quot;</code></td><td></td></tr></table></div>
+<div class="tab-panel" id="panel-sessions"><p>(no session history)</p></div>
+<div class="tab-panel" id="panel-changes"><div class="card ok"><strong>No deadline revisions</strong> &mdash; all BOs on track.</div></div>
+</div>
+</body></html>
