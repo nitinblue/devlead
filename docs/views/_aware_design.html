@@ -1,0 +1,240 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Aware Design</title>
+<style>
+:root {
+  --bg: #0b0d10; --panel: #11151a; --line: #222a33;
+  --ink: #e6edf3; --ink-dim: #9aa7b3; --ink-faint: #6b7785;
+  --accent: #7ee787; --accent-2: #79c0ff;
+}
+* { box-sizing: border-box; }
+html, body { margin: 0; padding: 0; background: var(--bg); color: var(--ink);
+  font: 15px/1.55 ui-sans-serif, -apple-system, "Segoe UI", Roboto, Helvetica, Arial, sans-serif; }
+body { padding: 30px 40px; max-width: 960px; margin: 0 auto; }
+a { color: var(--accent-2); text-decoration: none; }
+a:hover { text-decoration: underline; }
+code { font-family: ui-monospace, "SF Mono", Menlo, Consolas, monospace; font-size: 13px;
+  background: #0a0d11; padding: 1px 5px; border-radius: 4px; border: 1px solid var(--line); }
+pre { background: #0a0d11; border: 1px solid var(--line); border-radius: 6px;
+  padding: 12px 14px; overflow-x: auto; font-family: ui-monospace, "SF Mono", Menlo, Consolas, monospace;
+  font-size: 13px; line-height: 1.5; }
+pre code { background: transparent; border: 0; padding: 0; }
+h1, h2, h3, h4 { letter-spacing: -0.01em; margin-top: 1.4em; margin-bottom: 0.4em; }
+h1 { font-size: 28px; border-bottom: 1px solid var(--line); padding-bottom: 8px; }
+h2 { font-size: 22px; }
+h3 { font-size: 17px; color: var(--ink); }
+h4 { font-size: 14px; color: var(--ink-dim); text-transform: uppercase; letter-spacing: 0.06em; }
+p { margin: 8px 0; }
+ul, ol { padding-left: 24px; }
+li { margin: 3px 0; }
+blockquote { border-left: 3px solid var(--accent-2); margin: 14px 0; padding: 6px 14px;
+  color: var(--ink-dim); background: #10161c; border-radius: 0 6px 6px 0; }
+hr { border: 0; border-top: 1px solid var(--line); margin: 22px 0; }
+.footer { margin-top: 48px; padding-top: 16px; border-top: 1px solid var(--line);
+  color: var(--ink-faint); font-size: 12px; }
+.footer a { color: var(--ink-faint); }
+</style>
+</head>
+<body>
+<h1>_aware_design.md</h1>
+<blockquote><strong>Self-awareness file.</strong> Auto-generated snapshot of the project's current technical design. DO NOT EDIT - run <code>/devlead awareness</code> to refresh. Hand-edits are overwritten on next refresh.  <strong>Last refresh:</strong> 2026-04-17T04:28:13Z <strong>Generator:</strong> devlead.awareness v1 <strong>Scan source:</strong> src/devlead/*.py (module docstrings + public API + deps)</blockquote>
+<hr>
+<h2>Modules</h2>
+<h3><code>devlead.audit</code></h3>
+<ul>
+<li><strong>Path:</strong> <code>src/devlead/audit.py</code></li>
+<li><strong>Purpose:</strong> DevLead audit log writer. Implements FEATURES-0010.</li>
+<li><strong>Lines:</strong> 70</li>
+<li><strong>Public API:</strong> <code>append_event, tail</code></li>
+<li><strong>Depends on:</strong> (stdlib only)</li>
+</ul>
+<h3><code>devlead.awareness</code></h3>
+<ul>
+<li><strong>Path:</strong> <code>src/devlead/awareness.py</code></li>
+<li><strong>Purpose:</strong> Self-awareness layer - generates <em>aware</em>*.md files from the codebase.</li>
+<li><strong>Lines:</strong> 240</li>
+<li><strong>Public API:</strong> <code>Feature, Module, ProjectSnapshot, scan, render_features, render_design, refresh</code></li>
+<li><strong>Depends on:</strong> (stdlib only)</li>
+</ul>
+<h3><code>devlead.bootstrap</code></h3>
+<ul>
+<li><strong>Path:</strong> <code>src/devlead/bootstrap.py</code></li>
+<li><strong>Purpose:</strong> Bootstrap — generate CLAUDE.md section 100% derived from devlead_docs/ files.</li>
+<li><strong>Lines:</strong> 223</li>
+<li><strong>Public API:</strong> <code>generate_section, write_claude_md, generate_session_context</code></li>
+<li><strong>Depends on:</strong> (stdlib only)</li>
+</ul>
+<h3><code>devlead.bridge</code></h3>
+<ul>
+<li><strong>Path:</strong> <code>src/devlead/bridge.py</code></li>
+<li><strong>Purpose:</strong> Plugin bridge - ingest a plugin plan OR a scratchpad entry into an intake file.</li>
+<li><strong>Lines:</strong> 301</li>
+<li><strong>Public API:</strong> <code>ingest, ingest_from_scratchpad, promote_to_living</code></li>
+<li><strong>Depends on:</strong> (stdlib only)</li>
+</ul>
+<h3><code>devlead.cli</code></h3>
+<ul>
+<li><strong>Path:</strong> <code>src/devlead/cli.py</code></li>
+<li><strong>Purpose:</strong> Command-line dispatch for DevLead.</li>
+<li><strong>Lines:</strong> 714</li>
+<li><strong>Public API:</strong> <code>main</code></li>
+<li><strong>Depends on:</strong> <code>devlead.install</code></li>
+</ul>
+<h3><code>devlead.config</code></h3>
+<ul>
+<li><strong>Path:</strong> <code>src/devlead/config.py</code></li>
+<li><strong>Purpose:</strong> DevLead config loader. Implements FEATURES-0009.</li>
+<li><strong>Lines:</strong> 130</li>
+<li><strong>Public API:</strong> <code>Config, load</code></li>
+<li><strong>Depends on:</strong> (stdlib only)</li>
+</ul>
+<h3><code>devlead.convergence</code></h3>
+<ul>
+<li><strong>Path:</strong> <code>src/devlead/convergence.py</code></li>
+<li><strong>Purpose:</strong> Convergence math layer for DevLead.</li>
+<li><strong>Lines:</strong> 190</li>
+<li><strong>Public API:</strong> <code>dot, norm, cosine, compute_g, compute_s, compute_C, compute_alpha, compute_phi, compute_epsilon, compute_gravity, compute_gram</code></li>
+<li><strong>Depends on:</strong> (stdlib only)</li>
+</ul>
+<h3><code>devlead.dashboard</code></h3>
+<ul>
+<li><strong>Path:</strong> <code>src/devlead/dashboard.py</code></li>
+<li><strong>Purpose:</strong> 10-tab project management dashboard. Static HTML, CSS-only tabs, no JavaScript.</li>
+<li><strong>Lines:</strong> 504</li>
+<li><strong>Public API:</strong> <code>generate, write_dashboard</code></li>
+<li><strong>Depends on:</strong> (stdlib only)</li>
+</ul>
+<h3><code>devlead.effort</code></h3>
+<ul>
+<li><strong>Path:</strong> <code>src/devlead/effort.py</code></li>
+<li><strong>Purpose:</strong> Effort tracking — record and aggregate per-TTO engineering attribution.</li>
+<li><strong>Lines:</strong> 135</li>
+<li><strong>Public API:</strong> <code>record_effort, get_tto_effort, get_tbo_effort, get_bo_effort, get_all_effort, summary</code></li>
+<li><strong>Depends on:</strong> (stdlib only)</li>
+</ul>
+<h3><code>devlead.gate</code></h3>
+<ul>
+<li><strong>Path:</strong> <code>src/devlead/gate.py</code></li>
+<li><strong>Purpose:</strong> DevLead Level-2 enforcement gate. Implements FEATURES-0004.</li>
+<li><strong>Lines:</strong> 248</li>
+<li><strong>Public API:</strong> <code>check_pretooluse, check_session_start, check_user_prompt, check_stop, check</code></li>
+<li><strong>Depends on:</strong> <code>devlead.bootstrap</code></li>
+</ul>
+<h3><code>devlead.hierarchy</code></h3>
+<ul>
+<li><strong>Path:</strong> <code>src/devlead/hierarchy.py</code></li>
+<li><strong>Purpose:</strong> Parse _project_hierarchy.md into a BO/TBO/TTO tree and compute convergence.</li>
+<li><strong>Lines:</strong> 306</li>
+<li><strong>Public API:</strong> <code>TTO, TBO, BO, Sprint, parse, coverage_score, tbo_coverage_score, traceability_score, convergence_breakdown, summary</code></li>
+<li><strong>Depends on:</strong> (stdlib only)</li>
+</ul>
+<h3><code>devlead.install</code></h3>
+<ul>
+<li><strong>Path:</strong> <code>src/devlead/install.py</code></li>
+<li><strong>Purpose:</strong> Install command - creates devlead_docs/ in a target project and copies scaffold templates.</li>
+<li><strong>Lines:</strong> 287</li>
+<li><strong>Public API:</strong> <code>InstallReport, install, install_addon</code></li>
+<li><strong>Depends on:</strong> <code>devlead.bootstrap</code></li>
+</ul>
+<h3><code>devlead.intake</code></h3>
+<ul>
+<li><strong>Path:</strong> <code>src/devlead/intake.py</code></li>
+<li><strong>Purpose:</strong> Intake file layer - read/write any <code><em>intake</em>*.md</code> file.</li>
+<li><strong>Lines:</strong> 297</li>
+<li><strong>Public API:</strong> <code>IntakeEntry, prefix_from_path, template_path_for, read, next_id, add_entry, find_entry, list_by_status, update_status</code></li>
+<li><strong>Depends on:</strong> (stdlib only)</li>
+</ul>
+<h3><code>devlead.kpi</code></h3>
+<ul>
+<li><strong>Path:</strong> <code>src/devlead/kpi.py</code></li>
+<li><strong>Purpose:</strong> KPI engine for DevLead v2. Implements TTO-006 under BO-001/TBO-003.</li>
+<li><strong>Lines:</strong> 399</li>
+<li><strong>Public API:</strong> <code>KpiResult, compute, record_session, summary</code></li>
+<li><strong>Depends on:</strong> (stdlib only)</li>
+</ul>
+<h3><code>devlead.metric_source</code></h3>
+<ul>
+<li><strong>Path:</strong> <code>src/devlead/metric_source.py</code></li>
+<li><strong>Purpose:</strong> Metric source adapter — manual mode for v1.</li>
+<li><strong>Lines:</strong> 123</li>
+<li><strong>Public API:</strong> <code>record_reading, read_history, read_latest, latest_values, apply_to_sprints</code></li>
+<li><strong>Depends on:</strong> (stdlib only)</li>
+</ul>
+<h3><code>devlead.migrate</code></h3>
+<ul>
+<li><strong>Path:</strong> <code>src/devlead/migrate.py</code></li>
+<li><strong>Purpose:</strong> DevLead content migration. Implements FEATURES-0006.</li>
+<li><strong>Lines:</strong> 266</li>
+<li><strong>Public API:</strong> <code>MigrationRecord, migrate, rollback, list_migrations</code></li>
+<li><strong>Depends on:</strong> (stdlib only)</li>
+</ul>
+<h3><code>devlead.project_init</code></h3>
+<ul>
+<li><strong>Path:</strong> <code>src/devlead/project_init.py</code></li>
+<li><strong>Purpose:</strong> project-init CLI — cold-start onboarding for a new DevLead project.</li>
+<li><strong>Lines:</strong> 292</li>
+<li><strong>Public API:</strong> <code>Question, interview, write_answers, hash_hierarchy, lock_hierarchy, generate_intake_from_ttos</code></li>
+<li><strong>Depends on:</strong> <code>devlead.hierarchy</code></li>
+</ul>
+<h3><code>devlead.promise_ledger</code></h3>
+<ul>
+<li><strong>Path:</strong> <code>src/devlead/promise_ledger.py</code></li>
+<li><strong>Purpose:</strong> Promise ledger — captures what each TTO promised vs what reality delivered.</li>
+<li><strong>Lines:</strong> 276</li>
+<li><strong>Public API:</strong> <code>append_promise, read_all, collect_bo_metrics, write_promises_for, run_realisation_sweep</code></li>
+<li><strong>Depends on:</strong> <code>devlead.hierarchy</code></li>
+</ul>
+<h3><code>devlead.report</code></h3>
+<ul>
+<li><strong>Path:</strong> <code>src/devlead/report.py</code></li>
+<li><strong>Purpose:</strong> Session report — plain-English HTML that a non-coder can read to verify what Claude did.</li>
+<li><strong>Lines:</strong> 333</li>
+<li><strong>Public API:</strong> <code>generate, write_report</code></li>
+<li><strong>Depends on:</strong> (stdlib only)</li>
+</ul>
+<h3><code>devlead.resume</code></h3>
+<ul>
+<li><strong>Path:</strong> <code>src/devlead/resume.py</code></li>
+<li><strong>Purpose:</strong> Auto-generate _resume.md from real project state. Not Claude's opinion.</li>
+<li><strong>Lines:</strong> 372</li>
+<li><strong>Public API:</strong> <code>generate, refresh</code></li>
+<li><strong>Depends on:</strong> (stdlib only)</li>
+</ul>
+<h3><code>devlead.scratchpad</code></h3>
+<ul>
+<li><strong>Path:</strong> <code>src/devlead/scratchpad.py</code></li>
+<li><strong>Purpose:</strong> Scratchpad helpers - read/append/iterate/convert entries in _scratchpad.md.</li>
+<li><strong>Lines:</strong> 307</li>
+<li><strong>Public API:</strong> <code>read, append_entry, iter_untriaged, get_entry, append_cross_reference, archive_promoted</code></li>
+<li><strong>Depends on:</strong> (stdlib only)</li>
+</ul>
+<h3><code>devlead.sot</code></h3>
+<ul>
+<li><strong>Path:</strong> <code>src/devlead/sot.py</code></li>
+<li><strong>Purpose:</strong> Source-of-truth (SOT) declaration blocks. Implements FEATURES-0005.</li>
+<li><strong>Lines:</strong> 183</li>
+<li><strong>Public API:</strong> <code>SotBlock, parse, parse_text, render, read_all</code></li>
+<li><strong>Depends on:</strong> (stdlib only)</li>
+</ul>
+<h3><code>devlead.verifier</code></h3>
+<ul>
+<li><strong>Path:</strong> <code>src/devlead/verifier.py</code></li>
+<li><strong>Purpose:</strong> Verify runner — runs every TTO verify: command and updates hierarchy checkboxes.</li>
+<li><strong>Lines:</strong> 112</li>
+<li><strong>Public API:</strong> <code>VerifyResult, run_all, update_hierarchy, summary</code></li>
+<li><strong>Depends on:</strong> (stdlib only)</li>
+</ul>
+<h3><code>devlead.verify</code></h3>
+<ul>
+<li><strong>Path:</strong> <code>src/devlead/verify.py</code></li>
+<li><strong>Purpose:</strong> Cross-reference verifier for devlead_docs/. Implements FEATURES-0008.</li>
+<li><strong>Lines:</strong> 170</li>
+<li><strong>Public API:</strong> <code>VerifyReport, verify_links</code></li>
+<li><strong>Depends on:</strong> (stdlib only)</li>
+</ul>
+<div class="footer">Auto-generated by <code>devlead render</code> on 2026-04-17 05:00 UTC · <a href="index.html">← back to index</a></div>
+</body>
+</html>

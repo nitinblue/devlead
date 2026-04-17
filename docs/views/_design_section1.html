@@ -1,0 +1,101 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Design Section1</title>
+<style>
+:root {
+  --bg: #0b0d10; --panel: #11151a; --line: #222a33;
+  --ink: #e6edf3; --ink-dim: #9aa7b3; --ink-faint: #6b7785;
+  --accent: #7ee787; --accent-2: #79c0ff;
+}
+* { box-sizing: border-box; }
+html, body { margin: 0; padding: 0; background: var(--bg); color: var(--ink);
+  font: 15px/1.55 ui-sans-serif, -apple-system, "Segoe UI", Roboto, Helvetica, Arial, sans-serif; }
+body { padding: 30px 40px; max-width: 960px; margin: 0 auto; }
+a { color: var(--accent-2); text-decoration: none; }
+a:hover { text-decoration: underline; }
+code { font-family: ui-monospace, "SF Mono", Menlo, Consolas, monospace; font-size: 13px;
+  background: #0a0d11; padding: 1px 5px; border-radius: 4px; border: 1px solid var(--line); }
+pre { background: #0a0d11; border: 1px solid var(--line); border-radius: 6px;
+  padding: 12px 14px; overflow-x: auto; font-family: ui-monospace, "SF Mono", Menlo, Consolas, monospace;
+  font-size: 13px; line-height: 1.5; }
+pre code { background: transparent; border: 0; padding: 0; }
+h1, h2, h3, h4 { letter-spacing: -0.01em; margin-top: 1.4em; margin-bottom: 0.4em; }
+h1 { font-size: 28px; border-bottom: 1px solid var(--line); padding-bottom: 8px; }
+h2 { font-size: 22px; }
+h3 { font-size: 17px; color: var(--ink); }
+h4 { font-size: 14px; color: var(--ink-dim); text-transform: uppercase; letter-spacing: 0.06em; }
+p { margin: 8px 0; }
+ul, ol { padding-left: 24px; }
+li { margin: 3px 0; }
+blockquote { border-left: 3px solid var(--accent-2); margin: 14px 0; padding: 6px 14px;
+  color: var(--ink-dim); background: #10161c; border-radius: 0 6px 6px 0; }
+hr { border: 0; border-top: 1px solid var(--line); margin: 22px 0; }
+.footer { margin-top: 48px; padding-top: 16px; border-top: 1px solid var(--line);
+  color: var(--ink-faint); font-size: 12px; }
+.footer a { color: var(--ink-faint); }
+</style>
+</head>
+<body>
+<h1>DevLead Design — Section 1: Install on Existing Project</h1>
+<blockquote>Status: LOCKED (2026-04-12) Dictated by: user Captured by: claude Next section: not yet dictated</blockquote>
+<h2>The use case</h2>
+<p>DevLead gets installed onto an existing, big project. Not greenfield. The project already has code, structure, maybe its own docs and history. DevLead has to bolt on without disturbing any of that.</p>
+<h2>What install does</h2>
+<p>Install creates all the scaffolding files in <code>devlead_docs/</code>. Nothing else in the project is touched.</p>
+<h2>The source-of-truth rule (the core rule)</h2>
+<p>From the moment install completes, <code>devlead_docs/</code> is the <strong>single, canonical source of truth</strong>. It is used in both directions:</p>
+<ul>
+<li><strong>Inbound</strong> — everything the model needs to know about what has to be done comes from <code>devlead_docs/</code>. Tasks, stories, roadmap, standing instructions, vision, business objectives — all of it lives here.</li>
+<li><strong>Outbound</strong> — everything the model does that matters (progress, completions, new intake items, findings) gets written back into <code>devlead_docs/</code>.</li>
+</ul>
+<p>There is no other system of record. No other place the model can read from or write to that counts as real.</p>
+<h2>LLM memory — a derived view, not a peer source</h2>
+<p>LLM memory (Claude Code's auto-memory, or any equivalent memory system the model uses) is <strong>not</strong> a peer source of truth. It is a <strong>derived view</strong> of <code>devlead_docs/</code>. Every piece of content in memory originates from <code>devlead_docs/</code> content — memory is effectively a cache of the canonical store.</p>
+<p>Practical consequences:</p>
+<ul>
+<li>The model cannot put something into memory that is not already in (or derived from) <code>devlead_docs/</code>.</li>
+<li>If <code>devlead_docs/</code> changes, memory gets refreshed from it.</li>
+<li>Memory is never authoritative on its own. If memory and <code>devlead_docs/</code> disagree, <code>devlead_docs/</code> wins.</li>
+</ul>
+<h2>Work origination — two paths</h2>
+<p>Work only enters the system in one of two ways:</p>
+<ol>
+<li><strong>Path A — Collaborative.</strong> The user works with Claude to define the work. User and model talk it through, decide what it is, write it down.</li>
+<li><strong>Path B — Autonomous.</strong> Claude identifies a gap, bug, or need, and creates the work item itself.</li>
+</ol>
+<p>Both paths end the same way: an intake item lands in <code>devlead_docs/</code>.</p>
+<h2>Mandatory ordering</h2>
+<p>Once an intake item exists, the lifecycle is strict:</p>
+<pre>intake item in devlead_docs/
+        ↓
+    planning (Claude plans the approach)
+        ↓
+plan converted into stories/tasks in devlead_docs/
+        ↓
+    coding (Claude implements the tasks)
+        ↓
+results written back into devlead_docs/</pre>
+<p><strong>Coding can only begin after the plan has been materialized into stories/tasks inside <code>devlead_docs/</code>.</strong> A plan that lives only in chat, or only in the model's head, is not permission to code. The plan must land on disk first.</p>
+<h2>The "no jumping the gun" rule</h2>
+<p>The model must have <strong>no way</strong> to jump the gun. This applies to:</p>
+<ul>
+<li><strong>File edits.</strong> The model cannot edit any code file without a matching open task in <code>devlead_docs/</code>.</li>
+<li><strong>Planning / discussing.</strong> The model cannot plan or discuss work that did not originate in the loop. Any detour must first surface as a new intake item in <code>devlead_docs/</code>.</li>
+<li><strong>Completion claims.</strong> The model cannot mark anything "done" except by updating <code>devlead_docs/</code>.</li>
+<li><strong>Memory writes.</strong> The model cannot put content into LLM memory that did not originate from <code>devlead_docs/</code>.</li>
+</ul>
+<h2>What this section does NOT yet define</h2>
+<ul>
+<li>How enforcement is implemented (hooks, gates, drift detection, UI, etc.).</li>
+<li>What the scaffolding file structure actually is (which files exist, their formats, their contents). This is part of a later section.</li>
+<li>What the install command looks like.</li>
+<li>How the user interacts with DevLead day-to-day.</li>
+<li>How memory gets refreshed from <code>devlead_docs/</code> in practice.</li>
+</ul>
+<p>These are all follow-on sections to be dictated by the user next.</p>
+<div class="footer">Auto-generated by <code>devlead render</code> on 2026-04-17 05:00 UTC · <a href="index.html">← back to index</a></div>
+</body>
+</html>

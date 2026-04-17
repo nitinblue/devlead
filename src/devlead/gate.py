@@ -208,6 +208,63 @@ def check_stop(hook_input: dict, repo_root: Path) -> dict:
     except Exception as e:
         results.append(f"session: error {e}")
 
+    # FEATURES-0020: auto-realisation sweep — check any promise-ledger rows
+    # whose window has expired and classify them via convergence math.
+    try:
+        from devlead import hierarchy, metric_source, promise_ledger
+        h_path = docs_dir / "_project_hierarchy.md"
+        if h_path.exists():
+            sprints = hierarchy.parse(h_path)
+            metric_source.apply_to_sprints(
+                docs_dir / metric_source.HISTORY_FILENAME, sprints,
+            )
+            sweep = promise_ledger.run_realisation_sweep(
+                docs_dir / promise_ledger.LEDGER_FILENAME, sprints,
+            )
+            if sweep["updated"]:
+                results.append(f"realisation: {sweep['updated']} promise(s) updated")
+            elif sweep["checked"]:
+                results.append(f"realisation: {sweep['checked']} checked, none ready")
+    except Exception as e:
+        results.append(f"realisation: error {e}")
+
+    # FEATURES-0020: stale-metric prompt — warn for any measurable BO whose
+    # latest reading is older than its window_days (or 7 days default).
+    try:
+        from devlead import hierarchy, metric_source, promise_ledger
+        from datetime import datetime, timezone, timedelta
+        h_path = docs_dir / "_project_hierarchy.md"
+        if h_path.exists():
+            sprints = hierarchy.parse(h_path)
+            history_path = docs_dir / metric_source.HISTORY_FILENAME
+            now = datetime.now(timezone.utc)
+            stale: list[str] = []
+            for s in sprints:
+                for bo in s.bos:
+                    if not bo.has_metric_source:
+                        continue
+                    latest = metric_source.read_latest(history_path, bo.id)
+                    if latest is None:
+                        stale.append(f"{bo.id}: no reading yet")
+                        continue
+                    ts = latest.get("ts", "")
+                    try:
+                        ts_parsed = datetime.fromisoformat(ts.replace("Z", "+00:00"))
+                    except (TypeError, ValueError):
+                        continue
+                    age = now - ts_parsed
+                    if age > timedelta(days=promise_ledger.DEFAULT_WINDOW_DAYS):
+                        stale.append(f"{bo.id}: {age.days}d old")
+            if stale:
+                results.append(f"stale metrics: {'; '.join(stale[:3])}")
+                print(
+                    f"DevLead: BOs with stale or missing metric readings — "
+                    f"run `devlead metric-update <BO-ID> <value>`: {'; '.join(stale)}",
+                    file=sys.stderr,
+                )
+    except Exception as e:
+        results.append(f"stale-check: error {e}")
+
     audit.append_event(docs_dir, "session_end", result="ok", details="; ".join(results))
     print(f"DevLead session close-out: {'; '.join(results)}", file=sys.stderr)
     return {"continue": True}

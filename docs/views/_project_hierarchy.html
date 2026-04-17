@@ -1,0 +1,336 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Project Hierarchy</title>
+<style>
+:root {
+  --bg: #0b0d10; --panel: #11151a; --line: #222a33;
+  --ink: #e6edf3; --ink-dim: #9aa7b3; --ink-faint: #6b7785;
+  --accent: #7ee787; --accent-2: #79c0ff;
+}
+* { box-sizing: border-box; }
+html, body { margin: 0; padding: 0; background: var(--bg); color: var(--ink);
+  font: 15px/1.55 ui-sans-serif, -apple-system, "Segoe UI", Roboto, Helvetica, Arial, sans-serif; }
+body { padding: 30px 40px; max-width: 960px; margin: 0 auto; }
+a { color: var(--accent-2); text-decoration: none; }
+a:hover { text-decoration: underline; }
+code { font-family: ui-monospace, "SF Mono", Menlo, Consolas, monospace; font-size: 13px;
+  background: #0a0d11; padding: 1px 5px; border-radius: 4px; border: 1px solid var(--line); }
+pre { background: #0a0d11; border: 1px solid var(--line); border-radius: 6px;
+  padding: 12px 14px; overflow-x: auto; font-family: ui-monospace, "SF Mono", Menlo, Consolas, monospace;
+  font-size: 13px; line-height: 1.5; }
+pre code { background: transparent; border: 0; padding: 0; }
+h1, h2, h3, h4 { letter-spacing: -0.01em; margin-top: 1.4em; margin-bottom: 0.4em; }
+h1 { font-size: 28px; border-bottom: 1px solid var(--line); padding-bottom: 8px; }
+h2 { font-size: 22px; }
+h3 { font-size: 17px; color: var(--ink); }
+h4 { font-size: 14px; color: var(--ink-dim); text-transform: uppercase; letter-spacing: 0.06em; }
+p { margin: 8px 0; }
+ul, ol { padding-left: 24px; }
+li { margin: 3px 0; }
+blockquote { border-left: 3px solid var(--accent-2); margin: 14px 0; padding: 6px 14px;
+  color: var(--ink-dim); background: #10161c; border-radius: 0 6px 6px 0; }
+hr { border: 0; border-top: 1px solid var(--line); margin: 22px 0; }
+.footer { margin-top: 48px; padding-top: 16px; border-top: 1px solid var(--line);
+  color: var(--ink-faint); font-size: 12px; }
+.footer a { color: var(--ink-faint); }
+</style>
+</head>
+<body>
+<h1>Project Hierarchy</h1>
+<!-- devlead:sot
+  purpose: "Sprint / BO / TBO / TTO work tree with change management"
+  owner: "user+claude"
+  canonical_for: ["work_hierarchy"]
+  lineage:
+    receives_from: ["_intake_*.md (via promotion)"]
+    migrates_to: []
+  lifetime: "permanent"
+  last_audit: "2026-04-16"
+-->
+<blockquote>Sequenced by dependency. Each week builds on the last. TTO checkboxes ONLY checked by DevLead verify runner, NEVER by Claude.</blockquote>
+<hr>
+<h2>Sprint 1 — DevLead Works For Real (Apr 16 - May 15)</h2>
+<h3>BO-001: The governance loop is closed — capture, track, enforce, verify, report (weight: 40)</h3>
+<ul>
+<li><strong>Acceptance:</strong> User says "build X" → DevLead captures it → creates intake entry → sets focus → Claude codes under gate enforcement → DevLead runs verify → dashboard shows truth. End to end. No human intervention needed except "build X."</li>
+<li><strong>start_date:</strong> 2026-04-16</li>
+<li><strong>end_date:</strong> 2026-04-28</li>
+<li><strong>actual_date:</strong> (pending)</li>
+<li><strong>revised_date:</strong> (none)</li>
+<li><strong>revision_justification:</strong> (none)</li>
+<li><strong>metric:</strong> fraction of Edit/Write events with cwi populated (intake trace)</li>
+<li><strong>baseline:</strong> 0.30</li>
+<li><strong>target:</strong> 0.95</li>
+<li><strong>metric_source:</strong> manual</li>
+<li><strong>current:</strong> 0.32</li>
+</ul>
+<h4>TBO-001: Week 1 — The enforcement foundation (weight: 30)</h4>
+<p>User can: trust that Claude cannot write code without a tracked work item DEPENDS ON: nothing (this is the base layer)</p>
+<ul>
+<li>[ ] TTO-001: Gate hard-blocks Edit/Write without intake focus — exit 2 (weight: 25) [functional]</li>
+</ul>
+<p>verify: devlead focus clear 2&gt;&amp;1 &gt; /dev/null &amp;&amp; echo '{"tool_name":"Edit","tool_input":{"file_path":"src/app.py"}}' | devlead gate PreToolUse 2&gt;/dev/null; test $? -eq 2</p>
+<ul>
+<li>[x] TTO-002: Every gate check logged to audit — pass, block, exempt (weight: 15) [functional]</li>
+</ul>
+<p>verify: wc -l devlead_docs/_audit_log.jsonl | awk '{exit ($1 &gt; 5 ? 0 : 1)}'</p>
+<ul>
+<li>[ ] TTO-003: UserPromptSubmit captures every message to scratchpad (weight: 20) [functional]</li>
+</ul>
+<p>verify: echo '{"prompt":"test message"}' | devlead gate UserPromptSubmit 2&gt;&amp;1 | grep -q "continue"</p>
+<ul>
+<li>[ ] TTO-004: UserPromptSubmit classifies intent and injects route (weight: 25) [functional]</li>
+</ul>
+<p>verify: echo '{"prompt":"implement a new feature"}' | devlead gate UserPromptSubmit 2&gt;&amp;1 | grep -q "routing"</p>
+<ul>
+<li>[x] TTO-005: Stop hook auto-runs resume + dashboard + record_session (weight: 15) [functional]</li>
+</ul>
+<p>verify: grep -q "Stop" .claude/settings.json</p>
+<h4>TBO-002: Week 1 — The truth layer (weight: 25)</h4>
+<p>User can: open one HTML file and see what's real vs what Claude claimed DEPENDS ON: TBO-001 (needs gate + audit data to report on)</p>
+<ul>
+<li>[ ] TTO-006: Dashboard 10 tabs all render without error (weight: 20) [functional]</li>
+</ul>
+<p>verify: devlead dashboard 2&gt;&amp;1 | grep -q "Dashboard"</p>
+<ul>
+<li>[x] TTO-007: Verify runner in dashboard runs every TTO verify command (weight: 30) [functional]</li>
+</ul>
+<p>verify: grep -q "Def of Done" docs/dashboard-*.html</p>
+<ul>
+<li>[x] TTO-008: CLAUDE.md 100% derived from devlead_docs — zero hardcoded strings (weight: 25) [functional]</li>
+</ul>
+<p>verify: grep -q "auto-generated from devlead_docs" CLAUDE.md</p>
+<ul>
+<li>[x] TTO-009: Resume auto-generated with convergence + next TTOs (weight: 25) [functional]</li>
+</ul>
+<p>verify: devlead resume &amp;&amp; grep -q "Auto-generated by DevLead" devlead_docs/_resume.md</p>
+<h4>TBO-003: Week 2 — The pipeline (weight: 25)</h4>
+<p>User can: go from raw idea to tracked work item in the hierarchy DEPENDS ON: TBO-001 (gate must work before pipeline matters)</p>
+<ul>
+<li>[x] TTO-010: Scratchpad → intake promotion with trace (weight: 20) [functional]</li>
+</ul>
+<p>verify: python -c "from devlead.bridge import ingest_from_scratchpad; print('ok')"</p>
+<ul>
+<li>[ ] TTO-011: Intake → hierarchy promotion command (weight: 35) [functional]</li>
+</ul>
+<p>verify: echo "not yet built"</p>
+<ul>
+<li>[ ] TTO-012: Verify runner checks TTO boxes — DevLead marks done, not Claude (weight: 30) [functional]</li>
+</ul>
+<p>verify: echo "not yet built"</p>
+<ul>
+<li>[ ] TTO-013: Convergence recomputed after verify runner updates checkboxes (weight: 15) [functional]</li>
+</ul>
+<p>verify: echo "not yet built"</p>
+<h4>TBO-004: Week 2 — The sync engine (weight: 20)</h4>
+<p>User can: change one file and dependent files auto-update DEPENDS ON: TBO-002 (CLAUDE.md derivation must work first)</p>
+<ul>
+<li>[ ] TTO-014: DAG propagation reads SOT receives_from/migrates_to (weight: 30) [functional]</li>
+</ul>
+<p>verify: echo "not yet built"</p>
+<ul>
+<li>[ ] TTO-015: Change _routing_table.md → CLAUDE.md auto-regenerates (weight: 25) [functional]</li>
+</ul>
+<p>verify: echo "not yet built"</p>
+<ul>
+<li>[ ] TTO-016: Change _project_hierarchy.md → _resume.md auto-regenerates (weight: 25) [functional]</li>
+</ul>
+<p>verify: echo "not yet built"</p>
+<ul>
+<li>[ ] TTO-017: K_DRIFT KPI tracks file sync violations (weight: 20) [functional]</li>
+</ul>
+<p>verify: echo "not yet built"</p>
+<h3>BO-002: DevLead knows when something is wrong before the user does (weight: 25)</h3>
+<ul>
+<li><strong>Acceptance:</strong> DevLead detects inconsistencies, stale files, missed deadlines, and rising bypass rates — and surfaces them proactively in the dashboard and resume, without being asked.</li>
+<li><strong>start_date:</strong> 2026-04-25</li>
+<li><strong>end_date:</strong> 2026-05-05</li>
+<li><strong>actual_date:</strong> (pending)</li>
+<li><strong>revised_date:</strong> (none)</li>
+<li><strong>revision_justification:</strong> (none)</li>
+</ul>
+<h4>TBO-005: Week 3 — Self-correction (weight: 35)</h4>
+<p>User can: trust DevLead to catch its own mistakes and propose fixes DEPENDS ON: BO-001 (governance loop must be closed first)</p>
+<ul>
+<li>[ ] TTO-018: devlead doctor — coherence check across all files (weight: 25) [functional]</li>
+</ul>
+<p>verify: echo "not yet built"</p>
+<ul>
+<li>[ ] TTO-019: K_INCONSISTENCY KPI — counts hierarchy vs foundations drift (weight: 25) [functional]</li>
+</ul>
+<p>verify: echo "not yet built"</p>
+<ul>
+<li>[ ] TTO-020: Stale <em>aware</em>*.md detected and flagged (weight: 20) [functional]</li>
+</ul>
+<p>verify: echo "not yet built"</p>
+<ul>
+<li>[ ] TTO-021: Session experience analysis — frustration signals from conversation (weight: 30) [functional]</li>
+</ul>
+<p>verify: echo "not yet built"</p>
+<h4>TBO-006: Week 3 — Deadline intelligence (weight: 30)</h4>
+<p>User can: see which BOs are at risk before they're overdue DEPENDS ON: TBO-003 (hierarchy must be populated)</p>
+<ul>
+<li>[x] TTO-022: Dashboard timeline shows days remaining per BO (weight: 25) [functional]</li>
+</ul>
+<p>verify: grep -q "Timeline" docs/dashboard-*.html</p>
+<ul>
+<li>[ ] TTO-023: Overdue BOs trigger change management in resume (weight: 35) [functional]</li>
+</ul>
+<p>verify: echo "not yet built"</p>
+<ul>
+<li>[x] TTO-024: BO on-time rate KPI computed from real dates (weight: 20) [functional]</li>
+</ul>
+<p>verify: devlead kpi 2&gt;&amp;1 | grep -q "BO on-time"</p>
+<ul>
+<li>[ ] TTO-025: Token burn rate alert — if trending up, flag in dashboard (weight: 20) [functional]</li>
+</ul>
+<p>verify: echo "not yet built"</p>
+<h4>TBO-007: Week 3 — Token economics (weight: 35)</h4>
+<p>User can: see exactly how many tokens were spent on what DEPENDS ON: TBO-001 (audit + effort tracking must be active)</p>
+<ul>
+<li>[ ] TTO-026: effort.record_effort() called on every code edit with TTO context (weight: 30) [functional]</li>
+</ul>
+<p>verify: echo "not yet built"</p>
+<ul>
+<li>[x] TTO-027: Dashboard tokens tab shows per-TTO spend (weight: 25) [functional]</li>
+</ul>
+<p>verify: grep -q "Token" docs/dashboard-*.html</p>
+<ul>
+<li>[x] TTO-028: Tokenomics KPI — cost per convergence point (weight: 25) [functional]</li>
+</ul>
+<p>verify: devlead kpi 2&gt;&amp;1 | grep -q "Tokenomics"</p>
+<ul>
+<li>[ ] TTO-029: Session history records tokens per session automatically (weight: 20) [functional]</li>
+</ul>
+<p>verify: echo "needs Stop hook from TTO-005"</p>
+<h3>BO-003: DevLead installs everywhere in 60 seconds (weight: 15)</h3>
+<ul>
+<li><strong>Acceptance:</strong> pip install devlead &amp;&amp; devlead init — works on Windows/Mac/Linux, generates the right config for Claude/Gemini/Cursor. Non-coder can do it.</li>
+<li><strong>start_date:</strong> 2026-05-01</li>
+<li><strong>end_date:</strong> 2026-05-08</li>
+<li><strong>actual_date:</strong> (pending)</li>
+<li><strong>revised_date:</strong> (none)</li>
+<li><strong>revision_justification:</strong> (none)</li>
+</ul>
+<h4>TBO-008: Week 4 — Packaging (weight: 40)</h4>
+<p>User can: install with one command DEPENDS ON: BO-001 + BO-002 (product must work before packaging)</p>
+<ul>
+<li>[ ] TTO-030: pip install devlead works clean (weight: 30) [functional]</li>
+</ul>
+<p>verify: pip show devlead 2&gt;&amp;1 | grep -q "Version"</p>
+<ul>
+<li>[ ] TTO-031: devlead init --llm claude/gemini/cursor/generic (weight: 30) [functional]</li>
+</ul>
+<p>verify: echo "not yet built"</p>
+<ul>
+<li>[ ] TTO-032: Idempotent re-run (weight: 20) [functional]</li>
+</ul>
+<p>verify: mkdir -p /tmp/dit &amp;&amp; devlead init /tmp/dit &amp;&amp; devlead init /tmp/dit 2&gt;&amp;1 | grep -q "replaced" &amp;&amp; rm -rf /tmp/dit</p>
+<ul>
+<li>[ ] TTO-033: Published on PyPI (weight: 20) [functional]</li>
+</ul>
+<p>verify: echo "requires publishing"</p>
+<h4>TBO-009: Week 4 — Documentation (weight: 35)</h4>
+<p>User can: self-serve from README to running in 5 minutes DEPENDS ON: TBO-008 (install must work first)</p>
+<ul>
+<li>[ ] TTO-034: README — pitch + install + what happens (weight: 30) [non-functional]</li>
+</ul>
+<p>verify: test -f README.md &amp;&amp; wc -l README.md | awk '{exit ($1 &gt; 30 ? 0 : 1)}'</p>
+<ul>
+<li>[x] TTO-035: User guide walkthrough (weight: 30) [non-functional]</li>
+</ul>
+<p>verify: test -f docs/USER_GUIDE.md</p>
+<ul>
+<li>[ ] TTO-036: Example session transcript (weight: 20) [non-functional]</li>
+</ul>
+<p>verify: test -f docs/example-session.md</p>
+<ul>
+<li>[x] TTO-037: Foundations page (already done) (weight: 20) [non-functional]</li>
+</ul>
+<p>verify: test -f docs/devlead-foundations.html</p>
+<h4>TBO-010: Week 4 — Multi-LLM (weight: 25)</h4>
+<p>User can: use DevLead with Gemini, Cursor, or any LLM DEPENDS ON: TBO-008 (init --llm flag)</p>
+<ul>
+<li>[ ] TTO-038: AGENTS.md generated for Gemini (weight: 30) [functional]</li>
+</ul>
+<p>verify: echo "not yet built"</p>
+<ul>
+<li>[ ] TTO-039: .cursorrules generated for Cursor (weight: 30) [functional]</li>
+</ul>
+<p>verify: echo "not yet built"</p>
+<ul>
+<li>[x] TTO-040: MD-only tier works without pip (weight: 20) [functional]</li>
+</ul>
+<p>verify: test -f devlead_docs/_routing_table.md</p>
+<ul>
+<li>[ ] TTO-041: Tested with Gemini CLI (weight: 20) [functional]</li>
+</ul>
+<p>verify: echo "requires manual test"</p>
+<h3>BO-004: First paying users (weight: 20)</h3>
+<ul>
+<li><strong>Acceptance:</strong> 5+ users install DevLead on real projects. At least 1 pays. Tokenomics shows ROI.</li>
+<li><strong>start_date:</strong> 2026-05-08</li>
+<li><strong>end_date:</strong> 2026-05-15</li>
+<li><strong>actual_date:</strong> (pending)</li>
+<li><strong>revised_date:</strong> (none)</li>
+<li><strong>revision_justification:</strong> (none)</li>
+</ul>
+<h4>TBO-011: Week 5 — Beta (weight: 40)</h4>
+<p>User can: install, use for 3 sessions, and give feedback DEPENDS ON: BO-003 (must be installable)</p>
+<ul>
+<li>[ ] TTO-042: 5 beta users recruited (weight: 25) [non-functional]</li>
+</ul>
+<p>verify: echo "requires Nitin"</p>
+<ul>
+<li>[ ] TTO-043: Each runs 3+ sessions with dashboard reports (weight: 25) [functional]</li>
+</ul>
+<p>verify: echo "requires beta data"</p>
+<ul>
+<li>[ ] TTO-044: Friction points cataloged and fixed within 48hrs (weight: 25) [functional]</li>
+</ul>
+<p>verify: echo "requires feedback tracking"</p>
+<ul>
+<li>[ ] TTO-045: 3 testimonials collected (weight: 25) [non-functional]</li>
+</ul>
+<p>verify: echo "requires user feedback"</p>
+<h4>TBO-012: Week 5 — Revenue (weight: 30)</h4>
+<p>User can: pay for DevLead and feel it's worth it DEPENDS ON: TBO-011 (must have beta validation)</p>
+<ul>
+<li>[ ] TTO-046: Free tier defined (MD-only) (weight: 25) [non-functional]</li>
+</ul>
+<p>verify: echo "requires pricing"</p>
+<ul>
+<li>[ ] TTO-047: Paid tier defined (Python-enhanced) (weight: 25) [non-functional]</li>
+</ul>
+<p>verify: echo "requires pricing"</p>
+<ul>
+<li>[x] TTO-048: GitHub repo public with license (weight: 25) [non-functional]</li>
+</ul>
+<p>verify: test -f LICENSE</p>
+<ul>
+<li>[ ] TTO-049: Launch post on 3 communities (weight: 25) [non-functional]</li>
+</ul>
+<p>verify: echo "requires Nitin"</p>
+<h4>TBO-013: Week 5 — Proof of ROI (weight: 30)</h4>
+<p>User can: see that DevLead saved them money DEPENDS ON: TBO-007 (token economics must work)</p>
+<ul>
+<li>[ ] TTO-050: Before/after token comparison in dashboard (weight: 35) [functional]</li>
+</ul>
+<p>verify: echo "not yet built"</p>
+<ul>
+<li>[x] TTO-051: Convergence trend proves projects finish (weight: 35) [functional]</li>
+</ul>
+<p>verify: devlead kpi 2&gt;&amp;1 | grep -q "Sprint convergence"</p>
+<ul>
+<li>[x] TTO-052: K_BYPASS trending down proves discipline improves (weight: 30) [functional]</li>
+</ul>
+<p>verify: devlead kpi 2&gt;&amp;1 | grep -q "K_BYPASS"</p>
+<hr>
+<h2>Sprint 2 — DevLead at Scale (deferred until Sprint 1 ships)</h2>
+<blockquote>BO-005 (Portfolio), BO-006 (Enterprise/Analytics) — documented in session 4 memory but deferred. See session4_complete_record.md for full TBO/TTO details. Do not start Sprint 2 until BO-004 is complete and revenue is flowing.</blockquote>
+<div class="footer">Auto-generated by <code>devlead render</code> on 2026-04-17 05:00 UTC · <a href="index.html">← back to index</a></div>
+</body>
+</html>

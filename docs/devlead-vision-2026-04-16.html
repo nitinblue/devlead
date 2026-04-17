@@ -95,6 +95,7 @@
   <button class="tab-btn" data-tab="shakeout">Technical capabilities — shaken out by a human dev lead</button>
   <button class="tab-btn" data-tab="convergence">Convergence — POC on DevLead itself</button>
   <button class="tab-btn" data-tab="trial">Trial run — <code>devlead project-init</code></button>
+  <button class="tab-btn" data-tab="freshlook">Fresh look — 2026-04-17 post-implementation</button>
 </nav>
 <style>
   .matrix { font-family: ui-monospace, "SF Mono", Menlo, Consolas, monospace; font-size: 13px; background: #0a0d11; border: 1px solid var(--line); border-radius: 8px; padding: 14px 16px; overflow-x: auto; white-space: pre; line-height: 1.6; }
@@ -434,12 +435,8 @@
       <p>A tool that ships 25 metrics in 4 categories has not decided which one matters. As a buyer I want 3: convergence %, on-time BO rate, and forced-origin count. Earn the rest. The 10-tab dashboard has the same disease — 7 tabs are anxiety, not insight. The dashboard should answer 3 questions: <em>what's done, what's blocked, what's at risk.</em></p>
     </div>
     <div class="card">
-      <h3>Convergence percentage as currently computed</h3>
-      <p>The user picks the TTO weights. So the convergence number is whatever the user wants it to be. Tab 4's math fixes this for projects that wire <code>metric_source:</code>, but the legacy weighted-tasks-done number lives on for any project that doesn't. Without independent benchmarking or weight-anchoring rules, the legacy number is decoration.</p>
-    </div>
-    <div class="card">
-      <h3>Effort tracking exists but isn't wired</h3>
-      <p>The <code>effort.py</code> module is real. <em>Nothing calls it.</em> Per-feature cost attribution is the killer feature for me as a buyer — and it's the one thing the doc does <strong>not</strong> emphasize, while the module that would deliver it sits dark. <strong>Tab 5 BO-3 wires it. Until then, vapor.</strong></p>
+      <h3>Convergence weights are still user-picked</h3>
+      <p>Math now real (FEATURES-0014, shipped 2026-04-17 — see Tab 6). But the user still picks BO weights, so the rolled-up convergence number is partly editable. Without weight-anchoring rules (e.g. "no single TTO &gt; 30%"), priority math reflects intent, not external truth. Earn this through case studies, not asserted defaults.</p>
     </div>
     <div class="card">
       <h3>Dogfood-only validation (32 TTOs, all internal)</h3>
@@ -471,7 +468,7 @@
   </table>
 
   <div class="callout">
-    <p><strong>Honest one-liner from inside the role:</strong> One genuinely novel mechanism (the PreToolUse brake), one feature my compliance officer would buy on its own (the audit log), one primitive that kills the worst failure mode in AI coding (the verifier), and a project-init flow that finally solves the blank-page onboarding problem. Wire effort tracking, ship a Cursor adapter, and produce one external case study (all in Tab 5 Phase 1) and I sign for a Team seat in Q3.</p>
+    <p><strong>Honest one-liner from inside the role (updated 2026-04-17):</strong> Now ships with one genuinely novel mechanism (PreToolUse brake), one compliance-grade feature (the audit log), one primitive that kills the worst failure mode (the verifier), a project-init flow that solves the blank-page onboarding problem, working convergence math with first real C(τ) computed, and effort attribution wired. <strong>Two of the three "buyer conversion" gates have closed in one day.</strong> Ship a Cursor adapter, produce one external case study, and I'd sign for a Team seat in Q3.</p>
   </div>
 
 </section>
@@ -611,7 +608,7 @@ Reading:
   </table>
 
   <div class="callout">
-    <p><strong>Bottom line.</strong> Five computed scalars over an intent matrix and a goal vector. The math caught a planning hole on day zero, ranked a non-functional TTO above single-axis features, exposed a silent mid-sprint conflict, and admitted the deadline was infeasible at full scope before week one. <strong>Tab 5 ships this end-to-end as Phase 1.</strong></p>
+    <p><strong>Bottom line.</strong> Five computed scalars over an intent matrix and a goal vector. <span class="chip good">Shipped 2026-04-17 as FEATURES-0014</span> in <code>src/devlead/convergence.py</code> (190 LOC, 40 tests, stdlib only). First real C(τ) = 3.1% computed on this repo's BO-001. <strong>See Tab 6 for the post-implementation honest re-look.</strong></p>
   </div>
 
 </section>
@@ -622,7 +619,16 @@ Reading:
   <h2>Trial run — <code>devlead project-init</code> on DevLead Phase 1</h2>
 
   <div class="callout">
-    <p><strong>What this tab is.</strong> The full <code>devlead project-init</code> experience, run on a real project: <strong>DevLead Phase 1 itself</strong>. No fictional Chrome extension. The free-form input is what an honest founder-engineer would dictate at 9pm. The BOs map directly to actual gaps surfaced in Tab 3 (effort tracking unwired, convergence math missing, single-tool dogfood, no external user). The convergence dashboard at the bottom is real-shaped, with numbers that reflect today's true baseline (zero on every axis).</p>
+    <p><strong>What this tab is.</strong> The full <code>devlead project-init</code> experience, run on a real project: <strong>DevLead Phase 1 itself</strong>. No fictional Chrome extension. The free-form input is what an honest founder-engineer would dictate at 9pm. The BOs map directly to actual gaps surfaced in Tab 3 (effort tracking unwired, convergence math missing, single-tool dogfood, no external user). The convergence dashboard at the bottom was a mockup when written; the live data now flows.</p>
+  </div>
+
+  <div class="callout warn">
+    <p><strong>Status as of 2026-04-17 (post-implementation):</strong>
+    <span class="chip good">BO-1 shipped</span> Convergence math (FEATURES-0014). C(τ) = 3.1% on BO-001, computed.
+    <span class="chip good">BO-2 shipped</span> project-init CLI (FEATURES-0015). Hash <code>e149c98e52c5</code> locked, 42 + 10 intake entries derived.
+    <span class="chip good">BO-3 shipped</span> Effort tracking wired (FEATURES-0016). First effort row written by the wiring edit itself.
+    <span class="chip warn">BO-4 pending</span> One external user end-to-end. Distribution work — see Tab 6 for the TBO breakdown.
+    <br><br>The trial below is preserved as the spec that drove the work. <strong>Tab 6 is the honest post-implementation re-look.</strong></p>
   </div>
 
   <div class="phase-banner"><strong>Phase 1 — Engineer talks. DevLead listens. No forms.</strong></div>
@@ -944,6 +950,163 @@ would make you call it a win?
 
 </section>
 
+
+
+<!-- ===================== TAB 6 ===================== -->
+<section class="tab" id="freshlook">
+
+  <h2>Fresh look — DevLead as it stands on 2026-04-17</h2>
+
+  <div class="callout">
+    <p><strong>Why this tab exists.</strong> Tabs 1–5 were written before any code shipped. This tab is the honest re-look after Phase 1 BO-1, BO-2, and BO-3 landed in a single working session: ~1,140 LOC across five new modules, 133 tests passing, the first real C(τ) computed, and session amnesia structurally cured. The earlier tabs remain as design baseline; this tab is the report card.</p>
+  </div>
+
+  <h2>What DevLead actually is on 2026-04-17</h2>
+
+  <p>A working Python CLI that:</p>
+  <ul>
+    <li><strong>Gates Claude Code's Edit/Write tool</strong> against an active intake entry. Real teeth, fully audited.</li>
+    <li><strong>Captures every code change to an audit log</strong> with cwi attribution. 2,200+ events accumulated.</li>
+    <li><strong>Computes convergence math</strong> (<code>C(τ), α, φ, ε, G</code>) over a hierarchy where BOs declare metrics. <strong>First real C(τ) = 3.1%</strong> computed on this repo's own BO-001.</li>
+    <li><strong>Records promises at verify-done</strong> (<code>_promise_ledger.jsonl</code>) and runs a realisation sweep at window expiry to classify work as <code>realised | partial | vapor</code>.</li>
+    <li><strong>Onboards a new project in 10 minutes</strong> via <code>devlead project-init</code> interview → answers file → Claude drafts → <code>lock</code> hashes → intake auto-generated.</li>
+    <li><strong>Auto-derives session hand-off</strong> in <code>_resume.md</code> so the next Claude session sees what just shipped, who was active on what, and what modules might be untracked dark code.</li>
+    <li><strong>Tracks engineering effort per intake entry</strong> by hooking <code>record_effort</code> into <code>gate.check_pretooluse</code>.</li>
+  </ul>
+
+  <p class="dim">~5,500 LOC of source. 133 tests. Stdlib only. Zero new dependencies added today.</p>
+
+  <h2>Honest pros and cons</h2>
+
+  <div class="grid cols-2">
+    <div class="card honest">
+      <h3>✓ What is genuinely real</h3>
+      <ul>
+        <li><strong>Anti-amnesia is structurally fixed.</strong> Next Claude session reads <code>_resume.md</code> and sees today's work. No more "starting from zero."</li>
+        <li><strong>Convergence math actually computes</strong> on a real BO with a real metric. Nothing else in this category does this.</li>
+        <li><strong>PreToolUse brake is real.</strong> AI literally can't edit without a focused intake.</li>
+        <li><strong>Audit log makes compliance possible.</strong> Append-only JSONL with cwi attribution.</li>
+        <li><strong>MD-driven core works without Python.</strong> Power lies in the files, not the tool.</li>
+        <li><strong>133 tests, stdlib only, no SaaS lock-in.</strong></li>
+      </ul>
+    </div>
+    <div class="card">
+      <h3>✗ What is still weak (said honestly)</h3>
+      <ul>
+        <li><strong>Single-tool.</strong> Only Claude Code is wired. Cursor / Aider users get nothing today.</li>
+        <li><strong>Single-user.</strong> You. No external validation. Every quoted number is dogfood.</li>
+        <li><strong>Convergence weights still user-picked</strong> ⇒ priority math can be gamed. Magnitude is honest, priority is editable.</li>
+        <li><strong>Dashboard hangs on <code>_tab_dod</code></strong> because verify commands run synchronously. Convergence panel works in isolation; full dashboard is broken (pre-existing bug, not introduced today).</li>
+        <li><strong>No PyPI release yet.</strong> Anyone wanting to install must <code>git clone</code> + <code>pip install -e .</code></li>
+        <li><strong>Many earlier promises still vapor</strong>: mind-map view, DAG propagation engine, marketplace, Cursor / Aider adapters.</li>
+      </ul>
+    </div>
+  </div>
+
+  <h2>What's realistic vs not</h2>
+
+  <h3>Realistic in 2–4 weeks (the BO-4 path)</h3>
+  <ul>
+    <li>PyPI publish + README polish + smoke <code>devlead init</code> on a fresh machine: <strong>2–3 days</strong>.</li>
+    <li>Recruit 1–2 external users via r/ClaudeAI + 5 cold DMs: <strong>5–10 calendar days</strong>.</li>
+    <li>Sustain them for 7 days with friction-fix loop: <strong>7 days + your responsiveness</strong>.</li>
+    <li>A working Cursor adapter: <strong>3–5 days</strong> (small surface area).</li>
+    <li>Stop-hook integration for auto-realisation sweep + stale metric prompts: <strong>30 min – 1 hour</strong>.</li>
+  </ul>
+
+  <h3>Realistic in 1–2 months</h3>
+  <ul>
+    <li>5–10 external users, of whom 2–3 produce a usable case study.</li>
+    <li>$10–50 MRR if you turn on the simplest paid tier (cloud-hosted dashboard URL).</li>
+    <li>Promote FEATURES-0014..0017 into the hierarchy as TTOs so convergence math runs on the work of building convergence.</li>
+  </ul>
+
+  <h3>Not realistic — kill the pretense</h3>
+  <ul>
+    <li><strong>$1k MRR in 30 days from a cold start.</strong> Tab 2's old number — keep it as a Phase-2 horizon, not a 30-day target.</li>
+    <li><strong>"Marketplace" anything.</strong> No buyer-demand signal yet.</li>
+    <li><strong>DAG propagation + mind-map view as v1 features.</strong> Each is 2–3 weeks of work and adds nothing until BO-4 ships.</li>
+    <li><strong>AI-drafts-the-hierarchy automatically.</strong> Today the user pastes a prompt to Claude. That's honest; auto-drafting requires API integration. Ship it after 5 external users prove the manual flow.</li>
+  </ul>
+
+  <h2>Next steps — concrete TBOs to land BO-4</h2>
+
+  <p>Three TBOs feed BO-4 (one external user end-to-end). Each is 3–5 TTOs. <strong>All three together close the entire remaining Phase 1 weight.</strong></p>
+
+  <div class="bo-card b1">
+    <strong>TBO-PHASE1-D — Public install path</strong> · ~3 engineering days
+    <div class="bo-meta">
+      <span><strong>Verify:</strong> <code>pip install devlead && cd /tmp/test && devlead init && devlead project-init</code> runs end-to-end without errors</span>
+    </div>
+    <ul>
+      <li><strong>TTO-D.1</strong> Cut <code>0.3.0</code> git tag, build via <code>python -m build</code>, push to PyPI via <code>twine upload</code></li>
+      <li><strong>TTO-D.2</strong> README polish — pitch line, 5-min quickstart, example <code>devlead project-init</code> flow</li>
+      <li><strong>TTO-D.3</strong> <code>devlead init</code> smoke-tested on a fresh tmp directory with no devlead state</li>
+      <li><strong>TTO-D.4</strong> (NF) <code>pip install devlead</code> produces a working binary on Python 3.11+ with no deps beyond stdlib</li>
+    </ul>
+  </div>
+
+  <div class="bo-card b2">
+    <strong>TBO-PHASE1-E — External recruitment</strong> · ~5 calendar days, ~3 hours of your time
+    <div class="bo-meta">
+      <span><strong>Verify:</strong> at least 1 non-Nitin user has run <code>devlead init</code> AND <code>devlead project-init</code> on their own project</span>
+    </div>
+    <ul>
+      <li><strong>TTO-E.1</strong> r/ClaudeAI post with worked example (the C(τ) = 3.1% screenshot is the hook)</li>
+      <li><strong>TTO-E.2</strong> Cold DM 5 indie hackers building AI-coded products (target: solo founders with public Claude Code usage)</li>
+      <li><strong>TTO-E.3</strong> Onboarding-call template (30-min Zoom, screen-share, run <code>devlead project-init</code> together)</li>
+      <li><strong>TTO-E.4</strong> (NF) Friction log — every wrinkle a new user hits goes into <code>_intake_friction.md</code> for next-day fix</li>
+    </ul>
+  </div>
+
+  <div class="bo-card b3">
+    <strong>TBO-PHASE1-F — 7-day adoption proof</strong> · ~10 calendar days
+    <div class="bo-meta">
+      <span><strong>Verify:</strong> day 7, the external user's project has a non-zero C(τ) computed from their own metric, and their <code>_resume.md</code> shows their own shipped work</span>
+    </div>
+    <ul>
+      <li><strong>TTO-F.1</strong> Daily check-in (Slack/email) with each external user — 5 min per user per day</li>
+      <li><strong>TTO-F.2</strong> Each friction-log entry gets a same-day or next-day fix</li>
+      <li><strong>TTO-F.3</strong> Capture the user's <code>_resume.md</code> and convergence dashboard at day 7</li>
+      <li><strong>TTO-F.4</strong> (NF) User must have declared at least one BO with a real <code>metric_source</code>. If they refuse, that's a product-message failure to debug, not a user failure</li>
+    </ul>
+  </div>
+
+  <h3>Three orthogonal small TBOs (opportunistic, hours-not-days each)</h3>
+
+  <table>
+    <thead><tr><th>TBO</th><th>Estimate</th><th>Value</th></tr></thead>
+    <tbody>
+      <tr>
+        <td><strong>TBO-G — Stop-hook integration</strong></td>
+        <td>30 min</td>
+        <td>Wire <code>realisation-sweep</code> + metric-staleness prompts into existing Stop hook so users don't have to remember CLI commands</td>
+      </tr>
+      <tr>
+        <td><strong>TBO-H — Promote FEATURES-0014..0017 → hierarchy</strong></td>
+        <td>1 hour</td>
+        <td>Closes the self-referential loop so convergence math runs on the very work of building convergence (the chicken-and-egg from earlier sessions)</td>
+      </tr>
+      <tr>
+        <td><strong>TBO-I — <code>_tab_dod</code> dashboard fix</strong></td>
+        <td>1 hour</td>
+        <td>Kill the verify-runs-synchronously hang so the full dashboard generates cleanly (currently only the convergence panel renders in isolation)</td>
+      </tr>
+    </tbody>
+  </table>
+
+  <h2>Recommendation</h2>
+
+  <div class="callout">
+    <p><strong>Lock TBO-PHASE1-D today. Start TBO-PHASE1-E this week.</strong> Those two together close BO-4's pure-engineering and recruitment paths. TBO-PHASE1-F is the 7-day measurement window after.</p>
+    <p>The doc cleanup (deleting trash cards, trimming Tab 4) is worth doing but lower priority — the doc is a reference, the user-facing reality is the CLI. Reality matters more than the marketing doc right now.</p>
+  </div>
+
+  <h3>Honest one-liner from outside the role</h3>
+
+  <p class="dim">A workable category-defining tool now exists. The math layer is real, anti-amnesia is structurally cured, the brake actually brakes. What's missing is exactly what it's always been missing: someone besides the founder using it. The next 2–4 weeks decide whether this becomes a product or stays a self-portrait. Tab 5 is the spec; this tab is where we are; the work between now and the first external user is what counts.</p>
+
+</section>
 
 </main>
 

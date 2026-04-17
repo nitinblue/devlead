@@ -1,0 +1,696 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Intake Features</title>
+<style>
+:root {
+  --bg: #0b0d10; --panel: #11151a; --line: #222a33;
+  --ink: #e6edf3; --ink-dim: #9aa7b3; --ink-faint: #6b7785;
+  --accent: #7ee787; --accent-2: #79c0ff;
+}
+* { box-sizing: border-box; }
+html, body { margin: 0; padding: 0; background: var(--bg); color: var(--ink);
+  font: 15px/1.55 ui-sans-serif, -apple-system, "Segoe UI", Roboto, Helvetica, Arial, sans-serif; }
+body { padding: 30px 40px; max-width: 960px; margin: 0 auto; }
+a { color: var(--accent-2); text-decoration: none; }
+a:hover { text-decoration: underline; }
+code { font-family: ui-monospace, "SF Mono", Menlo, Consolas, monospace; font-size: 13px;
+  background: #0a0d11; padding: 1px 5px; border-radius: 4px; border: 1px solid var(--line); }
+pre { background: #0a0d11; border: 1px solid var(--line); border-radius: 6px;
+  padding: 12px 14px; overflow-x: auto; font-family: ui-monospace, "SF Mono", Menlo, Consolas, monospace;
+  font-size: 13px; line-height: 1.5; }
+pre code { background: transparent; border: 0; padding: 0; }
+h1, h2, h3, h4 { letter-spacing: -0.01em; margin-top: 1.4em; margin-bottom: 0.4em; }
+h1 { font-size: 28px; border-bottom: 1px solid var(--line); padding-bottom: 8px; }
+h2 { font-size: 22px; }
+h3 { font-size: 17px; color: var(--ink); }
+h4 { font-size: 14px; color: var(--ink-dim); text-transform: uppercase; letter-spacing: 0.06em; }
+p { margin: 8px 0; }
+ul, ol { padding-left: 24px; }
+li { margin: 3px 0; }
+blockquote { border-left: 3px solid var(--accent-2); margin: 14px 0; padding: 6px 14px;
+  color: var(--ink-dim); background: #10161c; border-radius: 0 6px 6px 0; }
+hr { border: 0; border-top: 1px solid var(--line); margin: 22px 0; }
+.footer { margin-top: 48px; padding-top: 16px; border-top: 1px solid var(--line);
+  color: var(--ink-faint); font-size: 12px; }
+.footer a { color: var(--ink-faint); }
+</style>
+</head>
+<body>
+<h1>_intake_features.md</h1>
+<!-- devlead:sot
+  purpose: "Captured feature requests awaiting promotion to hierarchy"
+  owner: "claude"
+  canonical_for: ["feature_intake"]
+  lineage:
+    receives_from: ["_scratchpad.md", "plugin plans (superpowers etc.)"]
+    migrates_to: ["_project_hierarchy.md"]
+  lifetime: "permanent"
+  last_audit: "2026-04-15"
+-->
+<blockquote><strong>Intake file.</strong> Captured feature requests awaiting promotion to the <code>Sprint -&gt; BO -&gt; TBO -&gt; TTO</code> hierarchy in <code>_project_hierarchy.md</code>.  <strong>Flow:</strong> <code>_scratchpad.md</code> (raw note) -&gt; <code>/devlead triage</code> -&gt; plugin planning flow (e.g. superpowers brainstorming + writing-plans) -&gt; <code>/devlead ingest &lt;plan&gt; --into _intake_features.md</code> -&gt; this file -&gt; promotion to <code>_project_hierarchy.md</code>.  <strong>ID prefix:</strong> derived from the filename slug. <code>_intake_features.md</code> -&gt; <code>FEATURES-NNNN</code>. You can create additional intake files with any slug (<code>_intake_security.md</code> -&gt; <code>SECURITY-NNNN</code>); DevLead recognizes any file matching <code><em>intake</em>*.md</code>.  <strong>Template:</strong> all intake files use <code>_intake_templates/default.md</code> in v1. As more templates ship, users will pick which template an intake file uses.</blockquote>
+<hr>
+<h2>Entries</h2>
+<p><em>(No features captured yet. Run <code>/devlead ingest &lt;plan&gt; --into _intake_features.md</code> to add the first entry.)</em></p>
+<h2>FEATURES-0001 - Scratchpad to intake conversion + dev-work discipline</h2>
+<ul>
+<li><strong>Source:</strong> scratchpad:2026-04-14-scratchpad-to-intake-conversion-dev-work-discipline</li>
+<li><strong>Captured:</strong> 2026-04-15T02:05:42Z</li>
+<li><strong>Summary:</strong> &gt; Last feature before Nitin freezes dev work to shake-the-tree test DevLead &gt; on itself. Two pieces:</li>
+<li><strong>Actionable items:</strong>
+<ul>
+<li>(none)</li>
+</ul></li>
+<li><strong>Proposed BO:</strong> (needs BO)</li>
+<li><strong>Proposed Sprint:</strong> (needs sprint)</li>
+<li><strong>Proposed weight:</strong> (needs weight)</li>
+<li><strong>Status:</strong> done</li>
+<li><strong>Origin:</strong> forced</li>
+<li><strong>Promoted to:</strong> (pending)</li>
+<li><strong>Promoted at:</strong> (pending)</li>
+</ul>
+<h2>FEATURES-0002 - Self-awareness framework (reduce CLAUDE.md reliance)</h2>
+<ul>
+<li><strong>Source:</strong> scratchpad:2026-04-14-self-awareness-framework-reduce-claude-md-reliance</li>
+<li><strong>Captured:</strong> 2026-04-15T02:05:42Z</li>
+<li><strong>Summary:</strong> &gt; Nitin dictated a new in-built DevLead feature: projects running on DevLead &gt; should become <strong>self-aware</strong>. Start slow. Eventually: DevLead knows the &gt; technical design, patterns used, KPIs per feature, and every behavior &gt; DevLead introdu</li>
+<li><strong>Actionable items:</strong>
+<ul>
+<li>(none)</li>
+</ul></li>
+<li><strong>Proposed BO:</strong> (needs BO)</li>
+<li><strong>Proposed Sprint:</strong> (needs sprint)</li>
+<li><strong>Proposed weight:</strong> (needs weight)</li>
+<li><strong>Status:</strong> done</li>
+<li><strong>Origin:</strong> normal</li>
+<li><strong>Promoted to:</strong> (pending)</li>
+<li><strong>Promoted at:</strong> (pending)</li>
+</ul>
+<h2>FEATURES-0003 - Memory cohesion and enforcement design analysis (depth phase kickoff)</h2>
+<ul>
+<li><strong>Source:</strong> scratchpad:2026-04-14-memory-cohesion-and-enforcement-design-analysis-depth-phase-kickoff</li>
+<li><strong>Captured:</strong> 2026-04-15T02:26:40Z</li>
+<li><strong>Summary:</strong> &gt; Nitin called development freeze after Session 3. Pivot from breadth (new &gt; features) to depth (cohesiveness, tightness, flexibility, configurability, &gt; agility, gracefulness). Two phase objectives: &gt; &gt; 1. Memory model cohesion: clutter-le</li>
+<li><strong>Actionable items:</strong>
+<ul>
+<li>[x] Audit every file in devlead_docs/ for purpose, owner, lifetime, status</li>
+<li>[x] Identify all leakage points (duplications, contradictions, stale content)</li>
+<li>[x] Map full content lineage (where info enters, transforms, exits)</li>
+<li>[x] Propose source-of-truth declaration block pattern</li>
+<li>[x] Propose lineage metadata extension for all file types</li>
+<li>[x] Propose migration protocol with zero-loss guarantee</li>
+<li>[x] Propose _resume.md bloat discipline with cap + migration nudges</li>
+<li>[x] Enumerate enforcement override levels 0-5 with tradeoffs</li>
+<li>[x] Recommend v1 enforcement mechanism (hook-based systemMessage, Level 2)</li>
+<li>[x] Design CWI (current working intake) tracking mechanism</li>
+<li>[x] Draft devlead.yml config surface for memory + enforcement + audit</li>
+<li>[x] Design audit log schema and /devlead audit subcommand</li>
+<li>[x] Produce comprehensive HTML analysis document for user review</li>
+<li>[x] List open questions for Nitin to answer before implementation begins</li>
+</ul></li>
+<li><strong>Proposed BO:</strong> (needs BO)</li>
+<li><strong>Proposed Sprint:</strong> (needs sprint)</li>
+<li><strong>Proposed weight:</strong> (needs weight)</li>
+<li><strong>Status:</strong> done</li>
+<li><strong>Origin:</strong> forced</li>
+<li><strong>Promoted to:</strong> (pending)</li>
+<li><strong>Promoted at:</strong> (pending)</li>
+</ul>
+<h2>FEATURES-0004 - Level-2 enforcement gate (devlead gate PreToolUse)</h2>
+<ul>
+<li><strong>Source:</strong> docs/memory_and_enforcement_design_2026-04-14.html#recommend</li>
+<li><strong>Captured:</strong> 2026-04-15T04:00:00Z</li>
+<li><strong>Summary:</strong> Ship the Level-2 enforcement gate designed in FEATURES-0003 HTML §6. Hook-invoked script reads stdin JSON, checks for an in_progress intake entry, writes an audit event, and returns a systemMessage nudge. Never blocks by default. Backs CLAUDE.md discipline rule with a programmatic signal.</li>
+<li><strong>Actionable items:</strong>
+<ul>
+<li>[x] Create src/devlead/gate.py with check_pretooluse(hook_input) -&gt; dict</li>
+<li>[x] Wire <code>devlead gate &lt;HookName&gt;</code> subcommand in cli.py (stdin JSON in, stdout JSON out)</li>
+<li>[x] Read in_progress intake entries via intake.list_by_status as the CWI equivalent</li>
+<li>[x] Default exempt paths: devlead_docs/<strong>, docs/</strong>, *.md, commands/<strong>, tests/</strong></li>
+<li>[x] Warn-only mode always; never exit non-zero in v1</li>
+<li>[x] Do NOT auto-wire .claude/settings.json hook — user opts in manually</li>
+<li>[x] Update CLAUDE.md to reference devlead gate as the discipline signal source</li>
+</ul></li>
+<li><strong>Proposed BO:</strong> (needs BO)</li>
+<li><strong>Proposed Sprint:</strong> (needs sprint)</li>
+<li><strong>Proposed weight:</strong> (needs weight)</li>
+<li><strong>Status:</strong> done</li>
+<li><strong>Origin:</strong> forced</li>
+<li><strong>Promoted to:</strong> (pending)</li>
+<li><strong>Promoted at:</strong> (pending)</li>
+</ul>
+<h2>FEATURES-0005 - SOT declaration blocks (Proposal A)</h2>
+<ul>
+<li><strong>Source:</strong> docs/memory_and_enforcement_design_2026-04-14.html#tighten (Proposal A)</li>
+<li><strong>Captured:</strong> 2026-04-15T04:00:00Z</li>
+<li><strong>Summary:</strong> Every devlead_docs/ file opens with a structured SOT block (purpose, owner, canonical_for, lineage, lifetime, bloat_cap_lines, last_audit). Parsed by new src/devlead/sot.py. Closes leaks L5 (_living vs _aware confusion), L9 (no lifecycle semantics).</li>
+<li><strong>Actionable items:</strong>
+<ul>
+<li>[x] Create src/devlead/sot.py with parse(path) and read_all(docs_dir)</li>
+<li>[x] Define SOT block format (HTML comment wrapping YAML-ish key/value lines)</li>
+<li>[x] Backfill SOT blocks into every existing scaffold template (src/devlead/scaffold/*.tmpl)</li>
+<li>[x] Backfill SOT blocks into every existing devlead_docs/*.md in this repo</li>
+<li>[ ] Add /devlead sot list|check command for inspection (deferred — CLI wiring is follow-up)</li>
+</ul></li>
+<li><strong>Proposed BO:</strong> (needs BO)</li>
+<li><strong>Proposed Sprint:</strong> (needs sprint)</li>
+<li><strong>Proposed weight:</strong> (needs weight)</li>
+<li><strong>Status:</strong> done</li>
+<li><strong>Origin:</strong> forced</li>
+<li><strong>Promoted to:</strong> (pending)</li>
+<li><strong>Promoted at:</strong> (pending)</li>
+</ul>
+<h2>FEATURES-0006 - Migration protocol /devlead migrate (Proposal C)</h2>
+<ul>
+<li><strong>Source:</strong> docs/memory_and_enforcement_design_2026-04-14.html#tighten (Proposal C)</li>
+<li><strong>Captured:</strong> 2026-04-15T04:00:00Z</li>
+<li><strong>Summary:</strong> Hash-checked, reversible content migration between files with zero-loss guarantee. Always strict mode — information loss is unrecoverable. Replaces the manual one-off archive approach used in Session 3.</li>
+<li><strong>Actionable items:</strong>
+<ul>
+<li>[x] Create src/devlead/migrate.py with migrate(src_section, dest_file) and rollback</li>
+<li>[x] Hash-check: destination must already contain matching content before removal</li>
+<li>[x] Append every migration to devlead_docs/_migration_log.jsonl</li>
+<li>[x] Wire /devlead migrate, /devlead migrate rollback &lt;id&gt;, /devlead migrate list in cli.py</li>
+<li>[x] Update commands/migrate.md</li>
+</ul></li>
+<li><strong>Proposed BO:</strong> (needs BO)</li>
+<li><strong>Proposed Sprint:</strong> (needs sprint)</li>
+<li><strong>Proposed weight:</strong> (needs weight)</li>
+<li><strong>Status:</strong> done</li>
+<li><strong>Origin:</strong> forced</li>
+<li><strong>Promoted to:</strong> (pending)</li>
+<li><strong>Promoted at:</strong> (pending)</li>
+</ul>
+<h2>FEATURES-0007 - Lineage metadata on intake entries (Proposal B)</h2>
+<ul>
+<li><strong>Source:</strong> docs/memory_and_enforcement_design_2026-04-14.html#tighten (Proposal B)</li>
+<li><strong>Captured:</strong> 2026-04-15T04:00:00Z</li>
+<li><strong>Summary:</strong> Extend IntakeEntry with derived_from, descendants, supersedes fields. Enables graph walks and supersession tracking across intake/scratchpad/hierarchy nodes.</li>
+<li><strong>Actionable items:</strong>
+<ul>
+<li>[x] Add derived_from, descendants, supersedes fields to intake.IntakeEntry</li>
+<li>[x] Update intake.py serializer/parser to round-trip the new fields</li>
+<li>[x] Update _intake_templates/default.md to include the new fields</li>
+<li>[x] Populate automatically at ingest where possible (scratchpad entry -&gt; derived_from)</li>
+</ul></li>
+<li><strong>Proposed BO:</strong> (needs BO)</li>
+<li><strong>Proposed Sprint:</strong> (needs sprint)</li>
+<li><strong>Proposed weight:</strong> (needs weight)</li>
+<li><strong>Status:</strong> done</li>
+<li><strong>Origin:</strong> forced</li>
+<li><strong>Promoted to:</strong> (pending)</li>
+<li><strong>Promoted at:</strong> (pending)</li>
+</ul>
+<h2>FEATURES-0008 - /devlead verify-links cross-reference walker</h2>
+<ul>
+<li><strong>Source:</strong> docs/memory_and_enforcement_design_2026-04-14.html#tighten (Proposal B follow-up, closes L10)</li>
+<li><strong>Captured:</strong> 2026-04-15T04:00:00Z</li>
+<li><strong>Summary:</strong> Walk every cross-reference in devlead_docs/ (intake source fields, scratchpad cross-ref lines, hierarchy parent pointers, SOT lineage blocks). Report broken refs, orphans, dangling promotions. Writes to audit log.</li>
+<li><strong>Actionable items:</strong>
+<ul>
+<li>[x] Create src/devlead/verify.py with verify_links(docs_dir)</li>
+<li>[x] Build reference graph: intake.source, scratchpad promoted-to, SOT lineage.receives_from/migrates_to</li>
+<li>[x] Detect broken refs (target missing) and orphans (not referenced by anyone)</li>
+<li>[x] Wire /devlead verify-links in cli.py</li>
+<li>[x] Emit audit events (verify_pass, verify_broken, verify_orphan)</li>
+</ul></li>
+<li><strong>Proposed BO:</strong> (needs BO)</li>
+<li><strong>Proposed Sprint:</strong> (needs sprint)</li>
+<li><strong>Proposed weight:</strong> (needs weight)</li>
+<li><strong>Status:</strong> done</li>
+<li><strong>Origin:</strong> forced</li>
+<li><strong>Promoted to:</strong> (pending)</li>
+<li><strong>Promoted at:</strong> (pending)</li>
+</ul>
+<h2>FEATURES-0009 - devlead.toml config loader (stdlib tomllib)</h2>
+<ul>
+<li><strong>Source:</strong> docs/memory_and_enforcement_design_2026-04-14.html#config</li>
+<li><strong>Captured:</strong> 2026-04-15T04:00:00Z</li>
+<li><strong>Summary:</strong> Single config surface at repo root. Loaded via stdlib tomllib (zero dep). Every knob in the design doc maps to a TOML section (memory, enforcement, audit, intake, bridge, kpis). Defaults live in code; TOML overrides.</li>
+<li><strong>Actionable items:</strong>
+<ul>
+<li>[x] Create src/devlead/config.py with load(repo_root) -&gt; Config</li>
+<li>[x] Define defaults dict in code; tomllib parses devlead.toml if present</li>
+<li>[x] Ship devlead.toml.tmpl in scaffold with commented-out defaults</li>
+<li>[x] Make gate.py, migrate.py, audit.py all read config through this module</li>
+<li>[x] Wire /devlead config show subcommand for inspection</li>
+</ul></li>
+<li><strong>Proposed BO:</strong> (needs BO)</li>
+<li><strong>Proposed Sprint:</strong> (needs sprint)</li>
+<li><strong>Proposed weight:</strong> (needs weight)</li>
+<li><strong>Status:</strong> done</li>
+<li><strong>Origin:</strong> forced</li>
+<li><strong>Promoted to:</strong> (pending)</li>
+<li><strong>Promoted at:</strong> (pending)</li>
+</ul>
+<h2>FEATURES-0010 - Audit log writes from all commands</h2>
+<ul>
+<li><strong>Source:</strong> docs/memory_and_enforcement_design_2026-04-14.html#audit</li>
+<li><strong>Captured:</strong> 2026-04-15T04:00:00Z</li>
+<li><strong>Summary:</strong> _audit_log.jsonl ships empty today. Every command (ingest, promote, focus, awareness, gate, migrate) should append a structured event. Schema locked per HTML §8.1.</li>
+<li><strong>Actionable items:</strong>
+<ul>
+<li>[x] Create src/devlead/audit.py with append_event(docs_dir, event_dict)</li>
+<li>[x] Lock schema: ts, event, tool, cwi, intake_id, source, origin, result, message</li>
+<li>[x] Add audit.append_event calls in bridge.ingest, bridge.ingest_from_scratchpad, bridge.promote_to_living, cli._cmd_focus, awareness.refresh</li>
+<li>[x] Add /devlead audit recent [N] inspection subcommand</li>
+<li>[x] Unit test that each command writes exactly one event per invocation</li>
+</ul></li>
+<li><strong>Proposed BO:</strong> (needs BO)</li>
+<li><strong>Proposed Sprint:</strong> (needs sprint)</li>
+<li><strong>Proposed weight:</strong> (needs weight)</li>
+<li><strong>Status:</strong> done</li>
+<li><strong>Origin:</strong> forced</li>
+<li><strong>Promoted to:</strong> (pending)</li>
+<li><strong>Promoted at:</strong> (pending)</li>
+</ul>
+<h2>FEATURES-0011 - Scratchpad archival rule (L8, Q7)</h2>
+<ul>
+<li><strong>Source:</strong> docs/memory_and_enforcement_design_2026-04-14.html#leaks (L8 + Q7)</li>
+<li><strong>Captured:</strong> 2026-04-15T04:00:00Z</li>
+<li><strong>Summary:</strong> Scratchpad entries never retire even after promotion. Add rule: entries with a &gt; Promoted: cross-reference can be archived to _scratchpad_archive.md after configurable grace (default 1 Sprint). Closes L8 and answers Q7.</li>
+<li><strong>Actionable items:</strong>
+<ul>
+<li>[x] Add scratchpad.archive_promoted(path, grace_days) helper</li>
+<li>[x] Write archived entries to devlead_docs/_scratchpad_archive.md with timestamp</li>
+<li>[x] Wire /devlead scratchpad archive subcommand</li>
+<li>[ ] Config knob: memory.scratchpad_archive_after_sprints in devlead.toml</li>
+<li>[x] Never archive entries still referenced by in_progress intake entries</li>
+</ul></li>
+<li><strong>Proposed BO:</strong> (needs BO)</li>
+<li><strong>Proposed Sprint:</strong> (needs sprint)</li>
+<li><strong>Proposed weight:</strong> (needs weight)</li>
+<li><strong>Status:</strong> done</li>
+<li><strong>Origin:</strong> forced</li>
+<li><strong>Promoted to:</strong> (pending)</li>
+<li><strong>Promoted at:</strong> (pending)</li>
+</ul>
+<h2>FEATURES-0012 - Lazy living-file creation (L11)</h2>
+<ul>
+<li><strong>Source:</strong> docs/memory_and_enforcement_design_2026-04-14.html#leaks (L11)</li>
+<li><strong>Captured:</strong> 2026-04-15T04:00:00Z</li>
+<li><strong>Summary:</strong> Eight of nine <em>living</em>*.md files ship as empty placeholders. Install feels like busywork. Ship only _living_project.md + _living_standing_instructions.md + _living_decisions.md. Others created on demand via /devlead init --add &lt;slug&gt;.</li>
+<li><strong>Actionable items:</strong>
+<ul>
+<li>[x] Reduce SCAFFOLD_FILES in install.py to the three essential <em>living</em>*.md</li>
+<li>[ ] Implement /devlead init --add &lt;slug&gt; for on-demand creation (deferred — install_addon() helper shipped; CLI wiring is follow-up)</li>
+<li>[x] Keep the removed templates available in scaffold/ so --add can find them</li>
+<li>[x] Update commands/init.md</li>
+</ul></li>
+<li><strong>Proposed BO:</strong> (needs BO)</li>
+<li><strong>Proposed Sprint:</strong> (needs sprint)</li>
+<li><strong>Proposed weight:</strong> (needs weight)</li>
+<li><strong>Status:</strong> done</li>
+<li><strong>Origin:</strong> forced</li>
+<li><strong>Promoted to:</strong> (pending)</li>
+<li><strong>Promoted at:</strong> (pending)</li>
+</ul>
+<h2>FEATURES-0013 - Shake-the-tree dogfood test (Session 4 planned)</h2>
+<ul>
+<li><strong>Source:</strong> devlead_docs/_resume.md#next-action</li>
+<li><strong>Captured:</strong> 2026-04-15T04:00:00Z</li>
+<li><strong>Summary:</strong> Install DevLead on a throwaway project and run the full user journey end-to-end: scratchpad capture -&gt; triage -&gt; promote (work / decision / fact) -&gt; focus -&gt; ingest -&gt; awareness -&gt; intake listing. Catalog every place that bends or breaks. File each gap as a _intake_bugs.md entry via /devlead promote --forced.</li>
+<li><strong>Actionable items:</strong>
+<ul>
+<li>[ ] Create /tmp/devlead-shake-test fresh directory</li>
+<li>[ ] Run /devlead init</li>
+<li>[ ] Run every command in the user journey and note friction points</li>
+<li>[ ] File each friction point as a BUGS-NNNN entry via /devlead promote --forced</li>
+<li>[ ] Write findings summary to devlead_docs/_scratchpad.md</li>
+<li>[ ] Run after FEATURES-0004 through -0012 land (validates the new stack)</li>
+</ul></li>
+<li><strong>Proposed BO:</strong> (needs BO)</li>
+<li><strong>Proposed Sprint:</strong> (needs sprint)</li>
+<li><strong>Proposed weight:</strong> (needs weight)</li>
+<li><strong>Status:</strong> done</li>
+<li><strong>Origin:</strong> forced</li>
+<li><strong>Promoted to:</strong> (pending)</li>
+<li><strong>Promoted at:</strong> (pending)</li>
+</ul>
+<h2>FEATURES-0014 - Convergence math layer (Phase 1 BO-1)</h2>
+<ul>
+<li><strong>Source:</strong> docs/devlead-vision-2026-04-16.html#tab4 + #tab5 (BO-1 of Phase 1)</li>
+<li><strong>Captured:</strong> 2026-04-17T22:00:00Z</li>
+<li><strong>Summary:</strong> Ship the convergence math engine end-to-end on DevLead's own project. Pure-math <code>convergence.py</code> module + tests, then BO/TTO schema extensions for <code>metric / baseline / target / metric_source / intent_vector</code>, then promise-ledger writer wired into the verifier, then a <code>metric_source: manual</code> adapter so one BO can compute a real C(τ) from a real metric reading. This delivers Tab 5 BO-1 ("Convergence math runs on a real metric") within ~10 engineering days.</li>
+<li><strong>Actionable items:</strong>
+<ul>
+<li>[x] Step 2: src/devlead/convergence.py — 190 LOC, 40 tests</li>
+<li>[x] Step 3: tests/test_convergence.py — Tab 4 worked numbers pinned</li>
+<li>[x] Step 4: BO + TTO schema extensions, parser updates, backward-compat (18 tests)</li>
+<li>[x] Step 5a: promise-ledger writer in verifier.py</li>
+<li>[x] Step 5b: realisation sweep — computes φ/ε at window expiry, classifies regime</li>
+<li>[x] Step 6: metric_source: manual mode + history overlay (16 tests)</li>
+<li>[x] Dashboard: Convergence panel in dashboard.py (renders C, G, per-BO, promise/realisation)</li>
+<li>[x] Verify: convergence.py 40 tests pass, BO-001 instrumented, real C(τ) = 3.1% computed</li>
+</ul></li>
+<li><strong>Proposed BO:</strong> (Phase 1 BO-1 per Tab 5)</li>
+<li><strong>Proposed Sprint:</strong> Phase 1 (3 weeks from 2026-04-17, deadline 2026-05-08)</li>
+<li><strong>Proposed weight:</strong> 0.30</li>
+<li><strong>Status:</strong> done</li>
+<li><strong>Origin:</strong> normal</li>
+<li><strong>Promoted to:</strong> (pending)</li>
+<li><strong>Promoted at:</strong> (pending)</li>
+</ul>
+<h2>FEATURES-0015 - project-init CLI (Phase 1 BO-2)</h2>
+<ul>
+<li><strong>Source:</strong> docs/devlead-vision-2026-04-16.html#tab5 (BO-2 of Phase 1)</li>
+<li><strong>Captured:</strong> 2026-04-17T04:10:00Z</li>
+<li><strong>Summary:</strong> Ship <code>devlead project-init</code> — the cold-start onboarding CLI. Interactive 10-question interview captures structured answers about a project; a "lock" subcommand hashes the resulting hierarchy and writes it to <code>_living_decisions.md</code> plus auto-generates <code>_intake_features.md</code> and <code>_intake_nonfunctional.md</code> from the TTOs. The Claude-in-the-loop drafting step (free-form answers → BO/TBO/TTO draft) is documented but executed by Claude in the user's session, not embedded as an LLM call in DevLead itself. v1 closes the blank-page problem without shipping LLM dependencies.</li>
+<li><strong>Actionable items:</strong>
+<ul>
+<li>[x] src/devlead/project_init.py — 292 LOC, 21 tests</li>
+<li>[x] tests/test_project_init.py — interview, lock idempotency, generate_intake split by ttype</li>
+<li>[x] cli.py — <code>devlead project-init [lock|generate-intake]</code> dispatch</li>
+<li>[x] Verify: lock produced hash <code>e149c98e52c5</code> on this repo's hierarchy; generate-intake derived 42 functional + 10 non-functional entries</li>
+</ul></li>
+<li><strong>Proposed BO:</strong> (Phase 1 BO-2 per Tab 5)</li>
+<li><strong>Proposed Sprint:</strong> Phase 1 (deadline 2026-05-01)</li>
+<li><strong>Proposed weight:</strong> 0.25</li>
+<li><strong>Status:</strong> done</li>
+<li><strong>Origin:</strong> normal</li>
+<li><strong>Promoted to:</strong> (pending)</li>
+<li><strong>Promoted at:</strong> (pending)</li>
+</ul>
+<h2>FEATURES-0017 - Auto session hand-off in _resume.md (anti-amnesia)</h2>
+<ul>
+<li><strong>Source:</strong> Nitin question 2026-04-17 — "can DevLead detect this and fix instead of claude"</li>
+<li><strong>Captured:</strong> 2026-04-17T04:25:00Z</li>
+<li><strong>Summary:</strong> Symptom: at session end, _resume.md said "No active focus" and listed STALE legacy TTOs as pending, while in reality FEATURES-0014/15/16 had just shipped today (~1140 LOC, 120 tests). A fresh Claude session reading _resume.md cold had no idea what was just built. Cure: enriched resume.py with three auto-derived sections — Recently shipped, Recent activity by intake (audit-derived), Untracked modules detected. Every section sourced from existing files; nothing hand-written. Session amnesia is now structurally impossible because the data was always there — just not rendered.</li>
+<li><strong>Actionable items:</strong>
+<ul>
+<li>[x] resume.py: _recent_done_intake / _recent_active_cwi / _untracked_modules helpers</li>
+<li>[x] resume.py.generate(): three new sections injected (top of file for Recently shipped, bottom for Untracked)</li>
+<li>[x] tests/test_resume_enrichment.py — 13 tests including matcher edge-cases</li>
+<li>[x] Verify: regenerated _resume.md now shows FEATURES-0014/15/16/17 under "Recently shipped" + per-CWI edit counts under "Recent activity"</li>
+</ul></li>
+<li><strong>Proposed BO:</strong> (anti-amnesia / cross-cutting)</li>
+<li><strong>Proposed Sprint:</strong> Phase 1 follow-up</li>
+<li><strong>Proposed weight:</strong> 0.05</li>
+<li><strong>Status:</strong> done</li>
+<li><strong>Origin:</strong> normal</li>
+<li><strong>Promoted to:</strong> (pending)</li>
+<li><strong>Promoted at:</strong> (pending)</li>
+</ul>
+<h2>FEATURES-0016 - Effort tracking wired (Phase 1 BO-3)</h2>
+<ul>
+<li><strong>Source:</strong> docs/devlead-vision-2026-04-16.html#tab5 (BO-3 of Phase 1) + Tab 3 trash card "Effort tracking exists but isn't wired"</li>
+<li><strong>Captured:</strong> 2026-04-17T04:14:00Z</li>
+<li><strong>Summary:</strong> The <code>effort.py</code> module is fully implemented (record_effort + aggregation) but nothing calls it. Wire <code>gate.check_pretooluse</code> to invoke <code>effort.record_effort</code> for each Edit/Write/MultiEdit attempt with the active CWI. Token count is NOT available from PreToolUse hooks in Claude Code, so v1 captures "edit count per TTO" as a cost-attribution proxy. Real token cost can be backfilled later from session-history if/when that data becomes accessible. Honest about the limit — surface as "edits per TTO" not "$ per TTO" until token cost is real.</li>
+<li><strong>Actionable items:</strong>
+<ul>
+<li>[x] gate.check_pretooluse calls effort.record_effort with active CWI per gate_pass event</li>
+<li>[x] tests/test_effort_wiring.py — 6 tests verifying CWI attribution, exempt skip, multi-CWI fan-out, accumulation</li>
+<li>[x] Verify: edit to src/devlead/effort.py at 04:16:44Z wrote the first FEATURES-0016 row to _effort_log.jsonl, fully closed loop</li>
+</ul></li>
+<li><strong>Proposed BO:</strong> (Phase 1 BO-3 per Tab 5)</li>
+<li><strong>Proposed Sprint:</strong> Phase 1 (deadline 2026-05-08)</li>
+<li><strong>Proposed weight:</strong> 0.10</li>
+<li><strong>Status:</strong> done</li>
+<li><strong>Origin:</strong> normal</li>
+<li><strong>Promoted to:</strong> (pending)</li>
+<li><strong>Promoted at:</strong> (pending)</li>
+</ul>
+<h2>FEATURES-0018 - Solid _resume.md with surfaced next-move candidates</h2>
+<ul>
+<li><strong>Source:</strong> Nitin direction 2026-04-17 — "lets keep option fresh for next session, to be picked up from html from my point of view, but as part of devlead you need to have a solid _resume"</li>
+<li><strong>Captured:</strong> 2026-04-17T04:35:00Z</li>
+<li><strong>Summary:</strong> Next session will open with no active focus by design (Nitin will pick from Tab 6 candidates). Today's _resume.md surfaces 36 stale HIERARCHY-* pending entries that drown out the 5 strategic FEATURES-NNNN candidates. Fix: filter pending list to show FEATURES-NNNN first with one-line context, collapse HIERARCHY-* to a single count line, and add a one-line pointer to Tab 6 of the vision doc for full strategic context. Make _resume.md solid enough that picking next focus takes 30 seconds.</li>
+<li><strong>Actionable items:</strong>
+<ul>
+<li>[ ] resume.py: split pending intake into FEATURES-NNNN (highlighted) vs HIERARCHY-* (collapsed count)</li>
+<li>[ ] resume.py: add a "## Choose your next focus" section that lists pending FEATURES-NNNN with their summary line + suggested <code>/devlead focus &lt;id&gt;</code> command</li>
+<li>[ ] resume.py: add a one-line pointer at top of file to Tab 6 of the vision HTML for strategic context</li>
+<li>[ ] tests for the new pending-split and choose-your-focus behaviour</li>
+<li>[ ] Verify: regenerated _resume.md shows FEATURES-0019..0023 prominently with focus commands ready to copy-paste</li>
+</ul></li>
+<li><strong>Proposed BO:</strong> (anti-amnesia v2 / cross-cutting)</li>
+<li><strong>Proposed Sprint:</strong> Phase 1 follow-up</li>
+<li><strong>Proposed weight:</strong> 0.05</li>
+<li><strong>Status:</strong> in_progress</li>
+<li><strong>Origin:</strong> normal</li>
+<li><strong>Promoted to:</strong> (pending)</li>
+<li><strong>Promoted at:</strong> (pending)</li>
+</ul>
+<h2>FEATURES-0019 - TBO-I — Dashboard <code>_tab_dod</code> synchronous-verify hang fix</h2>
+<ul>
+<li><strong>Source:</strong> docs/devlead-vision-2026-04-16.html#tab6 (orthogonal small TBOs)</li>
+<li><strong>Captured:</strong> 2026-04-17T04:35:00Z</li>
+<li><strong>Summary:</strong> Today's full dashboard generation takes ~45 minutes because <code>_tab_dod</code> runs every TTO's <code>verify:</code> shell command synchronously. Fix: skip verify execution at dashboard render time (use cached results from last <code>devlead verify-all</code> run instead, or run with a hard timeout). Convergence panel works in isolation; full dashboard should also work in &lt;5s. ~1 hour.</li>
+<li><strong>Actionable items:</strong>
+<ul>
+<li>[x] Replace synchronous verify-runs in _tab_dod with audit-log cached results lookup</li>
+<li>[x] Verify: <code>devlead dashboard</code> finishes in 0.491 seconds (down from ~45 minutes)</li>
+</ul></li>
+<li><strong>Proposed BO:</strong> (core feature polish, post-Phase-1-shipped)</li>
+<li><strong>Proposed weight:</strong> 0.03</li>
+<li><strong>Status:</strong> done</li>
+<li><strong>Origin:</strong> normal</li>
+<li><strong>Promoted to:</strong> (pending)</li>
+<li><strong>Promoted at:</strong> (pending)</li>
+</ul>
+<h2>FEATURES-0020 - TBO-G — Stop hook auto-runs realisation-sweep + stale metric prompts</h2>
+<ul>
+<li><strong>Source:</strong> docs/devlead-vision-2026-04-16.html#tab6 (orthogonal small TBOs)</li>
+<li><strong>Captured:</strong> 2026-04-17T04:35:00Z</li>
+<li><strong>Summary:</strong> Today users must remember to run <code>devlead realisation-sweep</code> and <code>devlead metric-update</code> manually. Wire both into the Stop hook: at session end, sweep pending promise-ledger rows whose window has expired, and prompt if any BO metric is older than 7 days. Makes daily usage frictionless. ~30 min.</li>
+<li><strong>Actionable items:</strong>
+<ul>
+<li>[x] gate.check_stop calls promise_ledger.run_realisation_sweep at end of every session</li>
+<li>[x] Stop hook prompts owner when any BO metric reading is older than the BO's window</li>
+<li>[x] Verify: ran <code>gate.check_stop</code> directly, session_end event written; silent when nothing pending or stale (correct behavior)</li>
+</ul></li>
+<li><strong>Proposed BO:</strong> (core feature polish)</li>
+<li><strong>Proposed weight:</strong> 0.03</li>
+<li><strong>Status:</strong> done</li>
+<li><strong>Origin:</strong> normal</li>
+<li><strong>Promoted to:</strong> (pending)</li>
+<li><strong>Promoted at:</strong> (pending)</li>
+</ul>
+<h2>FEATURES-0021 - TBO-H — Promote FEATURES-0014..0017 into hierarchy as TTOs</h2>
+<ul>
+<li><strong>Source:</strong> docs/devlead-vision-2026-04-16.html#tab6 (orthogonal small TBOs)</li>
+<li><strong>Captured:</strong> 2026-04-17T04:35:00Z</li>
+<li><strong>Summary:</strong> Right now C(τ) = 3.1% is computed only on BO-001 (intake-trace %). The entire convergence framework work (FEATURES-0014..0017) lives in intake but not in <code>_project_hierarchy.md</code>. Promoting them as TTOs under appropriate TBOs would let the convergence math run on the very work that built convergence — closes the dogfood loop completely. ~1 hour. Best done together with TBO-G so realisation-sweep has more rows to evaluate.</li>
+<li><strong>Actionable items:</strong>
+<ul>
+<li>[ ] Identify the right TBO under which FEATURES-0014..0017 belong (likely a new TBO-Phase1-shipped)</li>
+<li>[ ] Add TTO entries with intent_vector field populated</li>
+<li>[ ] Run convergence math, observe C(τ) reflects real shipped work</li>
+</ul></li>
+<li><strong>Proposed BO:</strong> (core feature polish, dogfood loop)</li>
+<li><strong>Proposed weight:</strong> 0.04</li>
+<li><strong>Status:</strong> pending</li>
+<li><strong>Origin:</strong> normal</li>
+<li><strong>Promoted to:</strong> (pending)</li>
+<li><strong>Promoted at:</strong> (pending)</li>
+</ul>
+<h2>FEATURES-0022 - TBO-J — Convergence dashboard explanatory UX</h2>
+<ul>
+<li><strong>Source:</strong> docs/devlead-vision-2026-04-16.html#tab6 (proposed core polish)</li>
+<li><strong>Captured:</strong> 2026-04-17T04:35:00Z</li>
+<li><strong>Summary:</strong> The convergence panel today shows numbers (C, G, α, φ, ε, regime labels) but not what they mean. Add inline tooltips, a one-line explainer per number, and color-coded regime badges. So opening the dashboard tells the user "this is good / this is concerning / this needs attention" without re-reading Tab 4. ~1-2 hours.</li>
+<li><strong>Actionable items:</strong>
+<ul>
+<li>[ ] Add a header explanation block at top of Convergence panel</li>
+<li>[ ] Each number gets a one-line "what it means" tooltip or aside</li>
+<li>[ ] Regime label colour-coded (green=realised, orange=partial, red=vapor)</li>
+<li>[ ] "What to do about this" hint per regime</li>
+</ul></li>
+<li><strong>Proposed BO:</strong> (core feature polish, user experience)</li>
+<li><strong>Proposed weight:</strong> 0.03</li>
+<li><strong>Status:</strong> pending</li>
+<li><strong>Origin:</strong> normal</li>
+<li><strong>Promoted to:</strong> (pending)</li>
+<li><strong>Promoted at:</strong> (pending)</li>
+</ul>
+<h2>FEATURES-0023 - TBO-K — Better <code>devlead resume</code> "next move" suggestion</h2>
+<ul>
+<li><strong>Source:</strong> docs/devlead-vision-2026-04-16.html#tab6 (proposed core polish)</li>
+<li><strong>Captured:</strong> 2026-04-17T04:35:00Z</li>
+<li><strong>Summary:</strong> Currently <code>_resume.md</code> says "No active focus" when nothing is in progress. It could derive a suggested-next from the highest-α pending TTO in the hierarchy, or the highest-priority pending FEATURES-NNNN intake entry. Smaller "what now?" friction. ~30 min. (Note: FEATURES-0018 partially addresses this for the FEATURES-NNNN case; this TBO extends it to hierarchy-derived suggestion.)</li>
+<li><strong>Actionable items:</strong>
+<ul>
+<li>[ ] resume.py: when no active focus, derive a suggestion from highest-α pending TTO</li>
+<li>[ ] If no hierarchy data, fall back to most-recently-added pending intake</li>
+<li>[ ] Verify: clear focus, regenerate _resume.md, observe a sensible "Suggested next focus" line</li>
+</ul></li>
+<li><strong>Proposed BO:</strong> (core feature polish, daily-driver UX)</li>
+<li><strong>Proposed weight:</strong> 0.02</li>
+<li><strong>Status:</strong> pending</li>
+<li><strong>Origin:</strong> normal</li>
+<li><strong>Promoted to:</strong> (pending)</li>
+<li><strong>Promoted at:</strong> (pending)</li>
+</ul>
+<h2>FEATURES-0024 - MD render layer — <code>devlead render</code> produces HTML view per MD file</h2>
+<ul>
+<li><strong>Source:</strong> Nitin direction 2026-04-17 — "expose all the md documents as HTML, give visual feel for what command line does"</li>
+<li><strong>Captured:</strong> 2026-04-17T05:00:00Z</li>
+<li><strong>Summary:</strong> Foundation of the MD↔HTML loop. Every <code>devlead_docs/*.md</code> gets a rendered HTML file at <code>docs/views/&lt;filename&gt;.html</code>. Uses stdlib markdown rendering (or the <code>markdown</code> package if shipping is faster) plus the dashboard CSS so views look consistent. Static output; no daemon required for v1. The render command walks devlead_docs/, renders each MD, plus generates an index page linking to all of them. Read-only in v1; edit-back is FEATURES-0029.</li>
+<li><strong>Actionable items:</strong>
+<ul>
+<li>[ ] src/devlead/render.py — markdown to HTML rendering (stdlib parser or <code>markdown</code> package)</li>
+<li>[ ] <code>devlead render</code> CLI command writes HTML for every devlead_docs/*.md</li>
+<li>[ ] Generated HTML uses dashboard's existing CSS variables and widget classes</li>
+<li>[ ] Index page at docs/views/index.html lists every rendered file with one-line summary</li>
+<li>[ ] tests/test_render.py — smoke test rendering on synthetic MD + integration on this repo's devlead_docs/</li>
+<li>[ ] Verify: <code>devlead render</code> produces docs/views/_intake_features.html, _resume.html, etc., all viewable in browser</li>
+</ul></li>
+<li><strong>Proposed BO:</strong> (MD↔HTML loop, foundation)</li>
+<li><strong>Proposed weight:</strong> 0.10</li>
+<li><strong>Status:</strong> in_progress</li>
+<li><strong>Origin:</strong> normal</li>
+<li><strong>Promoted to:</strong> (pending)</li>
+<li><strong>Promoted at:</strong> (pending)</li>
+</ul>
+<h2>FEATURES-0025 - New <code><em>living</em>*</code> content extracted from vision HTML tabs</h2>
+<ul>
+<li><strong>Source:</strong> Nitin direction 2026-04-17 — "see if you want to introduce any new md file category"</li>
+<li><strong>Captured:</strong> 2026-04-17T05:00:00Z</li>
+<li><strong>Summary:</strong> Today's vision HTML (Tabs 1-6) holds substantial content NOT captured in any MD file. Extract into 4 new <code><em>living</em>*.md</code> files so the source-of-truth principle holds — LLMs read MD; HTML is the rendered view. Files: <code>_living_pitch.md</code> (problem, 4 layers, what DevLead is — Tab 1), <code>_living_vision.md</code> (target state, 3 deltas, architecture rings — Tab 2), <code>_living_buyer.md</code> (outside-perspective trust/distrust — Tab 3), <code>_living_demos.md</code> (worked walkthroughs — Tabs 4 + 5). Once these exist, the vision HTML becomes a generated artifact rendered from MD instead of the canonical source.</li>
+<li><strong>Actionable items:</strong>
+<ul>
+<li>[ ] Draft <code>devlead_docs/_living_pitch.md</code> from Tab 1 content</li>
+<li>[ ] Draft <code>devlead_docs/_living_vision.md</code> from Tab 2 content</li>
+<li>[ ] Draft <code>devlead_docs/_living_buyer.md</code> from Tab 3 content</li>
+<li>[ ] Draft <code>devlead_docs/_living_demos.md</code> from Tab 4 + Tab 5 content</li>
+<li>[ ] Update SOT blocks on each new file</li>
+<li>[ ] Update CLAUDE.md session-start read order to include new files</li>
+<li>[ ] Verify: <code>devlead render</code> produces HTML views for each new MD</li>
+</ul></li>
+<li><strong>Proposed BO:</strong> (MD↔HTML loop, content migration)</li>
+<li><strong>Proposed weight:</strong> 0.06</li>
+<li><strong>Status:</strong> pending</li>
+<li><strong>Origin:</strong> normal</li>
+<li><strong>Promoted to:</strong> (pending)</li>
+<li><strong>Promoted at:</strong> (pending)</li>
+</ul>
+<h2>FEATURES-0026 - Auto-derived <code>_aware_status.md</code> post-implementation snapshot</h2>
+<ul>
+<li><strong>Source:</strong> Nitin direction 2026-04-17 + Tab 6 of vision HTML</li>
+<li><strong>Captured:</strong> 2026-04-17T05:00:00Z</li>
+<li><strong>Summary:</strong> Tab 6 ("Fresh look — post-implementation re-look") is content that should be auto-derived rather than hand-written. Like <code>_aware_features.md</code> and <code>_aware_design.md</code>, but for status / progress. Aggregates: done intake entries (recent), pending TBOs, convergence numbers, recent shipped LOC by audit log. Refreshed by <code>devlead awareness</code> alongside the existing aware files. Replaces hand-written status reports; users always see truth from data.</li>
+<li><strong>Actionable items:</strong>
+<ul>
+<li>[ ] src/devlead/awareness.py: add render_status() function alongside render_features and render_design</li>
+<li>[ ] _aware_status.md template with sections: shipped (last 30 days), pending TBOs, convergence summary, key counts</li>
+<li>[ ] <code>devlead awareness</code> regenerates all three aware files</li>
+<li>[ ] Tests for render_status produces stable output</li>
+<li>[ ] Verify: <code>devlead awareness</code> produces _aware_status.md showing today's shipped work</li>
+</ul></li>
+<li><strong>Proposed BO:</strong> (MD↔HTML loop, auto-derived content)</li>
+<li><strong>Proposed weight:</strong> 0.04</li>
+<li><strong>Status:</strong> pending</li>
+<li><strong>Origin:</strong> normal</li>
+<li><strong>Promoted to:</strong> (pending)</li>
+<li><strong>Promoted at:</strong> (pending)</li>
+</ul>
+<h2>FEATURES-0027 - Documents index page in dashboard</h2>
+<ul>
+<li><strong>Source:</strong> Nitin direction 2026-04-17 — "give visual feel for what is being done in command line"</li>
+<li><strong>Captured:</strong> 2026-04-17T05:00:00Z</li>
+<li><strong>Summary:</strong> New "Documents" tab in the dashboard that lists every <code>devlead_docs/*.md</code> file with metadata (owner, purpose from SOT block, line count, last modified). Each row links to the rendered HTML view. Becomes the entry point users open when they want to see what is in DevLead's brain.</li>
+<li><strong>Actionable items:</strong>
+<ul>
+<li>[ ] dashboard.py: add <code>_tab_documents(docs_dir)</code> function</li>
+<li>[ ] Read SOT blocks via sot.read_all(docs_dir) to extract metadata</li>
+<li>[ ] Render as table: filename, owner, purpose, lines, last_modified, view-link</li>
+<li>[ ] Wire into tabs list</li>
+<li>[ ] Verify: dashboard "Documents" tab shows all 20+ MD files with working links</li>
+</ul></li>
+<li><strong>Proposed BO:</strong> (MD↔HTML loop, navigation)</li>
+<li><strong>Proposed weight:</strong> 0.03</li>
+<li><strong>Status:</strong> pending</li>
+<li><strong>Origin:</strong> normal</li>
+<li><strong>Promoted to:</strong> (pending)</li>
+<li><strong>Promoted at:</strong> (pending)</li>
+</ul>
+<h2>FEATURES-0028 - Rich card-based HTML views for <code><em>intake</em>*.md</code> files</h2>
+<ul>
+<li><strong>Source:</strong> Nitin direction 2026-04-17 (visual feel)</li>
+<li><strong>Captured:</strong> 2026-04-17T05:00:00Z</li>
+<li><strong>Summary:</strong> Generic markdown-to-HTML rendering (FEATURES-0024) treats intake files as plain text. Intake entries are highly structured — they deserve a card-based rich view: status badges (pending/in_progress/done with color), per-actionable-item checkboxes, progress bar per entry, source/promoted-to as clickable links. Builds on FEATURES-0024 renderer but adds intake-specific styling.</li>
+<li><strong>Actionable items:</strong>
+<ul>
+<li>[ ] src/devlead/render.py: detect intake files (<code><em>intake</em>*.md</code>), use specialised renderer</li>
+<li>[ ] Each intake entry → card with status badge, summary, actionable items as checkboxes (visual only in v1)</li>
+<li>[ ] Progress bar showing percent done actionable items per entry</li>
+<li>[ ] Filter buttons (show only pending / in_progress / done)</li>
+<li>[ ] Verify: rendered _intake_features.html shows all entries as visual cards</li>
+</ul></li>
+<li><strong>Proposed BO:</strong> (MD↔HTML loop, rich rendering)</li>
+<li><strong>Proposed weight:</strong> 0.04</li>
+<li><strong>Status:</strong> pending</li>
+<li><strong>Origin:</strong> normal</li>
+<li><strong>Promoted to:</strong> (pending)</li>
+<li><strong>Promoted at:</strong> (pending)</li>
+</ul>
+<h2>FEATURES-0029 - <code>devlead serve</code> daemon + edit-from-HTML capability</h2>
+<ul>
+<li><strong>Source:</strong> Nitin direction 2026-04-17 — "edit MD files right from HTML, this will be very powerful"</li>
+<li><strong>Captured:</strong> 2026-04-17T05:00:00Z</li>
+<li><strong>Summary:</strong> v2 of the MD↔HTML loop. Tiny stdlib http.server daemon on localhost:7777 that serves the rendered HTML views AND accepts edit-back POST requests. Each rendered HTML has form fields / inline-editable elements; on save, the daemon validates and writes MD. MD remains source of truth; HTML is the editing surface for users who do not want to open a text editor. Significant work — properly belongs in v2 of MD↔HTML loop.</li>
+<li><strong>Actionable items:</strong>
+<ul>
+<li>[ ] src/devlead/serve.py — stdlib http.server based daemon, GET serves rendered HTML, POST accepts edits</li>
+<li>[ ] HTML templates with <code>data-md-source="&lt;file&gt;"</code> attributes on editable regions</li>
+<li>[ ] JS-light: minimal vanilla JS for inline edits, fetch POST on save</li>
+<li>[ ] Validation: parsed MD must satisfy intake schema before write (reject on validation error)</li>
+<li>[ ] Audit log every edit-from-HTML with editor identity, file, change summary</li>
+<li>[ ] CLI: <code>devlead serve [--port 7777]</code> starts the daemon</li>
+<li>[ ] Verify: edit FEATURES-0024 status from "pending" to "in_progress" via HTML, observe MD file updated and audit event written</li>
+</ul></li>
+<li><strong>Proposed BO:</strong> (MD↔HTML loop, edit-back v2)</li>
+<li><strong>Proposed weight:</strong> 0.10</li>
+<li><strong>Status:</strong> pending</li>
+<li><strong>Origin:</strong> normal</li>
+<li><strong>Promoted to:</strong> (pending)</li>
+<li><strong>Promoted at:</strong> (pending)</li>
+</ul>
+<h2>FEATURES-0030 - HTML form widgets per MD file type</h2>
+<ul>
+<li><strong>Source:</strong> Nitin direction 2026-04-17 (depends on FEATURES-0029)</li>
+<li><strong>Captured:</strong> 2026-04-17T05:00:00Z</li>
+<li><strong>Summary:</strong> Once <code>devlead serve</code> exists (FEATURES-0029), each MD-file type needs purpose-built HTML form widgets — intake entries get a status dropdown plus actionable-items checkbox grid plus summary textarea; hierarchy gets a BO/TBO/TTO tree editor with weight inputs; living docs get a contenteditable rich text editor; scratchpad gets an append-only entry form. The widgets enforce schema before submission. Without this, <code>devlead serve</code> would just be a generic textarea; with it, users get the visual co-edit experience Nitin envisions.</li>
+<li><strong>Actionable items:</strong>
+<ul>
+<li>[ ] Per-file-type HTML widget templates in render.py</li>
+<li>[ ] Intake widget: status dropdown, actionable items as checkbox list, summary textarea</li>
+<li>[ ] Hierarchy widget: tree view with inline editing plus weight validation (must sum 100)</li>
+<li>[ ] Living-doc widget: contenteditable with markdown preview</li>
+<li>[ ] Scratchpad widget: append-only form (never lose old entries)</li>
+<li>[ ] Verify: each MD file type has a tailored editing surface</li>
+</ul></li>
+<li><strong>Proposed BO:</strong> (MD↔HTML loop, polish)</li>
+<li><strong>Proposed weight:</strong> 0.05</li>
+<li><strong>Status:</strong> pending</li>
+<li><strong>Origin:</strong> normal</li>
+<li><strong>Promoted to:</strong> (pending)</li>
+<li><strong>Promoted at:</strong> (pending)</li>
+</ul>
+<h2>FEATURES-0031 - <code>devlead defrag</code> — file housekeeping (archive, merge, prune)</h2>
+<ul>
+<li><strong>Source:</strong> scratchpad:2026-04-17-devlead-defrag-command-file-housekeeping (Nitin approved 2026-04-17)</li>
+<li><strong>Captured:</strong> 2026-04-17T05:00:00Z</li>
+<li><strong>Summary:</strong> As projects age, devlead_docs/ files grow large and noisy: _intake_features.md is now ~430 lines with mix of done + pending entries; _scratchpad.md is ~898 lines with auto-captured user prompts; _audit_log.jsonl is ~2,200+ lines and growing. <code>devlead defrag</code> runs five housekeeping operations: (1) archive done intake entries to _intake_archive_*.md after 30-day grace period, (2) merge fragmented scratchpad entries by topic, (3) collapse repetitive audit-log runs (e.g. 50 consecutive gate_pass on same file → 1 rolled-up entry), (4) prune stale aware-file entries for deleted modules, (5) truncate state/effort/promise logs older than configurable window. Always hash-checked + reversible per the migrate.py pattern. Lower priority than MD↔HTML loop and BO-4 — schedule when files actually start hurting.</li>
+<li><strong>Actionable items:</strong>
+<ul>
+<li>[ ] src/devlead/defrag.py — five operations as separate functions</li>
+<li>[ ] Each operation outputs a dry-run plan first; user confirms before writes</li>
+<li>[ ] Use migrate.py pattern: hash-check destination before removing source</li>
+<li>[ ] CLI: <code>devlead defrag [--dry-run] [--scope intake|scratchpad|audit|aware|logs|all]</code></li>
+<li>[ ] Audit log every defrag operation with what was archived/merged/pruned</li>
+<li>[ ] Tests for each operation independently + integration test on synthetic large files</li>
+<li>[ ] Verify: <code>devlead defrag --dry-run</code> on this repo prints a sensible plan; full run shrinks _intake_features.md by 50%+ when the done entries reach 30-day archive eligibility</li>
+</ul></li>
+<li><strong>Proposed BO:</strong> (operational hygiene, scales with project age)</li>
+<li><strong>Proposed weight:</strong> 0.04</li>
+<li><strong>Status:</strong> pending</li>
+<li><strong>Origin:</strong> normal</li>
+<li><strong>Promoted to:</strong> (pending)</li>
+<li><strong>Promoted at:</strong> (pending)</li>
+</ul>
+<div class="footer">Auto-generated by <code>devlead render</code> on 2026-04-17 05:00 UTC · <a href="index.html">← back to index</a></div>
+</body>
+</html>

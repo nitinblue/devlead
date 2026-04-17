@@ -1,0 +1,138 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Aware Features</title>
+<style>
+:root {
+  --bg: #0b0d10; --panel: #11151a; --line: #222a33;
+  --ink: #e6edf3; --ink-dim: #9aa7b3; --ink-faint: #6b7785;
+  --accent: #7ee787; --accent-2: #79c0ff;
+}
+* { box-sizing: border-box; }
+html, body { margin: 0; padding: 0; background: var(--bg); color: var(--ink);
+  font: 15px/1.55 ui-sans-serif, -apple-system, "Segoe UI", Roboto, Helvetica, Arial, sans-serif; }
+body { padding: 30px 40px; max-width: 960px; margin: 0 auto; }
+a { color: var(--accent-2); text-decoration: none; }
+a:hover { text-decoration: underline; }
+code { font-family: ui-monospace, "SF Mono", Menlo, Consolas, monospace; font-size: 13px;
+  background: #0a0d11; padding: 1px 5px; border-radius: 4px; border: 1px solid var(--line); }
+pre { background: #0a0d11; border: 1px solid var(--line); border-radius: 6px;
+  padding: 12px 14px; overflow-x: auto; font-family: ui-monospace, "SF Mono", Menlo, Consolas, monospace;
+  font-size: 13px; line-height: 1.5; }
+pre code { background: transparent; border: 0; padding: 0; }
+h1, h2, h3, h4 { letter-spacing: -0.01em; margin-top: 1.4em; margin-bottom: 0.4em; }
+h1 { font-size: 28px; border-bottom: 1px solid var(--line); padding-bottom: 8px; }
+h2 { font-size: 22px; }
+h3 { font-size: 17px; color: var(--ink); }
+h4 { font-size: 14px; color: var(--ink-dim); text-transform: uppercase; letter-spacing: 0.06em; }
+p { margin: 8px 0; }
+ul, ol { padding-left: 24px; }
+li { margin: 3px 0; }
+blockquote { border-left: 3px solid var(--accent-2); margin: 14px 0; padding: 6px 14px;
+  color: var(--ink-dim); background: #10161c; border-radius: 0 6px 6px 0; }
+hr { border: 0; border-top: 1px solid var(--line); margin: 22px 0; }
+.footer { margin-top: 48px; padding-top: 16px; border-top: 1px solid var(--line);
+  color: var(--ink-faint); font-size: 12px; }
+.footer a { color: var(--ink-faint); }
+</style>
+</head>
+<body>
+<h1>_aware_features.md</h1>
+<blockquote><strong>Self-awareness file.</strong> Auto-generated inventory of every feature this project exposes. DO NOT EDIT - run <code>/devlead awareness</code> to refresh. Hand-edits are overwritten on next refresh.  <strong>Last refresh:</strong> 2026-04-17T04:28:13Z <strong>Generator:</strong> devlead.awareness v1 <strong>Scan sources:</strong> commands/*.md, src/devlead/cli.py</blockquote>
+<hr>
+<h2>Slash commands</h2>
+<h3>/devlead audit</h3>
+<ul>
+<li><strong>Kind:</strong> slash-command</li>
+<li><strong>Description:</strong> Inspect the DevLead audit log</li>
+<li><strong>Command file:</strong> <code>commands/audit.md</code></li>
+<li><strong>Handler:</strong> <code>src/devlead/cli.py:_cmd_audit</code></li>
+</ul>
+<h3>/devlead awareness</h3>
+<ul>
+<li><strong>Kind:</strong> slash-command</li>
+<li><strong>Description:</strong> Refresh DevLead self-awareness files (<em>aware</em>*.md)</li>
+<li><strong>Command file:</strong> <code>commands/awareness.md</code></li>
+<li><strong>Handler:</strong> <code>src/devlead/cli.py:_cmd_awareness</code></li>
+</ul>
+<h3>/devlead config</h3>
+<ul>
+<li><strong>Kind:</strong> slash-command</li>
+<li><strong>Description:</strong> Show the resolved DevLead configuration</li>
+<li><strong>Command file:</strong> <code>commands/config.md</code></li>
+<li><strong>Handler:</strong> <code>src/devlead/cli.py:_cmd_config</code></li>
+</ul>
+<h3>/devlead focus</h3>
+<ul>
+<li><strong>Kind:</strong> slash-command</li>
+<li><strong>Description:</strong> Set, show, or clear the current focus by flipping intake entry status</li>
+<li><strong>Command file:</strong> <code>commands/focus.md</code></li>
+<li><strong>Handler:</strong> <code>src/devlead/cli.py:_cmd_focus</code></li>
+</ul>
+<h3>/devlead gate</h3>
+<ul>
+<li><strong>Kind:</strong> slash-command</li>
+<li><strong>Description:</strong> Run the DevLead PreToolUse enforcement gate (warn-only)</li>
+<li><strong>Command file:</strong> <code>commands/gate.md</code></li>
+<li><strong>Handler:</strong> <code>src/devlead/cli.py:_cmd_gate</code></li>
+</ul>
+<h3>/devlead ingest</h3>
+<ul>
+<li><strong>Kind:</strong> slash-command</li>
+<li><strong>Description:</strong> Ingest a plugin's output plan/spec into a DevLead intake file</li>
+<li><strong>Command file:</strong> <code>commands/ingest.md</code></li>
+<li><strong>Handler:</strong> <code>src/devlead/cli.py:_cmd_ingest</code></li>
+</ul>
+<h3>/devlead init</h3>
+<ul>
+<li><strong>Kind:</strong> slash-command</li>
+<li><strong>Description:</strong> Install DevLead on the current project — creates devlead_docs/ with scaffolding and seeds the canonical source of truth.</li>
+<li><strong>Command file:</strong> <code>commands/init.md</code></li>
+<li><strong>Handler:</strong> <code>src/devlead/cli.py:_cmd_init</code></li>
+</ul>
+<h3>/devlead intake</h3>
+<ul>
+<li><strong>Kind:</strong> slash-command</li>
+<li><strong>Description:</strong> List current intake file entries</li>
+<li><strong>Command file:</strong> <code>commands/intake.md</code></li>
+<li><strong>Handler:</strong> <code>src/devlead/cli.py:_cmd_intake</code></li>
+</ul>
+<h3>/devlead migrate</h3>
+<ul>
+<li><strong>Kind:</strong> slash-command</li>
+<li><strong>Description:</strong> Hash-checked, reversible content migration between devlead_docs/ files</li>
+<li><strong>Command file:</strong> <code>commands/migrate.md</code></li>
+<li><strong>Handler:</strong> <code>src/devlead/cli.py:_cmd_migrate</code></li>
+</ul>
+<h3>/devlead promote</h3>
+<ul>
+<li><strong>Kind:</strong> slash-command</li>
+<li><strong>Description:</strong> Promote a scratchpad entry to an intake file, a decision log, or a living file</li>
+<li><strong>Command file:</strong> <code>commands/promote.md</code></li>
+<li><strong>Handler:</strong> <code>src/devlead/cli.py:_cmd_promote</code></li>
+</ul>
+<h3>/devlead scratchpad</h3>
+<ul>
+<li><strong>Kind:</strong> slash-command</li>
+<li><strong>Description:</strong> Append a raw capture entry to devlead_docs/_scratchpad.md - verbatim triage inbox, zero information loss.</li>
+<li><strong>Command file:</strong> <code>commands/scratchpad.md</code></li>
+<li><strong>Handler:</strong> <code>src/devlead/cli.py:_cmd_scratchpad</code></li>
+</ul>
+<h3>/devlead triage</h3>
+<ul>
+<li><strong>Kind:</strong> slash-command</li>
+<li><strong>Description:</strong> Walk untriaged _scratchpad.md entries and route each to its canonical home</li>
+<li><strong>Command file:</strong> <code>commands/triage.md</code></li>
+<li><strong>Handler:</strong> <code>src/devlead/cli.py:_cmd_triage</code></li>
+</ul>
+<h3>/devlead verify-links</h3>
+<ul>
+<li><strong>Kind:</strong> slash-command</li>
+<li><strong>Description:</strong> Walk cross-references in devlead_docs/ and report broken refs + orphans</li>
+<li><strong>Command file:</strong> <code>commands/verify-links.md</code></li>
+</ul>
+<div class="footer">Auto-generated by <code>devlead render</code> on 2026-04-17 05:00 UTC · <a href="index.html">← back to index</a></div>
+</body>
+</html>

@@ -221,6 +221,15 @@ def _tab_audit(docs_dir):
 
 
 def _tab_dod(sprints, repo_root):
+    """Read cached verify_tto events from the audit log instead of re-running.
+
+    FEATURES-0019: previously this function shelled out to every TTO's verify:
+    command at dashboard render time, taking ~45 minutes on a 67-TTO hierarchy.
+    Now it just reads the audit log for the latest verify_tto event per TTO,
+    written by `devlead verify-all`. To refresh stale results, the user runs
+    `devlead verify-all` (which then writes new audit events).
+    """
+    cached = _verify_results_from_audit(repo_root)
     html = ""
     for s in sprints:
         for bo in s.bos:
@@ -231,13 +240,50 @@ def _tab_dod(sprints, repo_root):
                     if not cmd:
                         rows += f'<tr><td class="mono">{tto.id}</td><td>{_e(tto.name[:45])}</td><td class="muted">no verify</td><td>—</td></tr>'
                         continue
-                    passed, output = _run_verify(cmd, repo_root)
+                    res = cached.get(tto.id)
+                    if res is None:
+                        rows += f'<tr><td class="mono">{tto.id}</td><td>{_e(tto.name[:45])}</td><td class="muted">not yet run</td><td class="muted">run <code>devlead verify-all</code></td></tr>'
+                        continue
+                    passed = res.get("result") == "pass"
                     cls = "st-done" if passed else "st-block"
                     label = "PASS" if passed else "FAIL"
-                    rows += f'<tr><td class="mono">{tto.id}</td><td>{_e(tto.name[:45])}</td><td><span class="badge-xs {cls}">{label}</span></td><td class="muted">{_e(output[:60])}</td></tr>'
+                    output = res.get("output", "") or ""
+                    ts = res.get("ts", "")[:10]
+                    rows += f'<tr><td class="mono">{tto.id}</td><td>{_e(tto.name[:45])}</td><td><span class="badge-xs {cls}">{label}</span></td><td class="muted">{_e(output[:60])} <em>({ts})</em></td></tr>'
                 if rows:
                     html += f'<div class="widget"><div class="widget-head">{tbo.id}: {_e(tbo.name[:40])}</div><table class="dt"><thead><tr><th>TTO</th><th>Name</th><th>Status</th><th>Output</th></tr></thead><tbody>{rows}</tbody></table></div>'
     return html or '<p class="muted">No TTOs with verify commands.</p>'
+
+
+def _verify_results_from_audit(repo_root):
+    """Build {tto_id: latest_verify_event} dict from _audit_log.jsonl.
+
+    Reads the audit log once, keeps only the most recent verify_tto event
+    per TTO. O(n) where n = audit log lines. No subprocess calls.
+    """
+    import json
+    log = repo_root / "devlead_docs" / "_audit_log.jsonl"
+    out = {}
+    if not log.exists():
+        return out
+    for line in log.read_text(encoding="utf-8").splitlines():
+        line = line.strip()
+        if not line:
+            continue
+        try:
+            ev = json.loads(line)
+        except json.JSONDecodeError:
+            continue
+        if ev.get("event") != "verify_tto":
+            continue
+        tto_id = ev.get("tto_id")
+        if not tto_id:
+            continue
+        ts = ev.get("ts", "")
+        prior = out.get(tto_id)
+        if prior is None or ts > prior.get("ts", ""):
+            out[tto_id] = ev
+    return out
 
 
 def _extract_verify(tto, repo_root):

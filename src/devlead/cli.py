@@ -121,6 +121,8 @@ def main(argv: list[str] | None = None) -> int:
         return _cmd_realisation_sweep(args[1:])
     if cmd == "project-init":
         return _cmd_project_init(args[1:])
+    if cmd == "render":
+        return _cmd_render(args[1:])
 
     # Unknown command -> exit 0 (warn-only by design).
     print(f"devlead: unknown command '{cmd}' (v2 under construction)", file=sys.stderr)
@@ -596,6 +598,25 @@ def _cmd_report(sub_args: list[str]) -> int:
     repo_root = Path(sub_args[0]) if sub_args else Path.cwd()
     out_path = report.write_report(repo_root)
     print(f"Report written to: {out_path}")
+    return 0
+
+
+def _cmd_render(sub_args: list[str]) -> int:
+    """`devlead render` — produce HTML views of every devlead_docs/*.md.
+
+    FEATURES-0024 (foundation of MD↔HTML loop). Reads every Markdown file in
+    devlead_docs/ and writes a rendered HTML file to docs/views/ alongside
+    an index.html linking them. Read-only views in v1; edit-back daemon is
+    FEATURES-0029.
+    """
+    from devlead import render
+
+    repo = Path.cwd()
+    docs_dir = repo / "devlead_docs"
+    out_dir = repo / "docs" / render.VIEWS_DIRNAME
+    rendered = render.render_dir(docs_dir, out_dir)
+    print(f"rendered {len(rendered)} files to {out_dir}")
+    print(f"index: {out_dir / 'index.html'}")
     return 0
 
 

@@ -1,0 +1,149 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Living Decisions</title>
+<style>
+:root {
+  --bg: #0b0d10; --panel: #11151a; --line: #222a33;
+  --ink: #e6edf3; --ink-dim: #9aa7b3; --ink-faint: #6b7785;
+  --accent: #7ee787; --accent-2: #79c0ff;
+}
+* { box-sizing: border-box; }
+html, body { margin: 0; padding: 0; background: var(--bg); color: var(--ink);
+  font: 15px/1.55 ui-sans-serif, -apple-system, "Segoe UI", Roboto, Helvetica, Arial, sans-serif; }
+body { padding: 30px 40px; max-width: 960px; margin: 0 auto; }
+a { color: var(--accent-2); text-decoration: none; }
+a:hover { text-decoration: underline; }
+code { font-family: ui-monospace, "SF Mono", Menlo, Consolas, monospace; font-size: 13px;
+  background: #0a0d11; padding: 1px 5px; border-radius: 4px; border: 1px solid var(--line); }
+pre { background: #0a0d11; border: 1px solid var(--line); border-radius: 6px;
+  padding: 12px 14px; overflow-x: auto; font-family: ui-monospace, "SF Mono", Menlo, Consolas, monospace;
+  font-size: 13px; line-height: 1.5; }
+pre code { background: transparent; border: 0; padding: 0; }
+h1, h2, h3, h4 { letter-spacing: -0.01em; margin-top: 1.4em; margin-bottom: 0.4em; }
+h1 { font-size: 28px; border-bottom: 1px solid var(--line); padding-bottom: 8px; }
+h2 { font-size: 22px; }
+h3 { font-size: 17px; color: var(--ink); }
+h4 { font-size: 14px; color: var(--ink-dim); text-transform: uppercase; letter-spacing: 0.06em; }
+p { margin: 8px 0; }
+ul, ol { padding-left: 24px; }
+li { margin: 3px 0; }
+blockquote { border-left: 3px solid var(--accent-2); margin: 14px 0; padding: 6px 14px;
+  color: var(--ink-dim); background: #10161c; border-radius: 0 6px 6px 0; }
+hr { border: 0; border-top: 1px solid var(--line); margin: 22px 0; }
+.footer { margin-top: 48px; padding-top: 16px; border-top: 1px solid var(--line);
+  color: var(--ink-faint); font-size: 12px; }
+.footer a { color: var(--ink-faint); }
+</style>
+</head>
+<body>
+<h1>Living Decisions</h1>
+<!-- devlead:sot
+  purpose: "Canonical append-only archive of all locked decisions"
+  owner: "user+claude"
+  canonical_for: ["locked_decisions"]
+  lineage:
+    receives_from: ["_scratchpad.md (via /devlead promote --to decision)"]
+    migrates_to: []
+  lifetime: "permanent"
+  last_audit: "2026-04-15"
+-->
+<blockquote><strong>Purpose.</strong> Canonical append-only archive of all locked decisions on this project: architecture, scope, pricing, tooling, design, anything. Every entry is dated. Entries are never deleted. If a decision is reversed or refined, a new entry supersedes the old one - history remains intact.  <strong>This file is the canonical source.</strong> Neither <code>_resume.md</code> nor any other file holds locked decisions. <code>_resume.md</code> is a thin session-bootstrap cursor. Locked decisions live here.  <strong>Contrast with other living files:</strong> - <code>_living_project.md</code> - what the project IS (identity) - <code>_living_goals.md</code> - narrative goal descriptions (doc-only, no metrics) - <code>_living_design.md</code> - HOW the system is shaped (design intent) - <code>_living_decisions.md</code> - choices that got made, and why (this file)</blockquote>
+<hr>
+<h2>Log</h2>
+<h2>2026-04-12 - Hierarchy (revised 2026-04-14)</h2>
+<ul>
+<li><strong>Decision:</strong> <code>Sprint -&gt; BO -&gt; TBO -&gt; TTO</code>. Vision removed from the hierarchy. Phase renamed to Sprint.</li>
+<li><strong>Rationale:</strong> Simplified from v2's original <code>Vision -&gt; Goals -&gt; Phase -&gt; BO -&gt; TBO -&gt; TTO</code>. Vision was too aspirational for a week-to-week scope. Goals folded into a doc-only container (see below). Phase renamed to Sprint for memorability; DevLead's Sprint is scoped to ship-windows/versions (months), NOT the agile 2-week cadence.</li>
+<li><strong>Status:</strong> locked</li>
+<li><strong>Supersedes:</strong> v2 original hierarchy</li>
+</ul>
+<h2>2026-04-14 - Goals as doc-only container (not a hierarchy node)</h2>
+<ul>
+<li><strong>Decision:</strong> Goals is a loose documentation concept that groups BOs for human readability. It is NOT a metric-carrying hierarchy node. <code>_living_goals.md</code> is prose-only - no schema, no metric fields, no convergence rollups.</li>
+<li><strong>Rationale:</strong> Earlier "BO = Goal (merged)" was wrong. A Goal is meta-narrative ("ship first revenue"); a BO is measurable ("sell X units by Y date"). Separating them allows loose goal framing without metric overhead.</li>
+<li><strong>Status:</strong> locked</li>
+<li><strong>Supersedes:</strong> "BO = Goal (merged)" from earlier Session 3</li>
+</ul>
+<h2>2026-04-14 - Plugin Bridge: zero-disruption principle</h2>
+<ul>
+<li><strong>Decision:</strong> DevLead NEVER modifies any Claude Code plugin's workflow, file paths, or defaults. Plugins run unchanged; DevLead ingests their outputs downstream into <code><em>intake</em>*.md</code>.</li>
+<li><strong>Rationale:</strong> Preserves user muscle memory. Avoids fragile wrapping. Single source of truth is enforced via ingestion, not via plugin modification.</li>
+<li><strong>Status:</strong> locked</li>
+<li><strong>Supersedes:</strong> (none)</li>
+</ul>
+<h2>2026-04-14 - File recognition by prefix</h2>
+<ul>
+<li><strong>Decision:</strong> DevLead recognizes files by prefix: <code><em>intake</em><em></code>, <code><em>living</em></em></code>, <code><em>project</em><em></code>, <code><em>aware</em></em></code>. Users can create any number of files per category with any slug. Install ships starter templates only; the taxonomy is open.</li>
+<li><strong>Rationale:</strong> Creative freedom. Users name files however fits them. DevLead just needs the prefix for routing.</li>
+<li><strong>Status:</strong> locked</li>
+<li><strong>Supersedes:</strong> (none)</li>
+</ul>
+<h2>2026-04-14 - Self-awareness framework</h2>
+<ul>
+<li><strong>Decision:</strong> DevLead maintains <code><em>aware</em>*.md</code> files that describe the project's current state auto-derived from code. v1 ships <code>_aware_features.md</code> and <code>_aware_design.md</code>. These are primary LLM memory substrate alongside <code>_resume.md</code> and <code>_scratchpad.md</code>.</li>
+<li><strong>Rationale:</strong> Reduces reliance on <code>CLAUDE.md</code> as the only memory source. Projects become self-aware: what features exist, what modules exist, what depends on what, all derived from the code itself.</li>
+<li><strong>Status:</strong> locked</li>
+<li><strong>Supersedes:</strong> (none)</li>
+</ul>
+<h2>2026-04-14 - Intake schema is template-driven</h2>
+<ul>
+<li><strong>Decision:</strong> Intake entries follow a template that defines allowed fields. Templates live in <code>devlead_docs/_intake_templates/*.md</code>. v1 ships one template (<code>default.md</code>); users can pick from multiple templates as more are added in v1.1+.</li>
+<li><strong>Rationale:</strong> LLM drafts all fields at ingest; user only confirms/corrects placement at triage. The template constrains what fields exist so the schema isn't open-ended.</li>
+<li><strong>Status:</strong> locked</li>
+<li><strong>Supersedes:</strong> (none)</li>
+</ul>
+<h2>2026-04-14 - Dev work discipline (all code traces to intake)</h2>
+<ul>
+<li><strong>Decision:</strong> Every code change must trace to an entry in <code><em>intake</em>*.md</code>. If the user forces work outside normal flow, Claude creates the intake entry first (best-effort ID association with existing hierarchy/intake), marks it <code>--forced</code> (setting <code>origin: forced</code>), then does the work.</li>
+<li><strong>Rationale:</strong> Prevents dark code. All work is traceable. The <code>origin: forced</code> field feeds a future K_BYPASS KPI measuring discipline slippage.</li>
+<li><strong>Status:</strong> locked</li>
+<li><strong>Supersedes:</strong> (none)</li>
+</ul>
+<h2>2026-04-14 - Enforcement: configurable, three modes</h2>
+<ul>
+<li><strong>Decision:</strong> Dev-work discipline enforcement is a config knob in <code>devlead.toml</code> (or <code>.yml</code>) with three values: <code>warning</code> (advisory systemMessage via hook; never blocks), <code>soft</code> (exit 1; blocks but overridable), <code>hard</code> (exit 2; blocks until resolved). Default at install is <code>warning</code>.</li>
+<li><strong>Rationale:</strong> Different teams want different rigor. Configurability honors both "minimum friction" and "maximum control" preferences. Default matches the locked "nothing exits 2 by default" rule.</li>
+<li><strong>Status:</strong> locked</li>
+<li><strong>Supersedes:</strong> (none)</li>
+</ul>
+<h2>2026-04-14 - _resume.md is a thin bootstrap cursor</h2>
+<ul>
+<li><strong>Decision:</strong> <code>_resume.md</code> holds ONLY session-bootstrap information: current focus, read order, next action, open blockers. It does NOT hold locked decisions (see this file), open threads (future <code>_living_open_questions.md</code>), history, or design sections. Target ~30-50 lines maximum.</li>
+<li><strong>Rationale:</strong> Original <code>_resume.md</code> grew to 654 lines at Session 3. Splitting concerns into dedicated canonical files keeps the bootstrap cursor small and scannable at session start. Historical content archived to <code>_resume_archive_2026-04-14.md</code> until the migration protocol ships.</li>
+<li><strong>Status:</strong> locked</li>
+<li><strong>Supersedes:</strong> All earlier <code>_resume.md</code> §3/§13/§4/§18/§19 responsibilities</li>
+</ul>
+<h2>2026-04-14 - Focus via intake entry status (not a separate file)</h2>
+<ul>
+<li><strong>Decision:</strong> Dev-work focus is tracked by flipping the <code>status</code> field inside an intake entry body to <code>in_progress</code>. No separate session-state file. <code>/devlead focus &lt;intake-id&gt;</code> sets it; <code>/devlead focus show</code> lists all <code>in_progress</code> entries; <code>/devlead focus clear</code> resets them all to <code>pending</code>.</li>
+<li><strong>Rationale:</strong> The intake entry already has a <code>status</code> lifecycle field. Adding a parallel <code>_session_state.json</code> creates two sources of truth that can drift. Status-in-body means focus is naturally visible when reading the intake file, and multiple entries can be <code>in_progress</code> simultaneously (a feature + a related bug, etc.).</li>
+<li><strong>Status:</strong> locked</li>
+<li><strong>Supersedes:</strong> Earlier <code>_session_state.json</code> proposal and the "CWI (Current Working Intake)" framing from the design analysis</li>
+</ul>
+<h2>2026-04-14 - Config file format: TOML via stdlib tomllib</h2>
+<ul>
+<li><strong>Decision:</strong> Config files use TOML, parsed via Python's stdlib <code>tomllib</code> (Python 3.11+). Zero external dependencies. YAML is also permitted for files where nested structure is more natural.</li>
+<li><strong>Rationale:</strong> Zero-dep footprint. TOML is human-friendly for flat config. YAML is available when needed.</li>
+<li><strong>Status:</strong> locked</li>
+<li><strong>Supersedes:</strong> (none)</li>
+</ul>
+<h2>2026-04-14 - Scratchpad routing has three targets</h2>
+<ul>
+<li><strong>Decision:</strong> Scratchpad entries are routed to one of three destinations during triage: (a) work -&gt; <code><em>intake</em><em>.md</code>, (b) decision -&gt; <code>_living_decisions.md</code>, (c) fact/doc -&gt; <code><em>living</em></em>.md</code>. Implemented via <code>/devlead promote &lt;needle&gt; [--into &lt;file&gt;|--to decision|--to fact --into &lt;file&gt;]</code>.</li>
+<li><strong>Rationale:</strong> Not all scratchpad content is work. Decisions and facts have their own canonical homes. Single-target promotion would force-fit content into intake files, creating clutter.</li>
+<li><strong>Status:</strong> locked</li>
+<li><strong>Supersedes:</strong> Earlier single-target <code>/devlead ingest --from-scratchpad</code> framing (still works as alias)</li>
+</ul>
+<h2>2026-04-17 - Hierarchy locked</h2>
+<ul>
+<li><strong>Decision:</strong> Project hierarchy frozen as MVP baseline.</li>
+<li><strong>Hash:</strong> <code>e149c98e52c5</code> (sha256 prefix of normalised <code>_project_hierarchy.md</code>)</li>
+<li><strong>Locked at:</strong> 2026-04-17T04:12:20Z</li>
+<li><strong>Status:</strong> locked</li>
+</ul>
+<div class="footer">Auto-generated by <code>devlead render</code> on 2026-04-17 05:00 UTC · <a href="index.html">← back to index</a></div>
+</body>
+</html>

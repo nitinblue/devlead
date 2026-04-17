@@ -1,0 +1,141 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Routing Table</title>
+<style>
+:root {
+  --bg: #0b0d10; --panel: #11151a; --line: #222a33;
+  --ink: #e6edf3; --ink-dim: #9aa7b3; --ink-faint: #6b7785;
+  --accent: #7ee787; --accent-2: #79c0ff;
+}
+* { box-sizing: border-box; }
+html, body { margin: 0; padding: 0; background: var(--bg); color: var(--ink);
+  font: 15px/1.55 ui-sans-serif, -apple-system, "Segoe UI", Roboto, Helvetica, Arial, sans-serif; }
+body { padding: 30px 40px; max-width: 960px; margin: 0 auto; }
+a { color: var(--accent-2); text-decoration: none; }
+a:hover { text-decoration: underline; }
+code { font-family: ui-monospace, "SF Mono", Menlo, Consolas, monospace; font-size: 13px;
+  background: #0a0d11; padding: 1px 5px; border-radius: 4px; border: 1px solid var(--line); }
+pre { background: #0a0d11; border: 1px solid var(--line); border-radius: 6px;
+  padding: 12px 14px; overflow-x: auto; font-family: ui-monospace, "SF Mono", Menlo, Consolas, monospace;
+  font-size: 13px; line-height: 1.5; }
+pre code { background: transparent; border: 0; padding: 0; }
+h1, h2, h3, h4 { letter-spacing: -0.01em; margin-top: 1.4em; margin-bottom: 0.4em; }
+h1 { font-size: 28px; border-bottom: 1px solid var(--line); padding-bottom: 8px; }
+h2 { font-size: 22px; }
+h3 { font-size: 17px; color: var(--ink); }
+h4 { font-size: 14px; color: var(--ink-dim); text-transform: uppercase; letter-spacing: 0.06em; }
+p { margin: 8px 0; }
+ul, ol { padding-left: 24px; }
+li { margin: 3px 0; }
+blockquote { border-left: 3px solid var(--accent-2); margin: 14px 0; padding: 6px 14px;
+  color: var(--ink-dim); background: #10161c; border-radius: 0 6px 6px 0; }
+hr { border: 0; border-top: 1px solid var(--line); margin: 22px 0; }
+.footer { margin-top: 48px; padding-top: 16px; border-top: 1px solid var(--line);
+  color: var(--ink-faint); font-size: 12px; }
+.footer a { color: var(--ink-faint); }
+</style>
+</head>
+<body>
+<h1>DevLead Routing Table</h1>
+<!-- devlead:sot
+  purpose: "Intent-to-responsibility routing for all DevLead actions"
+  owner: "user"
+  canonical_for: ["responsibility_routing"]
+  lineage:
+    receives_from: ["user dictation"]
+    migrates_to: []
+  lifetime: "permanent"
+  last_audit: "2026-04-16"
+-->
+<h2>How to use this file</h2>
+<p><strong>Read this file at the start of every session, before responding to any user input.</strong></p>
+<p>When the user says something, classify their intent against the responsibilities below. If a match is found, follow the steps exactly — no improvisation, no skipping. If no match is found, proceed as business-as-usual (LLM unguided).</p>
+<p><strong>To add a new responsibility:</strong> append a new <code>## R&lt;N&gt;</code> section following the same format. No code changes needed.</p>
+<hr>
+<h2>R1 — Building work pipeline</h2>
+<p><strong>Owner:</strong> DevLead <strong>Scope:</strong> Creating, updating, and maintaining the BO → TBO → TTO hierarchy</p>
+<p><strong>Triggers:</strong> user mentions new BO, TBO, TTO, hierarchy, pipeline, work breakdown, decomposition, "add objective", "break this down", "promote to hierarchy", "create a sprint"</p>
+<p><strong>Steps:</strong></p>
+<ol>
+<li>READ <code>devlead_docs/_project_hierarchy.md</code> — understand current hierarchy state</li>
+<li>READ <code>devlead_docs/_intake_features.md</code> — find the source intake entry being promoted</li>
+<li>VALIDATE — every TBO must have at least one TTO; every TTO must have a weight; weights within a parent must sum to 100</li>
+<li>WRITE new or updated BO/TBO/TTO node into <code>_project_hierarchy.md</code></li>
+<li>WRITE update to the source intake entry's <code>promoted_to</code> field</li>
+<li>WRITE <code>_audit_log.jsonl</code> event: <code>hierarchy_update</code></li>
+</ol>
+<p><strong>Guard:</strong> No BO without at least one TBO. No TBO without at least one TTO. Weights must sum to 100 per parent. BO must have <code>start_date</code> and <code>end_date</code>.</p>
+<hr>
+<h2>R2 — No coding outside intake context</h2>
+<p><strong>Owner:</strong> DevLead <strong>Scope:</strong> Ensuring every code change traces to an intake entry</p>
+<p><strong>Triggers:</strong> user asks to edit code, fix bug, refactor, create file, implement feature, write tests, modify any source file</p>
+<p><strong>Steps:</strong></p>
+<ol>
+<li>READ all <code>devlead_docs/<em>intake</em>*.md</code> — check for entries with <code>status: in_progress</code></li>
+<li>IF none found → STOP. Tell user: "No active intake focus. Run <code>/devlead focus &lt;intake-id&gt;</code> to set one, or capture this as a new intake entry first."</li>
+<li>IF found → verify the requested work relates to the focused intake entry</li>
+<li>PROCEED with coding only after steps 1-3 pass</li>
+<li>WRITE <code>_audit_log.jsonl</code> event: <code>gate_check</code> with the focused intake ID</li>
+</ol>
+<p><strong>Guard:</strong> Code editing is blocked (self-enforced) until an intake entry is in_progress. This is the discipline rule. No exceptions. If user forces it, create the intake entry FIRST with <code>--forced</code> origin, then proceed.</p>
+<hr>
+<h2>R4 — Delivering BOs on time</h2>
+<p><strong>Owner:</strong> DevLead <strong>Scope:</strong> Tracking deadlines, detecting slips, enforcing change management</p>
+<p><strong>Triggers:</strong> user mentions deadline, due date, missed date, slip, delay, "when is this due", "revise date", "extend deadline", "are we on track", or DevLead detects <code>today &gt; BO.end_date AND BO.status != done</code></p>
+<p><strong>Steps:</strong></p>
+<ol>
+<li>READ <code>devlead_docs/_project_hierarchy.md</code> — find the referenced BO</li>
+<li>CHECK if deadline is missed: <code>today &gt; end_date</code> and BO is not marked done</li>
+<li>IF missed:</li>
+</ol>
+<p>a. PRESERVE the original <code>end_date</code> as <code>actual_date: (missed YYYY-MM-DD)</code> b. ASK user for <code>revised_date</code> and <code>revision_justification</code> c. WRITE updated BO node with change-management fields d. WRITE <code>_audit_log.jsonl</code> event: <code>deadline_revision</code></p>
+<ol>
+<li>IF on track: report days remaining and convergence percentage</li>
+</ol>
+<p><strong>Guard:</strong> <code>revised_date</code> requires <code>revision_justification</code>. No silent slips. Every revision is an audit event.</p>
+<hr>
+<h2>R5 — Project management</h2>
+<p><strong>Owner:</strong> DevLead <strong>Scope:</strong> Status, blockers, priorities, planning, progress tracking</p>
+<p><strong>Triggers:</strong> user asks about status, blockers, priorities, sprint planning, "what should I work on next", progress, burndown, "what's done", "what's left"</p>
+<p><strong>Steps:</strong></p>
+<ol>
+<li>READ <code>devlead_docs/_project_hierarchy.md</code> — compute convergence per BO/TBO</li>
+<li>READ all <code>devlead_docs/<em>intake</em>*.md</code> — count pending/in_progress/done</li>
+<li>READ <code>devlead_docs/_audit_log.jsonl</code> — last 20 events for activity summary</li>
+<li>COMPUTE status: done TTOs / total TTOs per TBO, weighted convergence per BO</li>
+<li>PRESENT summary to user in plain language</li>
+<li>WRITE <code>_audit_log.jsonl</code> event: <code>status_query</code></li>
+</ol>
+<p><strong>Guard:</strong> Status is computed from data, not from memory. DevLead never says "I think we're at 60%" — it computes 60% from the hierarchy checkboxes and weights.</p>
+<hr>
+<h2>R6 — KPI generation</h2>
+<p><strong>Owner:</strong> DevLead <strong>Scope:</strong> Generating metrics from every DevLead action; reporting health</p>
+<p><strong>Triggers:</strong> user asks for KPIs, dashboard, report, metrics, health, "how are we doing", "show me the numbers", or at end of session</p>
+<p><strong>Steps:</strong></p>
+<ol>
+<li>READ <code>devlead_docs/_audit_log.jsonl</code> — event counts, gate_warn frequency</li>
+<li>READ <code>devlead_docs/_project_hierarchy.md</code> — convergence from checkboxes + weights</li>
+<li>READ all <code>devlead_docs/<em>intake</em>*.md</code> — throughput: pending/done/in_progress counts</li>
+<li>COMPUTE KPIs across four categories:</li>
+</ol>
+<ul>
+<li><strong>A. LLM Effectiveness:</strong> K_BYPASS (forced-origin count), gate_warn frequency</li>
+<li><strong>B. Delivery:</strong> intake throughput, BO on-time rate, blocker count</li>
+<li><strong>C. Project Health:</strong> traceability (TTOs linked to intake), doc freshness</li>
+<li><strong>D. Business Convergence:</strong> weighted rollup from hierarchy</li>
+</ul>
+<ol>
+<li>RUN <code>devlead report</code> to generate HTML dashboard</li>
+<li>WRITE <code>_audit_log.jsonl</code> event: <code>kpi_generated</code></li>
+</ol>
+<p><strong>Guard:</strong> KPIs are computed from data, never estimated. Every KPI has a formula and a data source. If the data doesn't exist, the KPI shows "no data" — never a guess.</p>
+<hr>
+<h2>Unmatched intent — business as usual</h2>
+<p>If the user's intent does not match any responsibility above, Claude proceeds normally. DevLead does not interfere with general conversation, research, debugging discussions, or other non-governance activities.</p>
+<p>However: if during BAU work Claude is about to edit a file, R2 still applies. R2 is always active, not just when explicitly triggered.</p>
+<div class="footer">Auto-generated by <code>devlead render</code> on 2026-04-17 05:00 UTC · <a href="index.html">← back to index</a></div>
+</body>
+</html>

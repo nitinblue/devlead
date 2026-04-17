@@ -1,0 +1,679 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Scratchpad</title>
+<style>
+:root {
+  --bg: #0b0d10; --panel: #11151a; --line: #222a33;
+  --ink: #e6edf3; --ink-dim: #9aa7b3; --ink-faint: #6b7785;
+  --accent: #7ee787; --accent-2: #79c0ff;
+}
+* { box-sizing: border-box; }
+html, body { margin: 0; padding: 0; background: var(--bg); color: var(--ink);
+  font: 15px/1.55 ui-sans-serif, -apple-system, "Segoe UI", Roboto, Helvetica, Arial, sans-serif; }
+body { padding: 30px 40px; max-width: 960px; margin: 0 auto; }
+a { color: var(--accent-2); text-decoration: none; }
+a:hover { text-decoration: underline; }
+code { font-family: ui-monospace, "SF Mono", Menlo, Consolas, monospace; font-size: 13px;
+  background: #0a0d11; padding: 1px 5px; border-radius: 4px; border: 1px solid var(--line); }
+pre { background: #0a0d11; border: 1px solid var(--line); border-radius: 6px;
+  padding: 12px 14px; overflow-x: auto; font-family: ui-monospace, "SF Mono", Menlo, Consolas, monospace;
+  font-size: 13px; line-height: 1.5; }
+pre code { background: transparent; border: 0; padding: 0; }
+h1, h2, h3, h4 { letter-spacing: -0.01em; margin-top: 1.4em; margin-bottom: 0.4em; }
+h1 { font-size: 28px; border-bottom: 1px solid var(--line); padding-bottom: 8px; }
+h2 { font-size: 22px; }
+h3 { font-size: 17px; color: var(--ink); }
+h4 { font-size: 14px; color: var(--ink-dim); text-transform: uppercase; letter-spacing: 0.06em; }
+p { margin: 8px 0; }
+ul, ol { padding-left: 24px; }
+li { margin: 3px 0; }
+blockquote { border-left: 3px solid var(--accent-2); margin: 14px 0; padding: 6px 14px;
+  color: var(--ink-dim); background: #10161c; border-radius: 0 6px 6px 0; }
+hr { border: 0; border-top: 1px solid var(--line); margin: 22px 0; }
+.footer { margin-top: 48px; padding-top: 16px; border-top: 1px solid var(--line);
+  color: var(--ink-faint); font-size: 12px; }
+.footer a { color: var(--ink-faint); }
+</style>
+</head>
+<body>
+<h1>_scratchpad.md - DevLead raw capture / triage inbox</h1>
+<!-- devlead:sot
+  purpose: "Raw untriaged capture inbox"
+  owner: "claude+user"
+  canonical_for: ["raw_capture"]
+  lineage:
+    receives_from: ["session dialogue"]
+    migrates_to: ["_intake_*.md", "_living_decisions.md", "_living_*.md"]
+  lifetime: "permanent"
+  bloat_cap_lines: 500
+  last_audit: "2026-04-15"
+-->
+<blockquote><strong>Purpose.</strong> This file is the project's <strong>raw capture space</strong>. Anything the user says that doesn't yet have a dedicated home lands here verbatim (or close to it), so nothing is lost while DevLead figures out where it belongs. As items find proper homes (design docs, locked decisions in <code>_resume.md</code>, living files, intake files, <code>CLAUDE.md</code>), they get triaged OUT of here - hash-verified, audited, zero information loss.  <strong>Contrast with <code>_resume.md</code>.</strong> <code>_resume.md</code> holds <strong>session-to-session memory</strong> - the handoff pointer for the next session, locked decisions, open threads, "where we are right now." <code>_scratchpad.md</code> holds <strong>raw untriaged dumps</strong> from any given session. Both exist, both are permanent, both are read every session. The goal is to keep <code>_scratchpad.md</code> as lean as possible.  <strong>Filename:</strong> <code>devlead_docs/_scratchpad.md</code></blockquote>
+<hr>
+<h2>Entry - 2026-04-14 - Plugin Bridge and Intake Flow</h2>
+<blockquote>Nitin dictated the bridging pattern between DevLead and other Claude Code plugins. Captured raw here; full design drafted in plan mode, implemented in Session 3 (this session). On completion this entry migrates OUT to <code>devlead_docs/_design_section2_plugin_bridge.md</code>.</blockquote>
+<h3>Principles (load-bearing)</h3>
+<ol>
+<li><strong>DevLead is the single source of truth for the project's work backlog.</strong> Every task that ever gets executed must trace to a node in <code>devlead_docs/</code>.</li>
+<li><strong>Zero disruption to plugin workflows.</strong> DevLead does NOT modify, override, or replace how any Claude Code plugin operates. Superpowers' <code>brainstorming -&gt; specs -&gt; writing-plans</code> flow stays exactly as it is. Other plugins stay exactly as they are. Users' existing muscle memory is preserved.</li>
+<li><strong>Plugins write to their native space; DevLead ingests downstream.</strong> Superpowers writes to <code>docs/superpowers/specs/</code> and <code>docs/superpowers/plans/</code> - unchanged. DevLead picks up the actionable outputs AFTER and files them into <code>devlead_docs/<em>intake</em>*.md</code>, from which they flow into the BO/TBO/TTO hierarchy.</li>
+<li><strong>No dark code.</strong> Every line of code that gets written must trace back through: intake file -&gt; TTO -&gt; TBO -&gt; BO -&gt; Phase -&gt; Vision. Code without that trace is "dark" - DevLead must detect it (v1 warn, v1.1 optional block).</li>
+</ol>
+<h3>The flow (Nitin's dictation)</h3>
+<pre>1. Raw dump of notes        -&gt; _scratchpad.md
+                                  |  triage (continuous)
+                                  v
+2. Item picked for backlog  -&gt; Claude runs the standard plugin flow
+                                (e.g. superpowers brainstorming -&gt; spec -&gt;
+                                 writing-plans -&gt; plan). Unchanged.
+                                  |  bridge (DevLead's new job)
+                                  v
+3. Plan's actionable items  -&gt; _intake_*.md
+                                  |  promotion (design TBD)
+                                  v
+4. Backlog                  -&gt; _project_hierarchy.md (BO / TBO / TTO)
+                                  |  normal DevLead flow
+                                  v
+5. Code execution           -&gt; traces all the way back up to the
+                                originating note in _scratchpad.md</pre>
+<h3>Intake files - initial set (Nitin named these)</h3>
+<p>| File | What it holds | |---|---| | <code>_intake_features.md</code> | New feature requests ready to be planned | | <code>_intake_bug_issues.md</code> | Bugs / issues / defects ready to be planned | | <em>(others TBD in plan mode)</em> | |</p>
+<h3>Status of this entry</h3>
+<ul>
+<li>Load-bearing principles promoted to <code>_resume.md</code> Section 3 (locked decisions).</li>
+<li>Open mechanism questions promoted to <code>_resume.md</code> Section 13 (open threads).</li>
+<li>Plan written to <code>C:\Users\nitin\.claude\plans\iridescent-fluttering-sloth.md</code> and approved.</li>
+<li>Implementation landed Session 3 (2026-04-14). Ingested as INTF-0001 in <code>_intake_features.md</code>.</li>
+<li>This entry will migrate OUT to <code>_design_section2_plugin_bridge.md</code> on Day 4; until then it remains here for traceability.</li>
+</ul>
+<hr>
+<h2>Entry - 2026-04-14 - Hierarchy simplification, Sprint rename, template-driven intake</h2>
+<blockquote>Nitin dictated a set of simplifications to the intake / hierarchy layer in Session 3. All captured raw here; locked rows were added to <code>_resume.md</code> Section 3 and the code refactor was executed immediately.</blockquote>
+<ol>
+<li><strong>Vision removed from the hierarchy.</strong> New hierarchy is <code>Sprint -&gt; BO -&gt; TBO -&gt; TTO</code>.</li>
+<li><strong>BO = Goal (merged).</strong> BOs are now goals with target dates. No separate Goals</li>
+</ol>
+<p>layer. K8 "Goal Yield" -&gt; K8 "BO Yield".</p>
+<ol>
+<li><strong>Top container renamed from "Phase" to "Sprint".</strong> DevLead's Sprint is</li>
+</ol>
+<p>scoped to ship-windows / versions (months), NOT the agile 2-week cadence. Docs must be explicit about this to prevent confusion. Flagged as open thread for monitoring.</p>
+<ol>
+<li><strong>Intake schema: lean + template-driven.</strong> Claude drafts every field at</li>
+</ol>
+<p>ingest (title, summary, actionable items, proposed BO/Sprint/weight). User only confirms or corrects placement at triage. Onus is on the LLM; user's cognitive load is near-zero.</p>
+<ol>
+<li><strong>Templates are real files on disk.</strong> They cannot be open-ended - every</li>
+</ol>
+<p>intake file follows a template that defines allowed fields, owners, required/optional, defaults. Templates live in <code>devlead_docs/_intake_templates/*.md</code> as editable markdown files. <strong>v1 ships ONE template (<code>default.md</code>)</strong> - all intake files use it. Users pick from multiple templates as more are added in v1.1+.</p>
+<ol>
+<li><strong>Template auto-update loop (v1.1).</strong> Over time, DevLead should watch user</li>
+</ol>
+<p>behavior - fields always left blank, fields user adds manually, wording changes - and propose template updates. v1 ships static templates; the learning loop is deferred to v1.1 (open thread in <code>_resume.md</code> Section 13).</p>
+<ol>
+<li><strong>File recognition by PREFIX, not hardcoded filenames.</strong> DevLead globs</li>
+</ol>
+<p><code><em>intake</em><em>.md</code>, <code><em>living</em></em>.md</code>, <code><em>project</em>*.md</code>. Users can create as many files per category as they want, with any slug. Install ships starter templates only.</p>
+<ol>
+<li><strong>Intake ID prefix derived from filename slug</strong> (uppercased, hyphen-separated).</li>
+</ol>
+<p><code>_intake_features.md</code> -&gt; <code>FEATURES-NNNN</code>, <code>_intake_security_findings.md</code> -&gt; <code>SECURITY-FINDINGS-NNNN</code>. No hardcoded prefix constants.</p>
+<h3>Implementation landed this session</h3>
+<ul>
+<li><code>intake.py</code> rewritten: dataclass has new fields (proposed_bo, proposed_sprint,</li>
+</ul>
+<p>proposed_weight, promoted_at); <code>prefix_from_path()</code> derives ID; heading regex accepts any uppercase-alnum-hyphen prefix; <code>template_path_for()</code> locates the template file for a given intake file.</p>
+<ul>
+<li><code>bridge.py</code> rewritten: <code>ingest(plan, into_file, docs_dir)</code> signature; validates</li>
+</ul>
+<p>that <code>into_file</code> matches <code><em>intake</em>*.md</code>.</p>
+<ul>
+<li><code>cli.py</code> rewritten: <code>/devlead ingest &lt;plan&gt; --into &lt;file&gt;</code> (was <code>--type</code>);</li>
+</ul>
+<p><code>/devlead intake</code> lists all <code><em>intake</em>*.md</code> files (not a fixed set).</p>
+<ul>
+<li><code>install.py</code> rewritten: nested-path support; copies template files into</li>
+</ul>
+<p><code>_intake_templates/</code>; renamed <code>_intake_bug_issues.md</code> -&gt; <code>_intake_bugs.md</code>.</p>
+<ul>
+<li>Scaffold templates: new <code>_intake_bugs.md.tmpl</code>, `_intake_templates/{features,</li>
+</ul>
+<p>bugs,_default}.md.tmpl` template spec files.</p>
+<ul>
+<li>Commands <code>/devlead ingest</code> and <code>/devlead intake</code> updated in <code>commands/*.md</code>.</li>
+</ul>
+<h3>Status of this entry</h3>
+<ul>
+<li>Principles locked in <code>_resume.md</code> Section 3.</li>
+<li>Open threads in <code>_resume.md</code> Section 13 (Section 4 stale, goals redundancy,</li>
+</ul>
+<p>template auto-update loop, Sprint/agile collision, template versioning).</p>
+<ul>
+<li>Code + templates + docs updated in the same session.</li>
+<li>Migrates OUT to <code>_design_section3_intake_templates.md</code> on Day 4.</li>
+</ul>
+<hr>
+<h2>Entry - 2026-04-14 - Self-awareness framework (reduce CLAUDE.md reliance)</h2>
+<blockquote>Nitin dictated a new in-built DevLead feature: projects running on DevLead should become <strong>self-aware</strong>. Start slow. Eventually: DevLead knows the technical design, patterns used, KPIs per feature, and every behavior DevLead introduces. <strong>LLM should not rely solely on CLAUDE.md for memory; DevLead should give a very structured source of information for LLM memory.</strong></blockquote>
+<h3>Framework (v1)</h3>
+<ol>
+<li><strong>Concept.</strong> A project is self-aware when DevLead continuously maintains</li>
+</ol>
+<p>a structured, code-derived description of the CURRENT state (features, design, patterns, metrics) separate from the curated <code><em>living</em>*</code> files.</p>
+<ol>
+<li><strong>File convention.</strong> <code>devlead_docs/<em>aware</em>*.md</code>. Flat, prefixed,</li>
+</ol>
+<p>machine-generated, never hand-edited. Overwritten on every refresh.</p>
+<ol>
+<li><strong>Source of truth.</strong> The CODE. Awareness files are always re-derivable.</li>
+<li><strong>LLM session-start read order (new):</strong></li>
+</ol>
+<p><code>_resume.md</code> -&gt; <code>_scratchpad.md</code> -&gt; <code><em>aware</em>*.md</code> -&gt; work.</p>
+<ol>
+<li>**Distinction from <code><em>living</em>*</code>:**</li>
+</ol>
+<ul>
+<li><code><em>living</em>*.md</code> = intent (design goals, decisions, glossary) - curated.</li>
+<li><code><em>aware</em>*.md</code> = reality (what the code actually does now) - derived.</li>
+</ul>
+<h3>Implemented this session (v1)</h3>
+<ul>
+<li><code>src/devlead/awareness.py</code> - pure scanner, stdlib only, no LLM calls.</li>
+<li><code>/devlead awareness</code> command (refreshes both aware files).</li>
+<li><code>_aware_features.md</code> - inventory of slash commands with description, command</li>
+</ul>
+<p>file, and handler function.</p>
+<ul>
+<li><code>_aware_design.md</code> - inventory of Python modules with purpose (from</li>
+</ul>
+<p>docstring), public API, line count, internal dependencies.</p>
+<ul>
+<li>Scaffold placeholders ship at install time; refresh fills them in.</li>
+<li><code>CLAUDE.md</code> session-start read order updated.</li>
+</ul>
+<h3>Deferred to v1.1</h3>
+<ul>
+<li><code>_aware_metrics.md</code> - live KPI values</li>
+<li><code>_aware_dependencies.md</code> - cross-module dependency graph</li>
+<li><code>_aware_invariants.md</code> - things that must stay true</li>
+<li>Auto-refresh on Stop hook (so files stay current without manual calls)</li>
+<li>Trace-to-TTO auto-linking (awareness file cross-references to BO/TBO/TTO IDs)</li>
+<li>Template-driven aware file schema (like intake templates)</li>
+</ul>
+<h3>Status</h3>
+<ul>
+<li>Principles captured in <code>_resume.md</code> Section 3 as locked rows.</li>
+<li>Implementation landed in this session.</li>
+<li>Dogfood: run <code>/devlead awareness</code> on DevLead's own repo to populate both</li>
+</ul>
+<p>aware files.</p>
+<ul>
+<li>Migrates OUT to <code>_design_section4_self_awareness.md</code> when Day 4 store layer</li>
+</ul>
+<p>lands.</p>
+<blockquote><strong>Promoted:</strong> tracked as <code>FEATURES-0002</code> in <code>_intake_features.md</code>.</blockquote>
+<blockquote><strong>Promoted:</strong> tracked as <code>FEATURES-0002</code> in <code>_intake_features.md</code>.</blockquote>
+<hr>
+<h2>Entry - 2026-04-14 - Scratchpad to intake conversion + dev-work discipline</h2>
+<blockquote>Last feature before Nitin freezes dev work to shake-the-tree test DevLead on itself. Two pieces:</blockquote>
+<h3>1. Scratchpad -&gt; intake conversion</h3>
+<ul>
+<li>New: <code>/devlead ingest --from-scratchpad &lt;needle&gt; --into &lt;_intake_file.md&gt;</code></li>
+<li><code>&lt;needle&gt;</code> matches substring on scratchpad entry_id or title. First match</li>
+</ul>
+<p>in file order wins.</p>
+<ul>
+<li>Converts the scratchpad entry directly into an intake entry - no plugin</li>
+</ul>
+<p>plan round-trip needed for well-scoped items.</p>
+<ul>
+<li>Bidirectional trace: new intake entry records <code>source: scratchpad:&lt;entry-id&gt;</code>;</li>
+</ul>
+<p>scratchpad entry gets a <code>&gt; <strong>Promoted:</strong></code> cross-reference line appended.</p>
+<ul>
+<li>Implemented via <code>scratchpad.get_entry()</code>, <code>scratchpad.append_cross_reference()</code>,</li>
+</ul>
+<p>and <code>bridge.ingest_from_scratchpad()</code>.</p>
+<h3>2. Dev-work discipline rule</h3>
+<ul>
+<li>Hard rule in <code>CLAUDE.md</code>: every code change must trace to an entry in</li>
+</ul>
+<p><code><em>intake</em>*.md</code>. No exceptions.</p>
+<ul>
+<li>Bugs Claude notices mid-task force a STOP:</li>
+</ul>
+<ol>
+<li>Append a new entry to <code>_scratchpad.md</code> describing the bug.</li>
+<li>Run <code>/devlead ingest --from-scratchpad &lt;needle&gt; --into _intake_bugs.md</code>.</li>
+<li>Only then fix the bug, with the new BUGS-NNNN ID in the commit message.</li>
+</ol>
+<ul>
+<li>Small inline cleanups follow the same rule. No "this is just a one-liner"</li>
+</ul>
+<p>exemptions - if it's too small to warrant an intake entry, it's too small to do right now; leave a scratchpad note and move on.</p>
+<ul>
+<li>Advisory in v1 (warnings + CLAUDE.md rule). Hook-based blocks land in v1.1.</li>
+</ul>
+<h3>3. Actionable-items floor</h3>
+<ul>
+<li>Every intake entry must have &gt;= 1 actionable item.</li>
+<li>Zero-item entries trigger a warning at ingest time:</li>
+</ul>
+<p>"every TBO must map to granular TTOs - refine or reject before promoting"</p>
+<ul>
+<li>This is the v1 version of "TBOs must map to granular TTOs". Full mapping</li>
+</ul>
+<p>enforcement lands when the store layer ships (Day 4+).</p>
+<h3>Refinements (added mid-session by Nitin)</h3>
+<hr>
+<h2>Entry - 2026-04-14 - Memory cohesion and enforcement design analysis (depth phase kickoff)</h2>
+<blockquote>Nitin called development freeze after Session 3. Pivot from breadth (new features) to depth (cohesiveness, tightness, flexibility, configurability, agility, gracefulness). Two phase objectives:  1. Memory model cohesion: clutter-less, leak-free, full lineage. 2. Enforcement design: how DevLead gracefully overrides LLM behavior so that _intake files remain the source of truth and no code gets written without a traceable entry.  This analysis is itself forced work (Nitin dictated; no pre-existing intake entry). Per the discipline rule I just shipped, Claude creates the intake entry first, associates IDs best-effort, marks --forced, THEN does the work.</blockquote>
+<h3>Actionable items</h3>
+<ul>
+<li>[ ] Audit every file in devlead_docs/ for purpose, owner, lifetime, status</li>
+<li>[ ] Identify all leakage points (duplications, contradictions, stale content)</li>
+<li>[ ] Map full content lineage (where info enters, transforms, exits)</li>
+<li>[ ] Propose source-of-truth declaration block pattern</li>
+<li>[ ] Propose lineage metadata extension for all file types</li>
+<li>[ ] Propose migration protocol with zero-loss guarantee</li>
+<li>[ ] Propose _resume.md bloat discipline with cap + migration nudges</li>
+<li>[ ] Enumerate enforcement override levels 0-5 with tradeoffs</li>
+<li>[ ] Recommend v1 enforcement mechanism (hook-based systemMessage, Level 2)</li>
+<li>[ ] Design CWI (current working intake) tracking mechanism</li>
+<li>[ ] Draft devlead.yml config surface for memory + enforcement + audit</li>
+<li>[ ] Design audit log schema and /devlead audit subcommand</li>
+<li>[ ] Produce comprehensive HTML analysis document for user review</li>
+<li>[ ] List open questions for Nitin to answer before implementation begins</li>
+</ul>
+<h3>Context pointers</h3>
+<ul>
+<li>Current state post-Session 3: 23 scaffold files, 6 CLI commands, 6 modules</li>
+<li>Discipline rule now in CLAUDE.md; --forced flag ships with origin field</li>
+<li>Next session will be shake-the-tree testing, not new features</li>
+<li>Best-effort ID associations: plugin bridge principles in §3 + self-awareness</li>
+</ul>
+<p>row in §3 + forced-work procedure in §3 (all directly relevant)</p>
+<blockquote><strong>Promoted:</strong> tracked as <code>FEATURES-0003</code> in <code>_intake_features.md</code>.</blockquote>
+<hr>
+<h2>Entry - 2026-04-14 - Depth phase implementation (session 3 close-out)</h2>
+<blockquote>Nitin said "go ahead and implement all these" - meaning the clean-slate flow changes from the design analysis. This session lands the code. Next session is shake-the-tree test.</blockquote>
+<h3>Actionable items</h3>
+<ul>
+<li>[x] Archive current _resume.md to _resume_archive_2026-04-14.md (manual zero-loss)</li>
+<li>[x] Write src/devlead/session.py (SessionState + Focus + load/save/set_focus)</li>
+<li>[x] Add /devlead focus command in cli.py</li>
+<li>[x] Add /devlead promote command in cli.py + bridge.promote_to_living</li>
+<li>[x] Fix L12: append_cross_reference dedupe in scratchpad.py</li>
+<li>[x] Overwrite _resume.md with thin cursor</li>
+<li>[x] Populate _living_decisions.md with initial locked decisions</li>
+<li>[x] Rewrite _living_goals.md as doc-only container</li>
+<li>[x] Update scaffold/_resume.md.tmpl (thin cursor template)</li>
+<li>[x] Add scaffold/_session_state.json.tmpl</li>
+<li>[x] Update install.py SCAFFOLD_FILES</li>
+<li>[x] Update CLAUDE.md session-start read order</li>
+<li>[x] Update commands/triage.md with 3-way routing</li>
+<li>[x] Create commands/focus.md</li>
+<li>[x] Create commands/promote.md</li>
+<li>[x] Dogfood: install, promote, focus, refresh awareness</li>
+<li>[x] Refresh docs/memory_and_enforcement_design_2026-04-14.html</li>
+</ul>
+<h3>Context pointers</h3>
+<ul>
+<li>FEATURES-0003 = design analysis intake (earlier this session)</li>
+<li>FEATURES-0004 = implementation intake (this work)</li>
+<li>Defaults locked per Nitin: TOML, L1/L2/L3/L12 first, /devlead focus naming</li>
+</ul>
+<hr>
+<h3>(Original position of the refinements block below)</h3>
+<ol>
+<li><strong>Forced-work procedure.</strong> When user pushes Claude to work outside the</li>
+</ol>
+<p>normal intake flow, Claude should NOT refuse and should NOT skip silently. Instead: (a) create the intake entry first, (b) best-effort associate IDs with existing hierarchy/intake items, (c) mark it <code>--forced</code> so <code>origin="forced"</code>, (d) then do the work. Trace integrity preserved.</p>
+<ol>
+<li><strong>KPI tag for forced work.</strong> The <code>origin</code> field is the v1 data model for a</li>
+</ol>
+<p>future K_BYPASS KPI that measures how often discipline is bypassed. v1 ships the field; v1.1 wires the calculation.</p>
+<ol>
+<li><strong>YAML permitted for configs.</strong> User explicitly approved YAML as a valid</li>
+</ol>
+<p>format for future config files (alongside TOML). Decide per-file when the config layer ships.</p>
+<h3>Post-implementation plan (Nitin's instructions)</h3>
+<ul>
+<li><strong>FREEZE development</strong> after this feature (with refinements above).</li>
+<li>Install DevLead on DevLead itself (already done; will re-verify rigorously).</li>
+<li>Shake-the-tree test: find gaps, friction, dark code paths.</li>
+<li>Audit what has been built and what is user-configurable.</li>
+</ul>
+<h3>Status of this entry</h3>
+<ul>
+<li>Principles in <code>_resume.md</code> Section 3 (4 new locked rows).</li>
+<li>Implementation landed in this session.</li>
+<li>Dogfood: convert the "self-awareness" scratchpad entry to</li>
+</ul>
+<p><code>_intake_features.md</code> via <code>--from-scratchpad</code>.</p>
+<blockquote><strong>Promoted:</strong> tracked as <code>FEATURES-0001</code> in <code>_intake_features.md</code>.</blockquote>
+<h2>Entry - 2026-04-16 - DevLead responsibility chain and intent routing (Nitin dictation 2026-04-16)</h2>
+<p>Nitin dictated the core product definition for DevLead. This is the canonical source.</p>
+<h2>DevLead has a defined role and responsibility set</h2>
+<p>Any user intent that resolves to one of DevLead's responsibilities triggers deterministic routing. Unresolved intents pass through to Claude as business-as-usual.</p>
+<h2>DevLead responsibilities (load-bearing, Nitin-dictated)</h2>
+<ol>
+<li><strong>Building the pipeline of work</strong> — BO -&gt; TBO -&gt; TTO mapping. The hierarchy is DevLead's job.</li>
+<li><strong>No coding outside intake context</strong> — All code traces to _intake entries. DevLead enforces this.</li>
+<li><strong>Full ownership of flow, design, architecture, modularity</strong> — DevLead knows the codebase. DevLead knows the design. DevLead knows the module boundaries. Not Claude.</li>
+<li><strong>Delivering business objectives on time</strong> — DevLead is accountable for deadlines, not Claude.</li>
+<li><strong>Full project management suite</strong> — Planning, tracking, prioritization, status, blockers — all DevLead.</li>
+<li><strong>Everything DevLead does generates KPI data</strong> — Every action produces data for KPI generation and reporting.</li>
+</ol>
+<h2>Intent routing concept</h2>
+<ul>
+<li>User says something -&gt; DevLead classifies intent -&gt; if intent matches a responsibility, DevLead routes to predefined file read/write sequence -&gt; Claude executes</li>
+<li>If intent does not match any responsibility -&gt; Claude proceeds as normal</li>
+<li>The responsibility chain is deterministic. Claude does not improvise inside DevLead's scope.</li>
+</ul>
+<h2>Non-functional requirements</h2>
+<ul>
+<li>Robust KPI generation and reporting framework</li>
+<li>Look up legacy/v1/ folder for features that were working fine (KPI engine, convergence, dashboard, etc.)</li>
+</ul>
+<h2>Source</h2>
+<p>Nitin verbal dictation, 2026-04-16 session. Captured verbatim into scratchpad per DevLead discipline.</p>
+<hr>
+<h2>Entry - 2026-04-16 - File discipline rule - no file without DevLead framework approval (Nitin dictation 2026-04-16)</h2>
+<p>Any new file Claude wants to create must be proposed through DevLead first.</p>
+<p>Claude cannot invent files. DevLead's framework defines what files exist, their naming convention, their category (<em>intake</em><em>, <em>living</em></em>, <em>aware</em><em>, <em>project</em></em>, _scratchpad.md, _resume.md), and their purpose.</p>
+<p>If a new file is needed, it goes through scratchpad -&gt; intake -&gt; DevLead approval. Not Claude deciding on its own.</p>
+<p>This includes memory files. The ~/.claude/projects/ memory directory is a Claude Code feature, but the CONTENT stored there should originate from devlead_docs/ (per CLAUDE.md rule: LLM memory is a derived view of devlead_docs/).</p>
+<p>Violation today: Claude created feedback_ground_truth.md, feedback_forward_motion.md, feedback_honesty_over_completeness.md as standalone memory files without routing them through DevLead. The content is valid but the process was wrong.</p>
+<p>Source: Nitin verbal correction, 2026-04-16.</p>
+<hr>
+<h2>Entry - 2026-04-16 - V1 DoD and exit criteria port + report line counts (Nitin 2026-04-16)</h2>
+<p>Two items from session:</p>
+<ol>
+<li>V1 had DoD at TBO level and exit criteria per state machine state. Port to v2:</li>
+</ol>
+<ul>
+<li>TBO gets a dod: field (human-readable acceptance)</li>
+<li>Routing table steps get exit criteria (what must be true before moving to next step)</li>
+<li>Functional TTOs: only DevLead marks done via verify command</li>
+<li>Non-functional TTOs: Claude can mark done</li>
+</ul>
+<ol>
+<li>Report should show line counts for MD files, not byte counts. Nitin said:</li>
+</ol>
+<p>"MD files i do not care about bytes, i may care about number of lines"</p>
+<p>Source: Nitin verbal, 2026-04-16 late session.</p>
+<hr>
+<h2>Entry - 2026-04-16 - Session 4 key concepts crystallized (Nitin + Claude 2026-04-16)</h2>
+<p>Three core concepts emerged and were validated this session. Documenting for permanence.</p>
+<h2>1. Memory Management</h2>
+<p>Problem: Claude starts every session from zero. Files exist but Claude skips them. Solution: Embed governance content directly in CLAUDE.md (not pointers to files). CLAUDE.md is the ONLY file every LLM reads automatically at session start. Everything load-bearing goes IN CLAUDE.md, not referenced from it.</p>
+<p>Key insight: _resume.md must be auto-generated by DevLead from real data (hierarchy convergence, intake status, audit log, git state). Claude never hand-writes it. DevLead writes it via devlead resume command.</p>
+<p>Session history (_session_history.jsonl) tracks convergence + tokens across sessions for trend analysis.</p>
+<p>Status: resume.py built and working. Session history schema defined but record_session() never called yet (zero entries).</p>
+<h2>2. Documentation as Governance</h2>
+<p>Problem: Claude builds Python modules and calls it governance. The code exists but nothing governs Claude's behavior.</p>
+<p>Solution: The governance IS the documentation. Specifically:</p>
+<ul>
+<li>_routing_table.md content embedded in CLAUDE.md = the brain</li>
+<li>_project_hierarchy.md with verify: fields on TTOs = the acceptance criteria  </li>
+<li>devlead report HTML = the trust layer for non-coders</li>
+</ul>
+<p>MD-driven means: if you delete all the Python, the routing table in CLAUDE.md still tells the LLM what to do. Python adds computation (KPIs, reports) but governance works without it.</p>
+<p>Status: routing table created with 5 responsibilities. Embedded in CLAUDE.md via bootstrap.py. Proven mechanism (same as superpowers skills).</p>
+<h2>3. Intent Routing</h2>
+<p>Problem: Claude improvises. Given any user input, Claude guesses what to do.</p>
+<p>Solution: Deterministic routing. User intent is classified against DevLead responsibilities. If matched, follow predefined steps (specific file reads and writes). If unmatched, Claude proceeds as normal.</p>
+<p>The routing table defines:</p>
+<ul>
+<li>Triggers (what user might say)</li>
+<li>Steps (exact sequence of READ/WRITE/VALIDATE/ASK actions)</li>
+<li>Guards (invariants that must hold)</li>
+</ul>
+<p>Key insight from Nitin: responsibilities are configurable. Adding a new one = adding a markdown section. No code changes. The LLM reads the new section and follows it.</p>
+<p>Feasibility proof: superpowers skills work this exact way. Markdown loaded into context, LLM follows the steps. The routing table is a permanent skill that is always active via CLAUDE.md.</p>
+<p>Status: 5 responsibilities defined (R1 pipeline, R2 no dark code, R4 deadlines, R5 project mgmt, R6 KPIs). Embedded in CLAUDE.md. Not yet tested in a fresh session — that is the critical next step.</p>
+<h2>4. Definition of Done</h2>
+<p>Problem: Claude marks its own work done. Every checkbox is Claude grading itself.</p>
+<p>Solution: TTOs have verify: fields — shell commands that DevLead runs. If exit 0, the TTO is done. Claude NEVER checks functional TTO boxes. Only DevLead does.</p>
+<p>Non-functional TTOs (documentation, pricing, positioning) can be marked by Claude since they require human judgment.</p>
+<p>Status: 45 TTOs with verify: fields. All unchecked. DevLead verification runner not built yet — that is the mechanism that will actually check boxes.</p>
+<h2>Open questions for next session</h2>
+<ol>
+<li>Should the routing table be a skill (invoked via Skill tool) or always-in-CLAUDE.md?</li>
+<li>How does intent classification actually work? Pattern matching on keywords? Or LLM judgment?</li>
+<li>What happens when intent is ambiguous — matches two responsibilities?</li>
+<li>How do we test routing in a fresh session without burning all tokens on the test?</li>
+</ol>
+<p>Source: Session 4 synthesis, 2026-04-16.</p>
+<hr>
+<h2>Entry - 2026-04-16 - Document relationship DAG — auto-propagation on change (Nitin 2026-04-16)</h2>
+<p>When any devlead_docs/ file changes, related files must auto-update.</p>
+<p>The SOT blocks already have receives_from and migrates_to fields. These define the DAG edges. What is missing: a propagation engine that watches for changes and triggers downstream regeneration.</p>
+<p>Examples:</p>
+<ul>
+<li>_routing_table.md changes -&gt; CLAUDE.md regenerates</li>
+<li>_project_hierarchy.md changes -&gt; _resume.md regenerates</li>
+<li><em>intake</em>*.md changes -&gt; _resume.md regenerates</li>
+<li>_living_decisions.md changes -&gt; CLAUDE.md regenerates</li>
+<li>Any file changes -&gt; dashboard regenerates</li>
+</ul>
+<p>This is a core architectural piece. Without it, files drift from each other and the governance layer becomes stale mid-session.</p>
+<p>Priority: HIGH — this should be in the foundations page as Foundation 3.</p>
+<p>Source: Nitin question, 2026-04-16 late session.</p>
+<hr>
+<h2>Entry - 2026-04-16 - user-input</h2>
+<p>I want to implement a new login feature</p>
+<hr>
+<h2>Entry - 2026-04-16 - user-input</h2>
+<p>whats the status of my project</p>
+<hr>
+<h2>Entry - 2026-04-16 - user-input</h2>
+<p>nice weather today</p>
+<hr>
+<h2>Entry - 2026-04-16 - Mindmap visualization for scratchpad (Nitin 2026-04-16)</h2>
+<p>Scratchpad entries should be visualizable as a mind map in static HTML. Center node = project. Branches = entries by date. Sub-branches = promoted targets (intake/decision/fact). SOT migrates_to gives connections. Could be a dashboard tab or standalone devlead mindmap command. CSS-only for static, minimal JS for expand/collapse.</p>
+<p>Source: Nitin idea, 2026-04-16 late session.</p>
+<hr>
+<h2>Entry - 2026-04-17 - user-input</h2>
+<p>welcome 4.7 ... BE my saviour, i am building DevLead project. Create a document in HTML format, explaining what is the tool all about, what is the motivation, benefits, your open view on caliber of this tool.. Create another tab in the page, and capture your grand vision whaere we can take this tool... I want massive distribution capability, i want to roll out a cheap option for engineers.. You goal is to give end to end vision from product, to tech architecture, to ease of use, value for users,</p>
+<hr>
+<h2>Entry - 2026-04-17 - user-input</h2>
+<p>docs/devlead-vision-2026-04-16.html, i want to continue to work on this file, till we finalize on everything.. First thing, Problem Statement you have captured is correct, but lets make it deeper and wider. 1.In general engineers lack smartness to build tech that matches the business objectives. When some one does it well they are the ones who grow and get paid. DevLead should enable every engineer with this ability.. Code to business objective convergence, feel free to better cool sounding term</p>
+<hr>
+<h2>Entry - 2026-04-17 - user-input</h2>
+<p>what happened you never came back</p>
+<hr>
+<h2>Entry - 2026-04-17 - user-input</h2>
+<p>why is claude hogging whole memory and crashing IDE..  Problem section now has four layers plus a lead-in callout. Key moves:</p>
+<ol>
+<li>Named the skill. "Business Convergence" (formal, ties to existing hierarchy math) + "Objective Gravity" (marketing). Both are in the doc â€” tell me if you want one killed.</li>
+<li>Layer 1 frames it as the single biggest career differentiator that nobody teaches â€” the skill that separates engineers who get paid from engineers who just ship.</li>
+</ol>
+<hr>
+<h2>Entry - 2026-04-17 - user-input</h2>
+<p>Lets freeze tab 1 as a baseline, keep updating Tab 2, which is the target state, we will keep tracking progress as compared to tab 1...</p>
+<hr>
+<h2>Entry - 2026-04-17 - user-input</h2>
+<p>there is issue with claude 4.7</p>
+<hr>
+<h2>Entry - 2026-04-17 - user-input</h2>
+<p>it has slowed down my machine</p>
+<hr>
+<h2>Entry - 2026-04-17 - user-input</h2>
+<p>terribly wrong with claude 4.7</p>
+<hr>
+<h2>Entry - 2026-04-17 - user-input</h2>
+<p>you there</p>
+<hr>
+<h2>Entry - 2026-04-17 - user-input</h2>
+<p>not sure whats wrong today</p>
+<hr>
+<h2>Entry - 2026-04-17 - user-input</h2>
+<p>whats wrong with 4.7, my machine is freezing, as if some heavy process running in the background</p>
+<hr>
+<h2>Entry - 2026-04-17 - user-input</h2>
+<p>should i restart my machine ?</p>
+<hr>
+<h2>Entry - 2026-04-17 - user-input</h2>
+<p>i am back you were working on updating v2 of docs\devlead-vision-2026-04-16.html</p>
+<hr>
+<h2>Entry - 2026-04-17 - user-input</h2>
+<p>One open thread from before the crash: you were going to tell me whether to keep both "Business Convergence" + "Objective Gravity" or kill one. Tab 1 still has both.   ----- Keep and update v2, once done let me know</p>
+<hr>
+<h2>Entry - 2026-04-17 - user-input</h2>
+<p>let me read</p>
+<hr>
+<h2>Entry - 2026-04-17 - user-input</h2>
+<p>Add another tab to the vision html, for technical flow, do not assume a single thing about DevLead, test it out as much as you want, give me a comprehensive list of capabilities, portray it in a very natural flow from a (human) DevLead point of view, what he does on a day to day basis, what they are generally responsible for, what are their typical challenges, and then layout our AI DevLead once you have full context.. i dont want a signle line of assumption, pretention, making things up.. Tell</p>
+<hr>
+<h2>Entry - 2026-04-17 - user-input</h2>
+<p>Remove these we dont need it, "Installs everywhere in 60 seconds", Cross-machine session resume (Pro tier) ... After that should we focus on 1 or 2 .. 1. What I do not trust â€” engineer LARP, marketing, or vapor ....2. What's missing that would block adoption for my team work interactively with me on this we have to make a great product, simple elegant but powerful</p>
+<hr>
+<h2>Entry - 2026-04-17 - user-input</h2>
+<p>yes lets do that</p>
+<hr>
+<h2>Entry - 2026-04-17 - user-input</h2>
+<p>Put your heart and soul to design "Business Convergence" / "Objective Gravity" branding .. If i cannot implement this then i am ready to kill the whole project</p>
+<hr>
+<h2>Entry - 2026-04-17 - user-input</h2>
+<p>I am talking about Code to business objective convergence</p>
+<hr>
+<h2>Entry - 2026-04-17 - user-input</h2>
+<p>this should be mathematical in nature</p>
+<hr>
+<h2>Entry - 2026-04-17 - user-input</h2>
+<p>not a narrative or a gate</p>
+<hr>
+<h2>Entry - 2026-04-17 - user-input</h2>
+<p>this should be a framework level work to bring goals to reality..</p>
+<hr>
+<h2>Entry - 2026-04-17 - user-input</h2>
+<p>think in terms of vectors, matrix, intent.. make it mathematical.. convergence itself is a very mathematical concept</p>
+<hr>
+<h2>Entry - 2026-04-17 - user-input</h2>
+<p>Too much content for me to digest and make sense of it. But Convergence is the only thing i care for at the beginning... So give me a dedicated tab for convergence, and develop a POC end to end for DevLead project demonstrating how you will create BO-TBO-TTO and apply full convergence math on it... go</p>
+<hr>
+<h2>Entry - 2026-04-17 - user-input</h2>
+<p>not possible for me to make sense of this. but thats ok, as long as you propose a plan that for any given project DevLead can come up with these initial BO-TBO-TTO process, may be based on a short inteview then we can go with this, but what is your learning after implementing this.. if you change hand and review it as a user how would you feel about it... In my mind, you should write the Business Objectives of the product (DEvLead), exclude the objective of revenue generation.. And the Set of BO</p>
+<hr>
+<h2>Entry - 2026-04-17 - user-input</h2>
+<p>I am ok with option A..But not sure between A and C.... TBO will always be a functional Requirement, TTO can be combination of functional and non functional requirement, we should segregate this accordingly for readability, at times user may not care about non functional requrment, at times they may care exactly about that</p>
+<hr>
+<h2>Entry - 2026-04-17 - user-input</h2>
+<p>So convergence, you think you can implement it, and what are the underlying assumption, is assumption that a user will dictate their requirement and you will create BO-TBO-TTO and the convergence math ?</p>
+<hr>
+<h2>Entry - 2026-04-17 - user-input</h2>
+<p>where does definition of done fits in here</p>
+<hr>
+<h2>Entry - 2026-04-17 - user-input</h2>
+<p>i am not worried about math layer, it has no meaning without the data inputs... Do the coding for this small piece for me.. develop a command line DevLead - project-int, when this commandline run, you take input from user the description of project, completely unstructured. Totally free format. with whatever is given you write - Vision, BO, TBO, TTO.. and give HTML as an output, idea being least cognitive overlaod on user, more visual feedback to engage user and get them excited.. keep taking fe</p>
+<hr>
+<h2>Entry - 2026-04-17 - user-input</h2>
+<p>Cool, so is there any coding work for you now ?</p>
+<hr>
+<h2>Entry - 2026-04-17 - user-input</h2>
+<p>in trial run, i would say lets take a real example, you can Choose DevLead Project, and any untouched feature or set of features should be implemented as part of this.. or full DevLead - Phase 1</p>
+<hr>
+<h2>Entry - 2026-04-17 - user-input</h2>
+<p>next step ?</p>
+<hr>
+<h2>Entry - 2026-04-17 - user-input</h2>
+<p>lets clean up, i dont want to carry any dead weight of information, i dont want to hang on to information thats useless</p>
+<hr>
+<h2>Entry - 2026-04-17 - user-input</h2>
+<p>lets go with this</p>
+<hr>
+<h2>Entry - 2026-04-17 - user-input</h2>
+<p>lets start implementation now, with convergence as the focus</p>
+<hr>
+<h2>Entry - 2026-04-17 - user-input</h2>
+<p>go ahead, but how are you leveraging DevLead itself for the governance ?</p>
+<hr>
+<h2>Entry - 2026-04-17 - user-input</h2>
+<p>yes lets pussh through</p>
+<hr>
+<h2>Entry - 2026-04-17 - user-input</h2>
+<p>push through</p>
+<hr>
+<h2>Entry - 2026-04-17 - user-input</h2>
+<p>push through</p>
+<hr>
+<h2>Entry - 2026-04-17 - user-input</h2>
+<p>keep building</p>
+<hr>
+<h2>Entry - 2026-04-17 - user-input</h2>
+<p>yes continue</p>
+<hr>
+<h2>Entry - 2026-04-17 - user-input</h2>
+<p>take all measures to avoid amnesia in next session. I have not been able to build anything meaningful over last few months on claude because of this issue.. how do i change this around, how do i finish projects and make some revenue, are you in a position to own anything. or anything DevLead can be leveraged for</p>
+<hr>
+<h2>Entry - 2026-04-17 - user-input</h2>
+<p>html file you had created i am ready to delte tabs that are no good now, and may be i will say, create a full analysis one more time, take a fresh look describe the project, tell me pros and cons, whats realistic, whats not.. and most importantly next steps in terms of TBO</p>
+<hr>
+<h2>Entry - 2026-04-17 - user-input</h2>
+<p>Anything that is not going to be of any use should be deleted, fresh analysis you have should be captured..</p>
+<hr>
+<h2>Entry - 2026-04-17 - user-input</h2>
+<p>so next session we start with freshlook tab, or where do we start</p>
+<hr>
+<h2>Entry - 2026-04-17 - user-input</h2>
+<p>&lt;task-notification&gt; &lt;task-id&gt;bplzazal0&lt;/task-id&gt; &lt;tool-use-id&gt;toolu_019uHH1DzBsvA3LGhhdKZuWL&lt;/tool-use-id&gt; &lt;output-file&gt;C:\Users\nitin\AppData\Local\Temp\claude\C--Users-nitin-plugin-development-devlead\6f09f199-80cd-45dd-983e-e71a77cb2d64\tasks\bplzazal0.output&lt;/output-file&gt; &lt;status&gt;completed&lt;/status&gt; &lt;summary&gt;Background command "Re-run dashboard synchronously" completed (exit code 0)&lt;/summary&gt; &lt;/task-notification&gt;</p>
+<hr>
+<h2>Entry - 2026-04-17 - user-input</h2>
+<p>i will avoid pypi till i understand the tool myself, and am happy with what its capable of doing, since you dont think 1K revenue is possible in 1 month, then might as well i will focus on core features of product and not worry about roll out for another week</p>
+<hr>
+<h2>Entry - 2026-04-17 - user-input</h2>
+<p>lets keep option fresh for next session, to be picked up from html from my point of view, but as part of devlead you need to have a solid _resume</p>
+<hr>
+<h2>Entry - 2026-04-17 - user-input</h2>
+<p>I would say, create the full list in _intake, do the full planning as far as you have visiblity, implement only as much you can, no force... add this idea to scratch pad - we need a command to defragment files, including archieving, meging etc</p>
+<hr>
+<h2>Entry - 2026-04-17 - devlead defrag command (file housekeeping)</h2>
+<blockquote>Captured as raw idea per Nitin direction 2026-04-17.</blockquote>
+<p>We need a <code>devlead defrag</code> command — file defragmentation across all devlead_docs/ artifacts as projects age and files grow large. Today:</p>
+<ul>
+<li><code>_intake_features.md</code> is ~400+ lines (24 entries, mix of done + pending)</li>
+<li><code>_scratchpad.md</code> is ~600+ lines (mostly user-input captures from auto-hooks)</li>
+<li><code>_audit_log.jsonl</code> is ~2,200+ lines and growing</li>
+<li><code><em>aware</em>*.md</code> files refresh-overwrite — fine</li>
+<li><code>_state_history.jsonl</code>, <code>_effort_log.jsonl</code>, <code>_promise_ledger.jsonl</code> grow forever</li>
+</ul>
+<h3>Proposed defrag operations</h3>
+<ol>
+<li><strong>Archive done intake entries</strong> to <code>_intake_archive_&lt;file&gt;.md</code> after a grace</li>
+</ol>
+<p>period (e.g. 30 days post-done). Preserves history, keeps active intake lean.</p>
+<ol>
+<li><strong>Merge fragmented scratchpad entries</strong> by topic (similar timestamps, similar</li>
+</ol>
+<p>content). Reduce 600 lines to ~200 by collapsing related captures.</p>
+<ol>
+<li><strong>Collapse repetitive audit-log runs</strong> — e.g. 50 consecutive <code>gate_pass</code></li>
+</ol>
+<p>events on the same file → one rolled-up "50× gate_pass on src/x.py" entry.</p>
+<ol>
+<li><strong>Prune stale aware files</strong> — drop entries for modules that no longer exist</li>
+</ol>
+<p>in src/.</p>
+<ol>
+<li><strong>Truncate state/effort/promise logs</strong> with a configurable window</li>
+</ol>
+<p>(e.g. keep last 90 days, archive older to <code>_*_archive.jsonl</code>).</p>
+<h3>Goals</h3>
+<ul>
+<li>Keep active files scannable (<code>_intake_features.md</code> should fit in one screen</li>
+</ul>
+<p>for the active subset).</p>
+<ul>
+<li>Never lose information — everything archived is hash-checked + reversible.</li>
+<li>Run on Stop hook (opportunistically) or via explicit <code>devlead defrag</code> CLI.</li>
+</ul>
+<h3>Status</h3>
+<p>Captured as scratchpad note. Promote to FEATURES-NNNN when ready to scope. Likely a 2-3 day implementation once kicked off. Lower priority than the MD↔HTML loop and the unfinished Phase 1 BO-4.</p>
+<div class="footer">Auto-generated by <code>devlead render</code> on 2026-04-17 05:00 UTC · <a href="index.html">← back to index</a></div>
+</body>
+</html>

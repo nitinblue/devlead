@@ -1,0 +1,442 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Resume Archive 2026-04-14</title>
+<style>
+:root {
+  --bg: #0b0d10; --panel: #11151a; --line: #222a33;
+  --ink: #e6edf3; --ink-dim: #9aa7b3; --ink-faint: #6b7785;
+  --accent: #7ee787; --accent-2: #79c0ff;
+}
+* { box-sizing: border-box; }
+html, body { margin: 0; padding: 0; background: var(--bg); color: var(--ink);
+  font: 15px/1.55 ui-sans-serif, -apple-system, "Segoe UI", Roboto, Helvetica, Arial, sans-serif; }
+body { padding: 30px 40px; max-width: 960px; margin: 0 auto; }
+a { color: var(--accent-2); text-decoration: none; }
+a:hover { text-decoration: underline; }
+code { font-family: ui-monospace, "SF Mono", Menlo, Consolas, monospace; font-size: 13px;
+  background: #0a0d11; padding: 1px 5px; border-radius: 4px; border: 1px solid var(--line); }
+pre { background: #0a0d11; border: 1px solid var(--line); border-radius: 6px;
+  padding: 12px 14px; overflow-x: auto; font-family: ui-monospace, "SF Mono", Menlo, Consolas, monospace;
+  font-size: 13px; line-height: 1.5; }
+pre code { background: transparent; border: 0; padding: 0; }
+h1, h2, h3, h4 { letter-spacing: -0.01em; margin-top: 1.4em; margin-bottom: 0.4em; }
+h1 { font-size: 28px; border-bottom: 1px solid var(--line); padding-bottom: 8px; }
+h2 { font-size: 22px; }
+h3 { font-size: 17px; color: var(--ink); }
+h4 { font-size: 14px; color: var(--ink-dim); text-transform: uppercase; letter-spacing: 0.06em; }
+p { margin: 8px 0; }
+ul, ol { padding-left: 24px; }
+li { margin: 3px 0; }
+blockquote { border-left: 3px solid var(--accent-2); margin: 14px 0; padding: 6px 14px;
+  color: var(--ink-dim); background: #10161c; border-radius: 0 6px 6px 0; }
+hr { border: 0; border-top: 1px solid var(--line); margin: 22px 0; }
+.footer { margin-top: 48px; padding-top: 16px; border-top: 1px solid var(--line);
+  color: var(--ink-faint); font-size: 12px; }
+.footer a { color: var(--ink-faint); }
+</style>
+</head>
+<body>
+<h1>DevLead v2 — Session Resume (<code>_resume.md</code>) — the project's scratchpad / triage inbox</h1>
+<blockquote><strong>This file always exists.</strong> It is the project's <strong>scratchpad</strong> — a fast-capture space for anything the user has said that doesn't yet have a dedicated home. Mentally, think of it as a <strong>triage inbox</strong>: items sit here until they find the right file to live in, then they get migrated out. The scratchpad does not retire, does not disappear, does not empty out permanently — but its goal is to be <strong>as lean as possible</strong>. The leaner <code>_resume.md</code> is, the better the project has triaged into dedicated files.  <strong>No history.</strong> <code>_resume.md</code> contains only currently-untriaged items + resume context for the next session. It does NOT contain session logs, completed work records, or archived decisions. History lives in dedicated files (<code>_audit_log.jsonl</code>, <code>_migration_log.jsonl</code>, design docs) or in git.  <strong>Session protocol.</strong> - <strong>At session start:</strong> Claude reads <code>devlead_docs/_resume.md</code> first, before anything else. Always. It's the catch-up pointer. - <strong>During session:</strong> Claude triages aggressively. Whenever an item in <code>_resume.md</code> finds a proper home (a dedicated file that can carry it), Claude migrates it out (hash-verified, audited — see zero-loss rule below). - <strong>Before session exit:</strong> Claude must write any new untriaged items to <code>_resume.md</code>. If the user said something important during the session that doesn't yet have a dedicated file, it gets captured here so it's not lost.  <strong>Zero information loss is a hard guarantee.</strong> Nothing leaves this file unless the destination verifiably holds the same content. Migration is audited, hash-checked, reversible, and hard-blocked (exit 2) if the destination is missing. This is the ONE rule in DevLead that enforces hard even in warn-only mode — information loss is unrecoverable and cannot be a warning.  <strong>Filename: <code>devlead_docs/_resume.md</code></strong> — short, memorable. Say "check the resume" and it's unmistakable.</blockquote>
+<hr>
+<h2>0. What to do first, in order</h2>
+<ol>
+<li>Read this file in full (you are doing that now).</li>
+<li>Read <code>devlead_docs/_design_section1.md</code> — Section 1 of the DevLead design is already locked on disk.</li>
+<li>Read <code>src/devlead/scaffold/interview_template.md</code> — the 5-block interview playbook.</li>
+<li>Skim memory files: <code>project_devlead_v2_redesign.md</code>, <code>feedback_no_adjacent_invention.md</code>, <code>feedback_enforcement_posture.md</code>, <code>user_nitin.md</code>.</li>
+<li>Jump to Section 14 of this file ("Where to resume exactly") and start there.</li>
+</ol>
+<p>Do NOT read or mine anything in <code>legacy/v1/</code> unless Nitin explicitly points there — that's v1's archive and it is off-limits by rule.</p>
+<hr>
+<h2>1. What DevLead is (the pitch)</h2>
+<p>DevLead is a <strong>governance layer installed as a Claude Code plugin</strong> on any software project. It sits between the human engineer and the AI coding assistant and enforces one rule: <strong>all work originates from a single canonical store, and all results go back to that store.</strong> Nothing the AI does happens outside that loop. LLM memory is a derived view of the store — never an independent source.</p>
+<p><strong>Core function:</strong> take a high-level requirement of a software project, convert business objectives into technical deliverables, do it with the least wasted time, effort, and tokens.</p>
+<p><strong>What a traditional (human) Dev Lead does:</strong> keeps technical implementation converging toward business objectives; sees drift; re-prioritizes; kills shadow work; runs retros; pivots when reality diverges. DevLead-the-product <strong>replicates that accountability continuously, mathematically, and visibly.</strong> It is not a task tracker. It is a convergence engine with enforcement and transparency built in.</p>
+<p><strong>Target user:</strong> solo engineers and small teams using AI aggressively who need to stay in the driver's seat. Secondary: anyone building a non-trivial project who wants AI assistance without giving up ownership of direction.</p>
+<p><strong>Why it wins:</strong> every other AI dev tool optimizes for <em>speed</em>. DevLead optimizes for <em>control</em>. You can read one directory and know everything the AI knows about your project.</p>
+<hr>
+<h2>2. Top-most goal (Nitin's own words, 2026-04-12)</h2>
+<blockquote>"Nitin wants to develop a Claude Plugin called DevLead. Devlead as name suggests is capable of taking a high level requirement of a software project, is able to convert business objectives into technical deliverables, does it with least wastage of time, effort, token — Nitin wants to start generating revenue selling this plugin — first revenue should come in a weeks time, $1000 in 1 month after first revenue."</blockquote>
+<p><strong>Revised dates</strong> (after Nitin's no-corner-cutting directive — full-feature v1 over cut MVP):</p>
+<ul>
+<li><strong>First revenue target: 2026-05-08</strong> (27 days from Apr 12)</li>
+<li><strong>$1000 cumulative target: 2026-06-08</strong> (one month after launch)</li>
+</ul>
+<p>These dates slipped from the original "1 week / 1 month" because Nitin chose full-feature over a thin MVP. That's the trade.</p>
+<hr>
+<h2>3. Locked design decisions (do not re-open unless Nitin asks)</h2>
+<p>| Decision | Value | |---|---| | Form factor | Claude Code plugin; repo root IS the plugin root | | Distribution | Open-core on public GitHub + paid features in private <code>devlead-pro</code> package | | License (core) | MIT | | License (paid) | Commercial | | Hierarchy | <code>Vision → Goals → Phase → BO → TBO → TTO</code> | | Story layer | <strong>KILLED</strong> — use TBO for user-visible, TTO for technical-atomic | | Task renamed | <code>Task → TTO</code> (Tangible Technical Objective) | | Goals | First-class, target-dated, linked to BO subsets, parallel to Vision | | State machine | <strong>KILLED</strong> — <code>_project_status.md</code> uses flags derived from other files, no states | | Enforcement posture | <strong>Warn by default</strong> (exit 0 + systemMessage); block only in opt-in strict mode | | Exit codes | <strong>Nothing in v2 ever exits 2</strong> unless strict mode is explicitly enabled | | NFR handling | <strong>Shape A</strong> — NFRs as tagged TTOs under the same parent TBO as functional TTOs, sharing convergence rollup | | Config | Two layers — <code>.claude/settings.json</code> (plumbing) + <code>devlead.toml</code> (user rules) | | KPIs at launch | 5 of 9: K1 Convergence, K5 Tokenomics, K7 Drift, K8 Goal Yield, K9 Word-Keeping | | Pricing | Free (1 project), $29/yr (5), $49/yr (unlimited), $99 lifetime | | Payment processor | Lemon Squeezy (handles tax, webhooks, license keys) | | License server | Cloudflare Worker + D1 (free tier) | | Price justification | Full feature set — all 4 hooks, 5 KPIs, goals, commitments, convergence, enforcement | | Plugin integration | <strong>Zero disruption</strong> — DevLead never modifies other plugins' flows, file paths, or defaults (added 2026-04-14) | | Single source of truth | All work traces to <code>devlead_docs/</code>; plugins feed in via <code><em>intake</em><em>.md</code> files, never by modification (added 2026-04-14) | | Dark code | <strong>Forbidden</strong> — any code whose origin doesn't trace intake → TTO → TBO → BO is detectable; warn in v1, optional block in v1.1 (added 2026-04-14) | | Hierarchy (revised 2026-04-14) | <code>Sprint -&gt; BO -&gt; TBO -&gt; TTO</code>. Vision killed. <strong>BO = Goal</strong> (merged): BOs are now goals with target dates; no separate Goals layer. K8 "Goal Yield" -&gt; K8 "BO Yield". | | Top container name | <strong>Sprint</strong>. DevLead's Sprint is scoped to ship-windows / versions (months), NOT the agile 2-week cadence. Docs must be explicit to avoid confusion. | | File recognition by prefix | DevLead globs <code><em>intake</em></em>.md</code>, <code><em>living</em><em>.md</code>, <code><em>project</em></em>.md</code> — treats every match as the corresponding type. Users create as many files per category as they want with any slug. Install ships starter templates only; taxonomy is open. | | Intake ID scheme | Derived from filename slug, uppercased: <code>_intake_features.md</code> -&gt; <code>FEATURES-NNNN</code>, <code>_intake_security_findings.md</code> -&gt; <code>SECURITY-FINDINGS-NNNN</code>. No hardcoded prefix constants. | | Intake schema | <strong>Template-driven, not free-form.</strong> Onus is on Claude/LLM to fill fields; template constrains what fields exist. Templates live in <code>devlead_docs/_intake_templates/<em>.md</code> as real editable files. <strong>v1 ships ONE template (<code>default.md</code>); all intake files use it.</strong> Users pick from multiple templates as more are added in v1.1+. Auto-update from user behavior is v1.1. | | Intake capture effort | Lean: Claude drafts every field at ingest (title, summary, actionable items, proposed BO/Sprint/weight). User only confirms or corrects placement hints at triage. | | Self-Awareness framework | DevLead maintains <code>devlead_docs/<em>aware</em></em>.md</code> files - code-derived, auto-generated descriptions of the current state of the project (features, design, later: metrics, deps, invariants). LLM reads them at session start AFTER <code>_resume.md</code> and <code>_scratchpad.md</code>. <strong>Structured memory substrate; reduces reliance on <code>CLAUDE.md</code> alone.</strong> v1 ships <code>_aware_features.md</code> + <code>_aware_design.md</code> via <code>/devlead awareness</code>; v1.1 adds more aspects and auto-refresh on Stop hook. Hand-edits are overwritten - files are derived, not authored. | | <code><em>aware</em><em></code> vs <code><em>living</em></em></code> | <code><em>living</em><em>.md</code> = curated intent (design goals, decisions, glossary). <code><em>aware</em></em>.md</code> = observed reality (what the code actually does right now). Both exist; don't conflate them. | | Dev work discipline | <strong>Hard rule:</strong> every code change must trace to an entry in <code><em>intake</em>*.md</code>. Bugs Claude finds mid-task force a STOP -&gt; scratchpad note -&gt; <code>/devlead ingest --from-scratchpad &lt;needle&gt; --into _intake_bugs.md</code> -&gt; fix. No inline "quick cleanups" outside the intake flow. Rule lives in <code>CLAUDE.md</code>. Enforcement is advisory in v1 (warnings); v1.1+ adds hook-based blocks. | | Scratchpad -&gt; intake conversion | <code>/devlead ingest --from-scratchpad &lt;needle&gt; --into &lt;_intake_file.md&gt;</code> converts a scratchpad entry directly into an intake entry (no plugin plan required for well-scoped items). Bidirectional trace: intake source is <code>scratchpad:&lt;entry-id&gt;</code>; the scratchpad entry gets a <code>&gt; <strong>Promoted:</strong></code> cross-reference line in its body. | | Actionable-items floor | Every intake entry must have &gt;=1 actionable item. Zero-item entries trigger a warning at ingest: "every TBO must map to granular TTOs - refine or reject before promoting". | | Forced-work procedure | When user dictates work outside normal flow: Claude (1) STOPS, (2) creates intake entry FIRST with best-effort BO/TBO/TTO association, (3) marks it <code>--forced</code> so <code>origin="forced"</code>, (4) THEN does the work. CLAUDE.md enforces; advisory in v1. This keeps trace integrity even under pressure. | | K_BYPASS KPI (v1.1 placeholder) | Future KPI: fraction of intake entries with <code>origin == "forced"</code>. High value = discipline slipping under user pressure. [T] transparency, [P] pivot trigger. v1 ships the <code>origin</code> field; v1.1 wires the calculation alongside K1/K5/K7/K8/K9. | | Config format — YAML approved | User approved YAML as a valid format for future config files (<code>devlead.yml</code> etc). TOML from the original design is still acceptable; both are allowed. Decide per-file when the config layer ships (Week 2). |</p>
+<hr>
+<h2>4. The hierarchy (with math)</h2>
+<pre>Vision                   (aspirational end state)
+  │
+  ├── Goals              (target-dated aspirations — first-class objects)
+  │     └── linked subset of BOs (one goal can span multiple BOs)
+  │
+  └── Phase              (delivery phase: MVP, GA, v2, ...)
+        └── BO           (Business Objective — measurable outcome, weighted)
+              └── TBO    (Tangible Business Outcome — "user can now do X")
+                    └── TTO (Tangible Technical Objective — atomic technical work)</pre>
+<p><strong>Weights.</strong> Every non-root node has <code>weight ∈ [0, 100]</code>. Sibling weights <strong>sum to 100 within their parent</strong>: Phases under Vision → 100; BOs under Phase → 100; TBOs under BO → 100; TTOs under TBO → 100.</p>
+<p><strong>Base completion.</strong> <code>tto.completion ∈ [0, 100]</code> — reported by engineer or inferred from commits/tests. Only hand-typed signal.</p>
+<p><strong>Rollup formula</strong> (recursive, from leaves up):</p>
+<pre>convergence(node) = Σ over children c:  (c.weight / 100) × convergence(c)</pre>
+<p><strong>Example.</strong> BO has two TBOs with weights 60 and 40. TBO-1 rolls up to 80%. TBO-2 rolls up to 30%. BO convergence = <code>0.60 × 80 + 0.40 × 30 = 60</code>.</p>
+<p><strong>Goal convergence.</strong> A Goal's linked BO subset is rolled up independently — gives a per-goal scalar. <code>_living_goals.md</code> tracks each goal's convergence separately from the Phase/Vision rollup.</p>
+<hr>
+<h2>5. The 9 KPIs (5 ship in v1, 4 in v1.1)</h2>
+<p>Each tagged <strong>[E]</strong> enforce, <strong>[T]</strong> transparency, <strong>[P]</strong> pivot trigger.</p>
+<p>| ID | Name | Role | Formula (short) | Launch? | |---|---|---|---|---| | K1 | Convergence | [T][P] | weighted rollup above | ✅ v1 | | K2 | Going in Circles | [E][T] | <code>rework_edits / total_edits</code> | v1.1 | | K3 | Skin in the Game | [E][T] | <code>user_validation_events / total_events</code> | v1.1 | | K4 | Time Investment Divergence | [T][P] | per BO: <code>|effort_share − weight_share|</code> | v1.1 | | K5 | Tokenomics | [T][P] | per BO: <code>tokens_spent / Δ_convergence</code> | ✅ v1 | | K6 | Shadow Work | [E][T] | <code>actions_without_task_linkage / total_actions</code> | v1.1 | | K7 | Drift | [E][T] | per-prompt topic match vs top-priority TTO, window avg | ✅ v1 | | K8 | Goal Yield | [T][P] | <code>goals_achieved_on_time / goals_committed</code> | ✅ v1 | | K9 | Word-Keeping Ratio | [E][T] | <code>commitments_kept_on_time / commitments_made</code> | ✅ v1 |</p>
+<p>K9 is <strong>the killer feature</strong> — it makes Claude accountable for every promise it makes across sessions. Every time Claude says "I'll ship X by Day N", it should call <code>/devlead commit ... --by DATE</code>. At target date, Claude must resolve with <code>/devlead resolve &lt;id&gt; kept|broken</code>. K9 is the public scorecard.</p>
+<hr>
+<h2>6. The 7 architectural layers</h2>
+<pre>USER (human) → 1. CAPTURE (interview, intake) → 2. STORE (devlead_docs/) →
+  │
+  ├→ 3. PROJECTION (LLM memory sync)
+  └→ 4. GOVERNANCE (gates, ordering, drift detection)
+                │
+                └→ 5. CONVERGENCE ENGINE (rollup + K1-K9) → 6. VISIBILITY (CLI/dashboard)
+                                                               → 7. AUDIT (jsonl + Promise Ledger)
+                                                                      ↑
+                                                                      │ hooks
+                                                                  LLM (Claude)</pre>
+<p>Hooks: <code>SessionStart</code>, <code>UserPromptSubmit</code>, <code>PreToolUse</code> (Edit|Write), <code>Stop</code>. All four fire during v1. <strong>Currently not registered</strong> — v1's hooks were cleared from <code>.claude/settings.json</code> during Session 2 to stop accidental blocks. v2 hooks register when the gate engine ships in Week 2.</p>
+<hr>
+<h2>7. Pricing and open-core split</h2>
+<h3>Free / open-source core (MIT, public GitHub)</h3>
+<ul>
+<li><code>/devlead init</code>, full scaffolding, all 4 hooks</li>
+<li><code>/devlead interview</code> (5 blocks, full template)</li>
+<li><code>/devlead status</code> (text output)</li>
+<li>BO/TBO/TTO hierarchy + weighted rollup</li>
+<li>K1, K5, K7 (three KPIs)</li>
+<li>Audit log, warn-mode enforcement</li>
+<li>1-project limit (counted in <code>~/.devlead/projects.json</code>)</li>
+</ul>
+<h3>Paid (<code>devlead-pro</code> private package, installed on license activation)</h3>
+<ul>
+<li><code>/devlead goal</code> + K8 + at-risk detection</li>
+<li><code>/devlead commit</code> + <code>/devlead resolve</code> + K9 + Promise Ledger</li>
+<li><code>/devlead pivot</code> full repivot ceremony</li>
+<li>KPIs K2, K3, K4, K6 (v1.1)</li>
+<li>Block-mode strict enforcement</li>
+<li>HTML dashboard (v1.1)</li>
+<li>Up to 5 projects (Personal) / unlimited (Pro, Lifetime)</li>
+<li>Priority support</li>
+</ul>
+<h3>License architecture</h3>
+<ul>
+<li><strong>Payment:</strong> Lemon Squeezy</li>
+<li><strong>License server:</strong> Cloudflare Worker + D1 SQLite (free tier, ~$0/mo)</li>
+<li><strong>Activation:</strong> <code>/devlead license activate &lt;KEY&gt;</code> calls server's <code>/verify</code>; result cached in <code>~/.devlead/license.json</code> with weekly re-ping; 30-day offline grace then tier downgrades gracefully.</li>
+<li><strong>Paid-code delivery:</strong> on activation, plugin downloads <code>devlead-pro</code> from private PyPI. The open-core repo does not contain paid code — nothing to patch out.</li>
+</ul>
+<h3>Revenue math to $1000</h3>
+<p>Mixed distribution: 3 × Lifetime ($297) + 15 × Personal ($435) + 6 × Pro ($294) = <strong>$1026</strong> in month 1 post-launch.</p>
+<hr>
+<h2>8. Config surface (two layers)</h2>
+<h3>Layer 1 — <code>.claude/settings.json</code> (DevLead-owned plumbing)</h3>
+<p>Routes each hook event to <code>devlead gate &lt;event&gt;</code>. Written automatically by <code>/devlead init</code>. Users do not edit.</p>
+<pre>{ "hooks": { "SessionStart": [{"hooks":[{"type":"command","command":"devlead gate SessionStart","timeout":10}]}], "UserPromptSubmit": [...], "PreToolUse": [{"matcher":"Edit|Write","hooks":[...]}], "Stop": [...] } }</pre>
+<h3>Layer 2 — <code>devlead.toml</code> at project root (user-owned)</h3>
+<p>Plain TOML. Sections: <code>[enforcement]</code> (mode: warn|block, global), <code>[[enforcement.rules]]</code> (per-rule event/matcher/check/action/message), <code>[kpis]</code> (thresholds), <code>[interview]</code> (block order, lock requirements), <code>[goals]</code> (at-risk window 20%, convergence threshold 0.5).</p>
+<p><strong>Defaults at install:</strong> <code>enforcement.mode = "warn"</code>, all rules enabled, K7 threshold 0.5, K8/K9 warn at 0.7, interview blocks ordered A→B→C→D→E, lock required.</p>
+<hr>
+<h2>9. Current build state (end of Session 2, 2026-04-12)</h2>
+<h3>Files on disk and verified working</h3>
+<p>| Path | What it is | |---|---| | <code>.claude-plugin/plugin.json</code> | Plugin manifest, v0.2.0-dev, MIT | | <code>commands/init.md</code> | <code>/devlead init</code> slash command | | <code>src/devlead/__init__.py</code> | <code>__version__ = "0.2.0-dev"</code> | | <code>src/devlead/__main__.py</code> | Entry point, delegates to <code>cli.main</code> | | <code>src/devlead/cli.py</code> | Subcommand dispatch. <code>init</code> works. Unknown commands exit 0. | | <code>src/devlead/install.py</code> | Install logic + <code>InstallReport</code> class. Idempotent. | | <code>src/devlead/scaffold/<em>.md.tmpl</code> (10 files) | All scaffold templates | | <code>src/devlead/scaffold/interview_template.md</code> | Full 5-block interview playbook with Phase 0 inspection, propose-first flow, 10-15 min target, NFR Shape A example | | <code>devlead_docs/_design_section1.md</code> | Section 1 of DevLead's own design, locked | | <code>devlead_docs/_resume.md</code> | This file | | <code>devlead_docs/_project_status.md</code> | Installed from scaffold, flags section (no state machine) | | <code>devlead_docs/_project_hierarchy.md</code> | Installed, empty BO tree | | <code>devlead_docs/<em>living</em></em>.md</code> (8 files) | Installed, empty living docs | | <code>devlead_docs/_audit_log.jsonl</code> | Installed, empty | | <code>devlead_docs/_promise_ledger.jsonl</code> | Installed, empty | | <code>devlead_docs/interview_template.md</code> | Copy of scaffold template, for in-project reference | | <code>.claude/settings.json</code> | <strong>Cleared</strong> — <code>{"hooks": {}}</code>. v1 hooks removed. | | <code>CLAUDE.md</code> | Rewritten for v2 | | <code>README.md</code> | Rewritten for v2 | | <code>legacy/v1/</code> | v1 archived untouched, git tag <code>v1-archive-2026-04-12</code> |</p>
+<h3>Verified end-to-end</h3>
+<pre>PYTHONPATH=src python -m devlead init /tmp/test-project   # 13 files created
+PYTHONPATH=src python -m devlead init /tmp/test-project   # idempotent, 13 skipped
+PYTHONPATH=src python -m devlead init .                   # dogfood, DevLead installed on its own repo</pre>
+<hr>
+<h2>10. The 27-day build plan — current position</h2>
+<ul>
+<li>✅ <strong>Day 1 (Apr 12):</strong> Scope locked. Plan approved. Interview template v2 content written.</li>
+<li>✅ <strong>Day 2 (Apr 12):</strong> Plugin skeleton + <code>/devlead init</code> + 10 scaffold templates + install logic + dogfood on DevLead's own repo.</li>
+<li>⏳ <strong>Day 3 (next session):</strong> <code>/devlead interview</code> command.</li>
+<li>Day 4: Store layer — parsers/writers for BO/TBO/TTO, weight validation, schema enforcement.</li>
+<li>Day 5: Hook infrastructure — wire all 4 hooks end-to-end.</li>
+<li>Day 6: Gate engine — warn/block modes, rules DSL.</li>
+<li>Day 7: Week 1 buffer.</li>
+<li>Week 2 (Days 8-14): Convergence math, K1/K5/K7/K8/K9, goal tracking, commitment ledger, audit, projection, <code>/devlead status</code>, external dogfood.</li>
+<li>Week 3 (Days 15-20): NFR integration, repivot loop, DevLead-on-DevLead dogfood, polish.</li>
+<li>Week 4 (Days 21-24): Landing page, demo video, plugin marketplace submission, public launch, first revenue May 8.</li>
+</ul>
+<hr>
+<h2>11. Critical gotchas — do not repeat these</h2>
+<ol>
+<li><strong>Nothing exits 2 in v2 by default.</strong> <code>src/devlead/cli.py</code> returns 0 on unknown commands. The one time I made it return 2, v1 hooks caused accidental hard blocks on every Edit/Write. Fixed; do not re-introduce.</li>
+<li><strong>v1 hooks in <code>.claude/settings.json</code> are cleared.</strong> <code>{"hooks": {}}</code> is the current state. v2 hooks register when the gate engine ships in Week 2, NOT before.</li>
+<li><strong>State machine is dead.</strong> Don't re-introduce <code>AWAITING_INTERVIEW</code> or any state transitions. <code>_project_status.md</code> has derived flags only.</li>
+<li><strong><code>legacy/v1/</code> is untouched and off-limits.</strong> Don't mine it unless Nitin explicitly points at a specific file.</li>
+<li><strong>Windows cp1252 console can't encode em-dash, arrows, or most Unicode.</strong> Keep all <code>print()</code> output in <code>src/devlead/*.py</code> ASCII-safe.</li>
+</ol>
+<hr>
+<h2>12. Rules of engagement (hard-won this session, do not violate)</h2>
+<ul>
+<li><strong>User dictates, Claude captures.</strong> If Nitin hasn't said it, it doesn't exist.</li>
+<li><strong>Claude proposes only inside the layer Nitin named.</strong> "Propose as much as you can" is scoped to that one layer. No silent invention of adjacent layers (files in devlead_docs/, CLAUDE.md rules, install flags, etc.).</li>
+<li><strong>Layer by layer, one at a time.</strong> Finish what Nitin named before opening anything new. If you think a gap exists, name it in one sentence and wait.</li>
+<li><strong>Plan mode is the harness guardrail.</strong> Re-enter plan mode during design phases. Stay in it until Nitin says "exit and build X."</li>
+<li><strong>Disagreements are surfaced loudly, not routed around.</strong> If a new direction conflicts with something locked, say so in one sentence.</li>
+<li><strong>Multi-session is fine and expected.</strong> No pushing to "finish" anything in one sitting.</li>
+<li><strong>The burden is on Claude to notice mid-response when it's about to jump and stop.</strong> This is the single most important behavior Nitin is trying to get out of you.</li>
+<li><strong>Do not write to any file without Nitin's explicit approval.</strong> Even plan files, even scratch files. The whole point of DevLead is that nothing happens outside the loop.</li>
+</ul>
+<hr>
+<h2>13. Open threads (explicitly undecided, surface when relevant)</h2>
+<ul>
+<li><strong>Exact <code>commands/interview.md</code> flow</strong> — to be designed on Day 3 (next session).</li>
+<li><strong>Store layer markdown schema</strong> — how BO/TBO/TTO serialize (plain headers vs YAML frontmatter). Decide on Day 4.</li>
+<li><strong>NFR default catalogs per project type</strong> — web service, CLI, library, mobile app, data pipeline. Decide when Block D support lands.</li>
+<li><strong>License server implementation details</strong> — Cloudflare Worker boilerplate. Defer to Week 3.</li>
+<li><strong>Goal at-risk thresholds</strong> — at-risk window 20% of target date, convergence threshold 0.5. Validate during dogfood.</li>
+<li><strong>First-customer candidate</strong> — Nitin needs a warm list of 3 by May 3 for direct-sales push on launch day.</li>
+<li><strong>Landing page copy ownership</strong> — Nitin writes, or Claude drafts and Nitin edits.</li>
+<li>**Exact set of <code><em>intake</em>*.md</code> files** — Nitin named <code>_intake_features.md</code> and <code>_intake_bug_issues.md</code> (2026-04-14). v1 had more (bugs, changes, features, gaps). Finalize in plan mode (Section 20).</li>
+<li><strong>Intake file schema</strong> — markdown sections vs YAML frontmatter vs table rows. Must be parseable by DevLead and readable by humans. Decide in plan mode.</li>
+<li><strong>Intake → hierarchy promotion</strong> — manual command, triage session, or auto-promote on backlog load? Decide in plan mode.</li>
+<li><strong>Plugin output → intake handoff mechanism</strong> — explicit <code>/devlead ingest &lt;path&gt;</code>, Stop-hook watcher, or Claude-driven after every plugin flow? Decide in plan mode.</li>
+<li><strong>Section 18 conflation (stale)</strong> — Section 18 defines <code>_resume.md</code> AS the scratchpad, but Nitin split them on 2026-04-14 (<code>_scratchpad.md</code> is now the raw capture file, <code>_resume.md</code> is the handoff memory file). Section 18 needs rewrite to reflect this split. Do not touch until a design section locks the new two-file split semantics.</li>
+<li><strong>Section 4 stale hierarchy diagram</strong> — Section 4 still shows <code>Vision -&gt; Goals -&gt; Phase -&gt; BO -&gt; TBO -&gt; TTO</code>. New hierarchy is <code>Sprint -&gt; BO -&gt; TBO -&gt; TTO</code> (Vision killed, BO=Goal merged). Section 4 must be rewritten. Do not touch until the new hierarchy math is locked in a design section.</li>
+<li><strong><code>_living_goals.md</code> redundancy</strong> — Now that BO = Goal, the <code>_living_goals.md</code> scaffold file is largely a view over the BO section of <code>_project_hierarchy.md</code>. Options: (a) repurpose it as a derived view, (b) remove it from the scaffold, (c) keep as alias. Decide on Day 4 when the store layer ships.</li>
+<li><strong>Template auto-update loop</strong> — Intake templates should evolve from user behavior (fields always left blank, fields user adds manually, wording changes). v1 ships static templates; the watch-and-propose loop is v1.1. Deferred.</li>
+<li><strong>Template versioning</strong> — When a template changes, how do existing entries written against the old template get read/rendered? Needs a version field on each template file + a migration story. Decide before v1.1 template-update loop.</li>
+<li><strong>Sprint-vs-agile naming collision</strong> — DevLead's Sprint is months/versions, not agile 2-week. Users from agile backgrounds will assume the shorter cadence. Mitigate with docs; monitor for confusion reports during dogfood. If pushback is high, revisit naming.</li>
+</ul>
+<hr>
+<h2>14. Where to resume exactly (next session's first action)</h2>
+<blockquote><strong>2026-04-14 update:</strong> The Day 3 deliverable below is being re-derived in light of <strong>Section 20 (Plugin Bridge + Intake Flow)</strong>. The original <code>/devlead interview</code> framing is not wrong — it becomes the first <em>consumer</em> of the plugin bridge rather than its own bespoke pipeline. Concrete Day 3 steps will be overwritten once the plan-mode output is approved.</blockquote>
+<p><strong>Day 3 deliverable: build the <code>/devlead interview</code> command.</strong></p>
+<p>This is the command that drives the 5-block interview per <code>src/devlead/scaffold/interview_template.md</code>. It must:</p>
+<ol>
+<li>Perform <strong>Phase 0 inspection</strong> on the current project (read README, package manifests, file tree, git log, existing docs) — all read-only, under 60 seconds of LLM work. Build an internal project profile.</li>
+<li>For each of Blocks A–E, follow the <strong>propose-first</strong> pattern: Claude drafts content from Phase 0 profile + prior block answers, presents as a draft, asks 1-3 anchor questions only when necessary, user corrects, Claude locks the block.</li>
+<li>Capture outputs to the correct files: Block A → <code>_living_project.md</code>, Block B → <code>_project_hierarchy.md</code> + <code>_living_goals.md</code> + <code>_living_metrics.md</code>, Block C → <code>_living_technical.md</code>, Block D → <code>_living_design.md</code> (+ NFR TTOs in <code>_project_hierarchy.md</code>), Block E → <code>_living_glossary.md</code> + <code>_living_standing_instructions.md</code> + <code>_living_risks.md</code>.</li>
+<li>Support resume-from-mid-block via <code>_project_status.md</code> flags (not states).</li>
+<li><strong>Target: under 15 minutes active user time for a typical project.</strong></li>
+</ol>
+<p><strong>Concrete Day 3 steps, in order:</strong></p>
+<ol>
+<li>Write <code>commands/interview.md</code> — the slash command file with instructions to Claude on how to conduct the interview. It reads the scaffold template at <code>src/devlead/scaffold/interview_template.md</code> as the source of truth for block content.</li>
+<li>Write <code>src/devlead/interview.py</code> — small Python helper module with pure functions for Phase 0 inspection (read README, parse <code>pyproject.toml</code>, list file tree, get git log summary, detect project type). No LLM calls in Python.</li>
+<li>Write <code>src/devlead/store.py</code> — parsers and writers for BO/TBO/TTO in markdown format. Decides the schema (likely: headers for structure, inline <code>(weight: N)</code> annotations, <code>[type: non-functional]</code> tag for NFRs). Keep it dead simple — no YAML frontmatter unless forced.</li>
+<li>Wire <code>cli.py</code> to expose <code>devlead interview</code> and <code>devlead inspect</code> subcommands.</li>
+<li><strong>Dogfood immediately:</strong> run <code>/devlead interview</code> on DevLead's own repo, using Section 1 + the architectural brief as the source material. Capture Nitin's actual answers into <code>devlead_docs/<em>living</em>*.md</code>. This is the first real use of the feature.</li>
+</ol>
+<p><strong>Do not do:</strong></p>
+<ul>
+<li>Do not build the gate engine yet (Day 6).</li>
+<li>Do not add hooks yet (Day 5).</li>
+<li>Do not touch <code>.claude/settings.json</code> — it stays <code>{"hooks": {}}</code> until gate engine ships.</li>
+<li>Do not introduce state machines anywhere.</li>
+<li>Do not change the hierarchy or KPI list — they're locked.</li>
+<li>Do not invent adjacent-layer scope (commitment ledger is Day 11, not Day 3).</li>
+</ul>
+<hr>
+<h2>15. Key file references</h2>
+<p>| What | Where | |---|---| | This resume file | <code>devlead_docs/_resume.md</code> | | Section 1 design (locked) | <code>devlead_docs/_design_section1.md</code> | | Interview template (5-block playbook) | <code>src/devlead/scaffold/interview_template.md</code> | | Plan file (harness-owned backup) | <code>C:\Users\nitin\.claude\plans\shimmying-hatching-parasol.md</code> | | Install logic | <code>src/devlead/install.py</code> | | CLI dispatch | <code>src/devlead/cli.py</code> | | Plugin manifest | <code>.claude-plugin/plugin.json</code> | | Init slash command | <code>commands/init.md</code> | | v1 archive (off-limits) | <code>legacy/v1/</code> | | v1 git tag | <code>v1-archive-2026-04-12</code> |</p>
+<hr>
+<h2>16. Memory files to read at session start</h2>
+<ul>
+<li><code>project_devlead_v2_redesign.md</code> — current project state snapshot</li>
+<li><code>feedback_no_adjacent_invention.md</code> — hard-won interaction pattern (do not invent adjacent layers)</li>
+<li><code>feedback_enforcement_posture.md</code> — warn-only enforcement preference</li>
+<li><code>user_nitin.md</code> — Nitin's profile and working style</li>
+<li><code>feedback_file_size.md</code> — keep files small</li>
+<li><code>feedback_subagent_mode.md</code> — subagent-driven execution default</li>
+</ul>
+<hr>
+<h2>17. Housekeeping — when this file needs maintenance</h2>
+<ul>
+<li>After every session, update Section 10 (where we are in the 27-day plan) and Section 9 (current build state).</li>
+<li>When a design decision changes, update Section 3.</li>
+<li>When a gotcha is discovered, add it to Section 11.</li>
+<li>When an open thread is resolved, remove it from Section 13 and add the resolution to Section 3 or wherever it belongs.</li>
+<li>When a section here matures into a dedicated file, <strong>migrate it</strong> (see Section 18 below for the migration protocol — do not just delete).</li>
+</ul>
+<hr>
+<h2>18. Session Resume — a first-class DevLead v1 feature</h2>
+<blockquote><strong>Captured 2026-04-12 (Session 2).</strong> Nitin dictated this as a must-have feature: <em>"Can this be a feature in DevLead, start of project, DevLead starts with a massive file, and keeps trimming it down as makes progress, and report burndown chart on this... nothing more frustrating for user if any information lost from initial sessions."</em> And clarified: <em>"_resume will always exist, but leaner the better, it will not contain any history, but claude should know which file to write before exiting, and to read this file at the start of session... this is same as triaging, any work that has not been triaged will need to stay here, till the line item finds proper home... scratchpad kind of file."</em> This section is the feature spec.</blockquote>
+<h3>18.1 Concept</h3>
+<p><code>_resume.md</code> is the project's <strong>scratchpad / triage inbox</strong>. It is a fast-capture space where any item that doesn't yet have a proper home lives until it finds one. It is <strong>always present</strong> — it does not retire, does not empty out, does not disappear. It <strong>starts empty</strong>, grows when sessions dump untriaged items, and shrinks when items get migrated to their dedicated homes.</p>
+<p><strong>Three things live in <code>_resume.md</code>:</strong></p>
+<ol>
+<li><strong>Untriaged items</strong> — anything the user has said that doesn't yet have a dedicated file. A raw intake bucket.</li>
+<li><strong>Resume pointers</strong> — short cross-references to where locked content has moved (so the next session can navigate: "Section 4 was migrated to <code>_living_project.md</code>").</li>
+<li><strong>Session handoff notes</strong> — the "where we are right now" cursor: what's in progress, what's next, what's blocked.</li>
+</ol>
+<p><strong>Four things do NOT live in <code>_resume.md</code>:</strong></p>
+<ul>
+<li>Session logs or audit history — those live in <code>_audit_log.jsonl</code>.</li>
+<li>Completed design decisions — those migrate to <code><em>design</em>*.md</code> files.</li>
+<li>Long architecture content — migrates to <code>_living_technical.md</code> / <code>_living_design.md</code>.</li>
+<li>Permanent project instructions — those belong in <code>CLAUDE.md</code>.</li>
+</ul>
+<p><code>/devlead init</code> creates <code>_resume.md</code> as an empty scratchpad with just a header template. It grows and shrinks continuously through the project lifetime. The goal is <strong>always as lean as possible, but never empty</strong> — there's always a session handoff note at minimum.</p>
+<h3>18.2 Session protocol (hard rule for Claude)</h3>
+<p>The protocol Claude must follow every session, enforced via <code>CLAUDE.md</code> instruction + <code>SessionStart</code> hook + <code>Stop</code> hook:</p>
+<ol>
+<li><strong>At session start (SessionStart hook / CLAUDE.md rule):</strong> Claude reads <code>devlead_docs/_resume.md</code> FIRST, before any other file. It contains the catch-up pointer and any untriaged items from prior sessions.</li>
+<li><strong>During session:</strong> Claude triages aggressively. Whenever an item in <code>_resume.md</code> finds a proper home, Claude migrates it out (hash-verified, audited — see 18.4). Triage is continuous, not end-of-session.</li>
+<li><strong>Before session exit (Stop hook):</strong> Claude must write any new untriaged items from THIS session to <code>_resume.md</code>. If the user mentioned something important that doesn't yet have a dedicated file, it gets captured here before Claude stops. Stop hook verifies this happened and warns if it didn't.</li>
+</ol>
+<p>Missing either side of this protocol = information loss risk. The Stop hook enforcement is what prevents end-of-session amnesia.</p>
+<h3>18.3 Leanness phases (descriptive, not stages with transitions)</h3>
+<p>The file's size tells you roughly how triaged the project is. These are descriptive bands, not formal states:</p>
+<p>| Lines | Band | What it means | |---|---|---| | &gt; 1000 | <strong>Fat</strong> | Early in project OR triage is falling behind. Migrate aggressively. | | 200–1000 | <strong>Normal</strong> | Healthy capture/triage rhythm, some backlog is expected. | | &lt; 200 | <strong>Lean</strong> | Most content lives in dedicated files; <code>_resume.md</code> is mostly handoff + a few untriaged items. | | &lt; 50 | <strong>Minimal</strong> | Near-ideal state: just session handoff + 1–3 items pending triage. |</p>
+<p><strong>Nothing happens automatically based on these bands.</strong> They're display labels. <code>/devlead status</code> shows the current band so you can see at a glance how much triage debt has accumulated.</p>
+<h3>18.4 Zero information loss — hard guarantee</h3>
+<p><strong>This is the one rule in DevLead that enforces hard, even in warn-only mode.</strong> Information loss is unrecoverable, so warnings are insufficient.</p>
+<p>The guarantee, stated plainly:</p>
+<blockquote>Nothing is ever removed from <code>_resume.md</code> unless the destination file verifiably holds the same content. If the destination is missing, empty, or content-mismatched, the removal is blocked. Period.</blockquote>
+<p>Implementation:</p>
+<ol>
+<li>Migration is proposed: <em>"Section 4 of <code>_resume.md</code> should move to <code>_living_project.md</code>."</em></li>
+<li>DevLead computes a content hash of the source section.</li>
+<li>DevLead checks whether <code>_living_project.md</code> contains content matching that hash.</li>
+<li><strong>If yes:</strong> safe to remove from <code>_resume.md</code>. Append to <code>_migration_log.jsonl</code>. Remove.</li>
+<li><strong>If no:</strong> migration is blocked. DevLead says: <em>"Target <code>_living_project.md</code> does not contain this content. Write it to the target first, then retry the migration."</em></li>
+</ol>
+<p>This is the only place <code>exit 2</code> (hard block) is allowed in v2's default config.</p>
+<h3>18.5 Burndown tracking</h3>
+<p>Every time <code>_resume.md</code> is modified, DevLead appends a line to <code>devlead_docs/_resume_burndown.jsonl</code>:</p>
+<pre>{"timestamp":"2026-04-12T...", "lines":847, "delta":-12, "session_id":"...", "reason":"migrated Section 4 to _living_project.md"}</pre>
+<p><code>/devlead status</code> renders it as a text chart:</p>
+<pre>Resume burndown:
+  Apr 12:  847 █████████████████████████████
+  Apr 13:  812 ████████████████████████████
+  Apr 14:  749 ██████████████████████████
+  Apr 15:  681 ██████████████████████
+  Apr 16:  622 ████████████████████
+  ...
+  Phase: Burndown (trend: -45 lines/day → retirement ETA 14 days)</pre>
+<p>HTML dashboard version ships in v1.1.</p>
+<h3>18.6 New KPI — K10 Resume Leanness</h3>
+<p>Added to the KPI list (was 9, now 10).</p>
+<ul>
+<li><strong>Measures:</strong> how lean <code>_resume.md</code> currently is, and whether it's trending leaner or fatter.</li>
+<li><strong>Formula:</strong> combines current line count with 7-day delta. Current size → band (Fat / Normal / Lean / Minimal, see 18.3). 7-day delta → trend arrow.</li>
+<li><strong>Role:</strong> [T] transparency, [P] pivot trigger.</li>
+<li><strong>Threshold:</strong> in Fat band, positive growth for 7 days → warn (triage is falling behind). In Normal+ band, sustained growth → warn (content is being captured but not triaged out).</li>
+<li><strong>No terminal state.</strong> K10 reports forever because <code>_resume.md</code> is permanent. A steady-state project has K10 in the Lean or Minimal band with near-zero trend.</li>
+</ul>
+<h3>18.7 Slash commands</h3>
+<ul>
+<li><code>/devlead resume</code> — print the current <code>_resume.md</code> with line count, band, and trend in the header.</li>
+<li><code>/devlead triage</code> — interactive triage session: walk through untriaged items, propose a destination for each, migrate on approval.</li>
+<li><code>/devlead migrate &lt;section&gt; --to &lt;file&gt;</code> — explicit migration with hash check and audit entry. Hard-blocks on destination-missing.</li>
+<li><code>/devlead migrate rollback &lt;id&gt;</code> — undo a migration from <code>_migration_log.jsonl</code> if content loss is detected.</li>
+<li><code>/devlead status --resume</code> — show leanness band + trend (text in v1, chart in v1.1).</li>
+</ul>
+<h3>18.8 How <code>_resume.md</code> interacts with <code>CLAUDE.md</code></h3>
+<p>The two files have different roles but are <strong>both permanent</strong>:</p>
+<p>| | <code>CLAUDE.md</code> | <code>_resume.md</code> | |---|---|---| | <strong>Owner</strong> | User / the project | DevLead | | <strong>Lifetime</strong> | Permanent, grows over project life | Permanent, shrinks-and-grows continuously | | <strong>Role</strong> | Production instructions for Claude Code | Scratchpad + triage inbox for untriaged items and session handoff | | <strong>Read when</strong> | Every Claude Code session (always) | Every Claude Code session (always, first) | | <strong>Size</strong> | Stable, small-to-medium | Varies; goal is always as lean as possible |</p>
+<p>As items in <code>_resume.md</code> find proper homes, stable patterns (standing instructions, project-specific rules, design principles) can migrate INTO <code>CLAUDE.md</code> — which grows. Other content migrates into <code><em>living</em><em>.md</code> / <code><em>project</em></em>.md</code> / <code><em>design</em>*.md</code> files. The net effect is that <code>_resume.md</code> stays lean because things flow outward from it.</p>
+<p>The steady state: rich <code>CLAUDE.md</code> + populated <code>devlead_docs/</code> dedicated files + a <strong>minimal but non-empty <code>_resume.md</code></strong> (just session handoff + 1–3 items in triage). That's the goal, and <code>_resume.md</code> never goes away.</p>
+<h3>18.9 Placement in v1 build plan</h3>
+<ul>
+<li><strong>Day 3 (next session):</strong> Add <code>_resume.md.tmpl</code> scaffold template for <code>/devlead init</code>. Add <code>/devlead resume</code> read command. Wire CLAUDE.md instruction to read <code>_resume.md</code> at session start.</li>
+<li><strong>Day 11 (Week 2):</strong> Add <code>/devlead migrate</code> + <code>/devlead triage</code> commands with hash verification, <code>_migration_log.jsonl</code> audit, rollback.</li>
+<li><strong>Day 12 (Week 2):</strong> Add leanness tracking (<code>_resume_leanness.jsonl</code>), wire K10, surface in <code>/devlead status</code>.</li>
+<li><strong>Day 13 (Week 2):</strong> Wire Stop hook so Claude writes untriaged items to <code>_resume.md</code> before exit. This is the "don't lose context" guarantee.</li>
+</ul>
+<p><strong>Timeline impact:</strong> +1 day to the 27-day plan. New first revenue target: <strong>2026-05-09</strong> (was May 8). $1000 target: <strong>2026-06-09</strong>.</p>
+<h3>18.10 This file IS the first instance</h3>
+<p>The file you are reading right now (<code>devlead_docs/_resume.md</code>) IS the first <code>_resume.md</code> in existence. It was created manually in Session 2 because the triage and leanness machinery doesn't exist yet. When the migration/triage commands ship on Day 11, we will start triaging sections out (Section 1 → <code>_living_purpose.md</code>, Section 4 → <code>_design_section2.md</code>, etc.) and this file will shrink. Leanness tracking begins Day 12. The file will never retire — it will settle into a lean steady state where it holds session handoff + a small triage queue.</p>
+<p><strong>Dogfood note:</strong> DevLead's own development of this feature is tracked via this very file. If this file doesn't shrink over the build plan, the feature is broken and we should be worried.</p>
+<hr>
+<h2>19. Project Maturity Score (PMS) — composite metric</h2>
+<blockquote><strong>Captured 2026-04-12 (Session 2).</strong> Nitin dictated: <em>"introduce a concept to give a score to project on its maturity level."</em> This is the spec.</blockquote>
+<h3>19.1 Purpose</h3>
+<p>A single number <strong>0–100</strong> that answers <em>"how mature is this project, right now?"</em> Looking at the score, a user (or Claude) instantly knows whether the project is embryonic, bootstrapping, actively building, or steady-state. The number drives multiple downstream behaviors (LLM reading priority, retirement eligibility, KPI reporting discipline).</p>
+<p><strong>PMS is a composite derived metric, not a KPI.</strong> KPIs (K1–K10) are atomic measures with a single formula each. PMS is a weighted rollup over several signals — some of which ARE KPIs, some of which are state flags. Presented separately from the KPI list so it's unambiguous.</p>
+<h3>19.2 Formula</h3>
+<pre>PMS = Σ (sub_score_i × weight_i) / 100</pre>
+<p>where each sub-score is 0–100 and weights sum to 100:</p>
+<p>| ID | Sub-score | Weight | Source | |---|---|---|---| | M1 | <strong>Interview completion</strong> | 20 | 20 points per locked interview block (A–E). 0 to 100 linearly. | | M2 | <strong>Hierarchy populated</strong> | 15 | % of BOs with weights, averaged with % of TBOs with weights, averaged with % of TBOs having ≥1 TTO. | | M3 | <strong>Convergence progress</strong> | 15 | Vision-level convergence (weighted rollup from K1). 0 to 100 directly. | | M4 | <strong>Resume leanness</strong> | 15 | Inverse of <code>_resume.md</code> line count. 100 if &lt; 50 lines (Minimal); 80 if &lt; 200 (Lean); 40 if 200–1000 (Normal); 0 if &gt; 1000 (Fat). | | M5 | <strong>Living docs populated</strong> | 10 | Fraction of <code><em>living</em>*.md</code> files with non-placeholder content (≥ 5 lines of real text). | | M6 | <strong>CLAUDE.md richness</strong> | 10 | Lines of project-specific content in <code>CLAUDE.md</code> (excluding boilerplate). 0 if stub; 100 if ≥ 50 lines. | | M7 | <strong>Word-keeping discipline</strong> | 5 | K9 (Word-Keeping Ratio × 100). Only counts after ≥ 5 commitments made. Otherwise carried as N/A. | | M8 | <strong>Goal yield</strong> | 5 | K8 (Goal Yield × 100). Only counts after ≥ 1 goal resolved. Otherwise N/A. | | M9 | <strong>Audit log depth</strong> | 3 | <code>min(audit_entries / 50, 1) × 100</code>. Rewards projects that have been running. | | M10 | <strong>Pivot experience</strong> | 2 | 100 if ≥ 1 completed pivot in <code>_migration_log.jsonl</code> or <code>_pivot_log.jsonl</code>; else 0. Pivots are evidence of iteration. |</p>
+<p>Weights: 20+15+15+15+10+10+5+5+3+2 = <strong>100.</strong></p>
+<p><strong>N/A handling:</strong> sub-scores marked N/A (M7, M8 early on) are re-weighted proportionally across the remaining scores so PMS never gets artificially suppressed.</p>
+<h3>19.3 Maturity bands</h3>
+<p>| PMS range | Band | What it means | |---|---|---| | <strong>0–20</strong> | <strong>Embryonic</strong> | Fresh install. Interview not done. <code>_resume.md</code> is the primary source of truth. | | <strong>21–40</strong> | <strong>Bootstrap</strong> | Interview partially done. Hierarchy thin. <code>_resume.md</code> still dominant. | | <strong>41–60</strong> | <strong>Active</strong> | Interview complete, hierarchy populated, work underway. <code>_resume.md</code> actively burning down. Dedicated files filling up. | | <strong>61–80</strong> | <strong>Mature</strong> | Dedicated files dominant. <code>_resume.md</code> residual. Real convergence happening. K8/K9 meaningful. | | <strong>81–100</strong> | <strong>Steady State</strong> | <code>CLAUDE.md</code> rich. Dedicated files authoritative. <code>_resume.md</code> approaching retirement. Project is self-carrying. |</p>
+<p><strong>Steady state:</strong> <code>PMS ≥ 85</code> with M4 in Lean or Minimal band is what a mature project looks like. There is no retirement gate — <code>_resume.md</code> always exists, just stays lean. The goal of driving PMS up is not to eliminate any file; it's to move the project into the Steady State band.</p>
+<h3>19.4 Where PMS appears</h3>
+<ul>
+<li><strong><code>/devlead status</code> header:</strong> big number with band label —</li>
+</ul>
+<pre>  DevLead — MyProject
+  Maturity: 47/100 (Active)
+  Phase: Burndown   Trend: -45 lines/day   Retirement ETA: 14 days
+  [... rest of status output ...]</pre>
+<ul>
+<li><strong><code>/devlead maturity</code>:</strong> dedicated command that prints PMS with full sub-score breakdown —</li>
+</ul>
+<pre>  Project Maturity Score: 47 / 100   Band: Active
+
+    M1  Interview completion     80/100   (weight 20)   → contributes 16.0
+    M2  Hierarchy populated      60/100   (weight 15)   → contributes 9.0
+    M3  Convergence progress     25/100   (weight 15)   → contributes 3.8
+    M4  Resume burndown          40/100   (weight 15)   → contributes 6.0
+    M5  Living docs populated    50/100   (weight 10)   → contributes 5.0
+    M6  CLAUDE.md richness       30/100   (weight 10)   → contributes 3.0
+    M7  Word-keeping              N/A     (&lt; 5 commits, excluded)
+    M8  Goal yield                N/A     (no goals resolved, excluded)
+    M9  Audit depth             100/100   (weight 3)    → contributes 3.0
+    M10 Pivot experience         50/100   (weight 2)    → contributes 1.0
+                                                         ────────────
+                                                         Total: 46.8 ≈ 47</pre>
+<ul>
+<li><strong>HTML dashboard (v1.1):</strong> progress ring with band color + sub-score breakdown.</li>
+</ul>
+<h3>19.5 How PMS drives LLM behavior</h3>
+<p>The LLM's reading priority at session start is a function of PMS — but <strong><code>_resume.md</code> is always read first</strong>, regardless. The question is what comes after:</p>
+<ul>
+<li><strong>PMS &lt; 40 (Embryonic/Bootstrap):</strong> <code>_resume.md</code> first (it's fat and authoritative), then scan dedicated files for what exists.</li>
+<li><strong>PMS 40–70 (Active/early Mature):</strong> <code>_resume.md</code> first (it's thinning out), then dedicated files for the meat of the project.</li>
+<li><strong>PMS &gt; 70 (Mature/Steady State):</strong> <code>_resume.md</code> first (it's lean — just handoff + triage queue), then <code>CLAUDE.md</code>, then dedicated files.</li>
+</ul>
+<p>The first-read rule is invariant: Claude always reads <code>_resume.md</code> at session start, because that's where untriaged items and the session handoff live. What changes with PMS is how much OTHER content Claude needs to read to understand the project — less as the project matures.</p>
+<p>This is how "project maturity decides the handoff" (Nitin's phrase) becomes concrete without ever taking <code>_resume.md</code> out of the loop.</p>
+<h3>19.6 Trend tracking</h3>
+<p>PMS is recomputed at every session start and at every <code>/devlead status</code> call. Each value is appended to <code>devlead_docs/_maturity_log.jsonl</code>:</p>
+<pre>{"timestamp":"2026-04-12T...", "pms":47, "band":"Active", "m1":80, "m2":60, "m3":25, "m4":40, "m5":50, "m6":30, "m9":100, "m10":50, "reason":"session_start"}</pre>
+<p>Slope of PMS over time tells you whether the project is actually maturing:</p>
+<ul>
+<li><strong>Rising:</strong> healthy. Work is moving the project forward.</li>
+<li><strong>Flat:</strong> warn. The project is running but not maturing. Either migrate more, or it's stuck.</li>
+<li><strong>Falling:</strong> alarm. Extremely rare — usually means content was moved from dedicated files back into <code>_resume.md</code>, or standing instructions were retired, or a pivot undid prior work.</li>
+</ul>
+<h3>19.7 Placement in v1 build plan</h3>
+<ul>
+<li><strong>Day 12 (Week 2):</strong> Implement PMS formula, <code>/devlead maturity</code> command, wire into <code>/devlead status</code> header. Share audit log infrastructure from Day 11.</li>
+<li><strong>Day 17 (Week 3):</strong> PMS gates <code>/devlead resume retire</code>.</li>
+</ul>
+<p><strong>Timeline impact:</strong> +0.5 day, absorbed into Week 2 buffer. First revenue target holds at <strong>2026-05-09</strong>.</p>
+<h3>19.8 Current PMS of DevLead itself (as of 2026-04-12, end Session 2)</h3>
+<p>Computed manually for dogfood:</p>
+<ul>
+<li>M1 Interview completion: 0/100 (interview hasn't been run on DevLead yet)</li>
+<li>M2 Hierarchy populated: 0/100 (no BOs yet)</li>
+<li>M3 Convergence progress: 0/100 (nothing to roll up)</li>
+<li>M4 Resume burndown: 0/100 (this file is huge)</li>
+<li>M5 Living docs populated: 0/100 (all scaffold stubs)</li>
+<li>M6 CLAUDE.md richness: ~40/100 (rewritten for v2, has real content)</li>
+<li>M7 Word-keeping: N/A</li>
+<li>M8 Goal yield: N/A</li>
+<li>M9 Audit depth: 0/100 (no audit log yet)</li>
+<li>M10 Pivot experience: 0/100</li>
+</ul>
+<p><strong>Current PMS ≈ 4/100 (Embryonic).</strong> Totally expected — we just archived v1 and wrote Section 1 of v2's design. The whole point of the next 28 days is to drive this number up.</p>
+<hr>
+<h2>20. Session handoff pointer (2026-04-14)</h2>
+<blockquote><strong>File split, dictated this session:</strong> <code>_scratchpad.md</code> now holds raw untriaged capture; <code>_resume.md</code> (this file) holds session-to-session memory — locked decisions, open threads, where-we-are. Section 18 of this file currently conflates the two and needs revision — tracked in Section 13.  <strong>Where to look for the current raw capture:</strong> <code>devlead_docs/_scratchpad.md</code> — entry dated 2026-04-14 contains the Plugin Bridge + Intake Flow directive in full.  <strong>Where the load-bearing pieces already live in THIS file:</strong> - Locked principles (SSoT, zero-disruption, plugin bridge, no dark code) → Section 3. - Open mechanism questions (intake file set, schema, promotion, handoff) → Section 13. - Day-3 pivot note (interview becomes the first consumer of the bridge) → Section 14.  <strong>Next action on resume:</strong> enter plan mode and draft the end-to-end Plugin Bridge + Intake Flow design. Plan gets approved → migrates to <code>_design_section2_plugin_bridge.md</code> → scratchpad entry shrinks to a pointer.</blockquote>
+<hr>
+<p><em>End of resume file. Filename: <code>devlead_docs/_resume.md</code>. This file is the first read point for every new session; <code>_scratchpad.md</code> is the second. Section 18 still describes an older design where <code>_resume.md</code> was the scratchpad — that section is stale and tracked for revision in Section 13.</em></p>
+<div class="footer">Auto-generated by <code>devlead render</code> on 2026-04-17 05:00 UTC · <a href="index.html">← back to index</a></div>
+</body>
+</html>

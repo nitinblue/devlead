@@ -38,6 +38,17 @@ def generate(repo_root: Path) -> str:
         "",
     ]
 
+    # FEATURES-0018: pointer to strategic context if the vision doc exists.
+    vision_path = repo_root / "docs" / "devlead-vision-2026-04-16.html"
+    if vision_path.exists():
+        lines.append(
+            f"> 📋 **Strategic context:** open `{vision_path.relative_to(repo_root)}` Tab 6 "
+            f"(\"Fresh look — post-implementation\") for the current state of play, "
+            f"honest pros/cons, and the next-move TBOs. The sections below are "
+            f"DevLead-derived; the doc is the strategic narrative."
+        )
+        lines.append("")
+
     lines.append("## Current focus")
     lines.append("")
     focus_lines = _get_focus(docs_dir)
@@ -134,34 +145,56 @@ def _get_focus(docs_dir: Path) -> list[str]:
 
 
 def _get_intake_summary(docs_dir: Path) -> list[str]:
+    """Show in_progress + curated FEATURES-NNNN pending entries prominently;
+    collapse hierarchy-derived noise (HIERARCHY-*, etc.) to a single count line.
+
+    FEATURES-0018: prior version dumped all 36+ pending entries flat, drowning
+    the strategic FEATURES-NNNN candidates under auto-generated hierarchy items.
+    """
     try:
         from devlead import intake
         done = 0
-        in_progress = 0
-        pending = 0
-        entries_by_status: dict[str, list[str]] = {"in_progress": [], "pending": [], "done": []}
+        in_progress: list[tuple[str, str]] = []
+        pending_curated: list[tuple[str, str, str]] = []  # (id, title, prefix)
+        pending_derived: list[tuple[str, str]] = []
         for f in sorted(docs_dir.glob("_intake_*.md")):
             for e in intake.read(f):
                 if e.status == "done":
                     done += 1
                 elif e.status == "in_progress":
-                    in_progress += 1
-                    entries_by_status["in_progress"].append(f"{e.id}: {e.title}")
+                    in_progress.append((e.id, e.title))
                 else:
-                    pending += 1
-                    entries_by_status["pending"].append(f"{e.id}: {e.title}")
+                    # Split: HIERARCHY-* and other auto-generated entries get collapsed.
+                    if e.id.startswith("HIERARCHY-"):
+                        pending_derived.append((e.id, e.title))
+                    else:
+                        prefix = e.id.rsplit("-", 1)[0]
+                        pending_curated.append((e.id, e.title, prefix))
 
-        lines = [f"{done} done, {in_progress} in progress, {pending} pending."]
-        if entries_by_status["in_progress"]:
+        total_pending = len(pending_curated) + len(pending_derived)
+        lines = [f"{done} done, {len(in_progress)} in progress, {total_pending} pending."]
+
+        if in_progress:
             lines.append("")
             lines.append("**In progress:**")
-            for e in entries_by_status["in_progress"]:
-                lines.append(f"- {e}")
-        if entries_by_status["pending"]:
+            for eid, title in in_progress:
+                lines.append(f"- {eid}: {title}")
+
+        if pending_curated:
             lines.append("")
-            lines.append("**Pending:**")
-            for e in entries_by_status["pending"]:
-                lines.append(f"- {e}")
+            lines.append("**Pending — curated (set focus with `/devlead focus <id>`):**")
+            # Sort by ID descending so newest (highest number) appears first
+            pending_curated.sort(key=lambda t: t[0], reverse=True)
+            for eid, title, _prefix in pending_curated:
+                lines.append(f"- `{eid}` — {title}")
+
+        if pending_derived:
+            lines.append("")
+            lines.append(
+                f"**Pending — hierarchy-derived ({len(pending_derived)} entries collapsed):** "
+                "auto-generated from `_project_hierarchy.md` TTOs. See `_intake_features.md` for the full list."
+            )
+
         return lines
     except Exception as e:
         return [f"(error: {e})"]

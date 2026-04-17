@@ -4,7 +4,7 @@
 > current technical design. DO NOT EDIT - run `/devlead awareness` to
 > refresh. Hand-edits are overwritten on next refresh.
 >
-> **Last refresh:** 2026-04-17T04:28:13Z
+> **Last refresh:** 2026-04-17T05:03:44Z
 > **Generator:** devlead.awareness v1
 > **Scan source:** src/devlead/*.py (module docstrings + public API + deps)
 
@@ -43,7 +43,7 @@
 ### `devlead.cli`
 - **Path:** `src/devlead/cli.py`
 - **Purpose:** Command-line dispatch for DevLead.
-- **Lines:** 714
+- **Lines:** 735
 - **Public API:** `main`
 - **Depends on:** `devlead.install`
 
@@ -64,7 +64,7 @@
 ### `devlead.dashboard`
 - **Path:** `src/devlead/dashboard.py`
 - **Purpose:** 10-tab project management dashboard. Static HTML, CSS-only tabs, no JavaScript.
-- **Lines:** 504
+- **Lines:** 550
 - **Public API:** `generate, write_dashboard`
 - **Depends on:** (stdlib only)
 
@@ -78,7 +78,7 @@
 ### `devlead.gate`
 - **Path:** `src/devlead/gate.py`
 - **Purpose:** DevLead Level-2 enforcement gate. Implements FEATURES-0004.
-- **Lines:** 248
+- **Lines:** 305
 - **Public API:** `check_pretooluse, check_session_start, check_user_prompt, check_stop, check`
 - **Depends on:** `devlead.bootstrap`
 
@@ -138,6 +138,13 @@
 - **Public API:** `append_promise, read_all, collect_bo_metrics, write_promises_for, run_realisation_sweep`
 - **Depends on:** `devlead.hierarchy`
 
+### `devlead.render`
+- **Path:** `src/devlead/render.py`
+- **Purpose:** Markdown → HTML renderer for devlead_docs/ files.
+- **Lines:** 325
+- **Public API:** `render_md_to_html, render_md_to_full_html, render_dir`
+- **Depends on:** (stdlib only)
+
 ### `devlead.report`
 - **Path:** `src/devlead/report.py`
 - **Purpose:** Session report — plain-English HTML that a non-coder can read to verify what Claude did.
@@ -148,7 +155,7 @@
 ### `devlead.resume`
 - **Path:** `src/devlead/resume.py`
 - **Purpose:** Auto-generate _resume.md from real project state. Not Claude's opinion.
-- **Lines:** 372
+- **Lines:** 405
 - **Public API:** `generate, refresh`
 - **Depends on:** (stdlib only)
 
