@@ -6,13 +6,23 @@ it from actual data: intake status, audit log, git state.
 
 Called by `devlead report` and `devlead resume` to keep the bootstrap
 cursor honest.
+
+FEATURES-0017 added three anti-amnesia sections derived from existing files:
+  - "Recently shipped" from done intake entries (last N days)
+  - "Recent activity by intake" from audit-log gate_pass events grouped by cwi
+  - "Untracked modules detected" from _aware_design.md vs intake-mention diff
+These make session-handoff structurally automatic — no hand-written notes.
 """
 
 from __future__ import annotations
 
+import json
+import re
 import subprocess
-from datetime import datetime, timezone
+from datetime import datetime, timedelta, timezone
 from pathlib import Path
+
+DEFAULT_RECENT_WINDOW_DAYS = 7
 
 
 def generate(repo_root: Path) -> str:
@@ -32,6 +42,18 @@ def generate(repo_root: Path) -> str:
     lines.append("")
     focus_lines = _get_focus(docs_dir)
     lines.extend(focus_lines)
+    lines.append("")
+
+    # Anti-amnesia: surface what shipped recently so the next session sees the
+    # work that JUST happened, not just the legacy hierarchy backlog.
+    lines.append("## Recently shipped (last 7 days)")
+    lines.append("")
+    lines.extend(_get_recent_done_intake(docs_dir))
+    lines.append("")
+
+    lines.append("## Recent activity by intake (audit-derived)")
+    lines.append("")
+    lines.extend(_get_recent_active_cwi(docs_dir))
     lines.append("")
 
     lines.append("## Read at session start")
@@ -71,6 +93,11 @@ def generate(repo_root: Path) -> str:
     lines.append("")
     next_lines = _get_next_ttos(docs_dir)
     lines.extend(next_lines)
+    lines.append("")
+
+    lines.append("## Untracked modules (potential dark code)")
+    lines.append("")
+    lines.extend(_get_untracked_modules(docs_dir))
     lines.append("")
 
     lines.append("## Plan file")
@@ -212,3 +239,134 @@ def _get_git_status(repo_root: Path) -> list[str]:
         return [f"{file_count} uncommitted files.", "", "```", output[:500], "```"]
     except Exception:
         return ["(could not run git)"]
+
+
+# --- FEATURES-0017: anti-amnesia helpers ----------------------------------
+
+
+def _parse_iso_ts(ts: str) -> datetime | None:
+    """Parse an ISO-8601 timestamp; return None if unparseable."""
+    if not ts:
+        return None
+    try:
+        return datetime.fromisoformat(ts.replace("Z", "+00:00"))
+    except (TypeError, ValueError):
+        return None
+
+
+def _get_recent_done_intake(
+    docs_dir: Path, days: int = DEFAULT_RECENT_WINDOW_DAYS
+) -> list[str]:
+    """Done intake entries with `captured` timestamp inside the recent window.
+
+    Catches the very thing that caused this feature to exist: a session
+    finished real work but the next session couldn't see it because
+    _resume.md only listed the legacy backlog.
+    """
+    try:
+        from devlead import intake
+        cutoff = datetime.now(timezone.utc) - timedelta(days=days)
+        recent: list[tuple[str, str, str]] = []  # (id, title, captured)
+        for f in sorted(docs_dir.glob("_intake_*.md")):
+            for e in intake.read(f):
+                if e.status != "done":
+                    continue
+                ts = _parse_iso_ts(e.captured)
+                if ts is None or ts < cutoff:
+                    continue
+                recent.append((e.id, e.title, e.captured))
+        if not recent:
+            return [f"(none in the last {days} days)"]
+        recent.sort(key=lambda t: t[2], reverse=True)
+        return [f"- **{eid}** — {title} _(captured {ts[:10]})_" for eid, title, ts in recent]
+    except Exception as e:
+        return [f"(error: {e})"]
+
+
+def _get_recent_active_cwi(
+    docs_dir: Path, days: int = DEFAULT_RECENT_WINDOW_DAYS
+) -> list[str]:
+    """Group recent gate_pass events by cwi to show what was actively worked on.
+
+    Reads _audit_log.jsonl directly. Fast — only the last ~500 lines.
+    """
+    log = docs_dir / "_audit_log.jsonl"
+    if not log.exists():
+        return ["(no audit log yet)"]
+    try:
+        cutoff = datetime.now(timezone.utc) - timedelta(days=days)
+        cwi_counts: dict[str, int] = {}
+        cwi_files: dict[str, set[str]] = {}
+        # Tail-ish: read all but only count recent. Audit log fits in memory.
+        for raw in log.read_text(encoding="utf-8").splitlines():
+            raw = raw.strip()
+            if not raw:
+                continue
+            try:
+                ev = json.loads(raw)
+            except json.JSONDecodeError:
+                continue
+            if ev.get("event") != "gate_pass" or ev.get("result") != "pass":
+                continue
+            ts = _parse_iso_ts(ev.get("ts", ""))
+            if ts is None or ts < cutoff:
+                continue
+            for cwi_id in ev.get("cwi", []) or []:
+                cwi_counts[cwi_id] = cwi_counts.get(cwi_id, 0) + 1
+                file_path = ev.get("file") or ""
+                if file_path:
+                    short = file_path.replace("\\", "/").rsplit("/", 1)[-1]
+                    cwi_files.setdefault(cwi_id, set()).add(short)
+        if not cwi_counts:
+            return [f"(no gated edits in the last {days} days)"]
+        ordered = sorted(cwi_counts.items(), key=lambda kv: kv[1], reverse=True)
+        out = []
+        for cwi_id, n in ordered:
+            files = sorted(cwi_files.get(cwi_id, set()))
+            sample = ", ".join(files[:4]) + ("…" if len(files) > 4 else "")
+            out.append(f"- **{cwi_id}** — {n} edits across {len(files)} files: _{sample}_")
+        return out
+    except Exception as e:
+        return [f"(error: {e})"]
+
+
+def _get_untracked_modules(docs_dir: Path) -> list[str]:
+    """Modules in _aware_design.md that no intake entry mentions = dark-code warning.
+
+    Heuristic, not perfect: flags modules whose name doesn't appear in any
+    _intake_*.md file. Catches the case where code lands without an intake
+    trace (the original sin DevLead exists to prevent).
+    """
+    awareness_path = docs_dir / "_aware_design.md"
+    if not awareness_path.exists():
+        return ["(no _aware_design.md yet — run `devlead awareness`)"]
+    try:
+        # Extract module names from "### `devlead.<module>`" headings
+        text = awareness_path.read_text(encoding="utf-8")
+        modules = re.findall(r"^### `devlead\.([\w_]+)`", text, re.MULTILINE)
+        if not modules:
+            return ["(no modules detected)"]
+
+        # Concat all intake files into one searchable blob (cheap; intake is small).
+        # Normalise both sides: snake_case ↔ kebab-case ↔ space-separated all match.
+        intake_blob = ""
+        for f in docs_dir.glob("_intake_*.md"):
+            intake_blob += f.read_text(encoding="utf-8") + "\n"
+        intake_blob_norm = intake_blob.replace("-", "_").replace(" ", "_").lower()
+
+        def _mentioned(mod: str) -> bool:
+            return mod.replace("-", "_").lower() in intake_blob_norm
+
+        untracked = [m for m in modules if not _mentioned(m) and m not in {
+            # known-builtin / pre-FEATURES-tracking modules — exclude to reduce noise
+            "audit", "cli", "config", "install", "intake", "scratchpad",
+            "bridge", "bootstrap", "migrate", "report", "sot", "verify",
+        }]
+        if not untracked:
+            return ["All `_aware_design.md` modules trace to an intake entry."]
+        return [
+            f"- `devlead.{m}` — module exists, no intake entry mentions it"
+            for m in untracked
+        ]
+    except Exception as e:
+        return [f"(error: {e})"]

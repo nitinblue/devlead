@@ -20,6 +20,10 @@ class TTO:
     weight: int
     done: bool
     ttype: str = "functional"
+    # Convergence-layer fields (Phase 1, FEATURES-0014). Optional for backward
+    # compat — TTOs without intent_vector are excluded from α/φ/ε calculations.
+    intent_vector: dict[str, float] = field(default_factory=dict)
+    verify_kind: str = "shell"  # shell | benchmark | human_signoff | lint
 
 
 @dataclass
@@ -49,6 +53,14 @@ class BO:
     actual_date: str = "(pending)"
     revised_date: str = "(none)"
     revision_justification: str = "(none)"
+    # Convergence-layer fields (Phase 1, FEATURES-0014). Optional for backward
+    # compat — BOs without metric/baseline/target fall back to "self-reported"
+    # mode; convergence math degrades to legacy weighted-tasks-done.
+    metric: str = ""
+    baseline: float | None = None
+    target: float | None = None
+    metric_source: str = ""  # "manual" | "shell:<cmd>" | "url:<endpoint>"
+    current: float | None = None
     tbos: list[TBO] = field(default_factory=list)
 
     @property
@@ -58,6 +70,34 @@ class BO:
         total = sum(t.weight * t.convergence for t in self.tbos)
         weight_sum = sum(t.weight for t in self.tbos)
         return (total / weight_sum) if weight_sum > 0 else 0.0
+
+    @property
+    def has_metric_source(self) -> bool:
+        """True if this BO can compute a real C(τ) from convergence.py.
+
+        Requires metric, baseline, target, and metric_source all populated.
+        BOs without these fall back to legacy weighted-tasks-done convergence.
+        """
+        return bool(
+            self.metric
+            and self.metric_source
+            and self.baseline is not None
+            and self.target is not None
+        )
+
+    @property
+    def normalised_progress(self) -> float | None:
+        """Per-axis normalised progress for this BO.
+
+        Returns (current - baseline) / (target - baseline) if metric data is
+        present; None otherwise. Used by convergence.compute_s().
+        """
+        if not self.has_metric_source or self.current is None:
+            return None
+        denom = (self.target or 0.0) - (self.baseline or 0.0)
+        if denom == 0.0:
+            return 1.0 if self.current == self.target else 0.0
+        return ((self.current or 0.0) - (self.baseline or 0.0)) / denom
 
 
 @dataclass
@@ -74,13 +114,53 @@ class Sprint:
         return (total / weight_sum) if weight_sum > 0 else 0.0
 
 
-_BO_RE = re.compile(r"^### (BO-\d+):\s*(.+?)\s*\(weight:\s*(\d+)\)")
-_TBO_RE = re.compile(r"^#### (TBO-\d+):\s*(.+?)\s*\(weight:\s*(\d+)\)")
+_BO_RE = re.compile(r"^### (BO-[\d.]+):\s*(.+?)\s*\(weight:\s*(\d+)\)")
+_TBO_RE = re.compile(r"^#### (TBO-[\d.]+):\s*(.+?)\s*\(weight:\s*(\d+)\)")
 _TTO_RE = re.compile(
-    r"^- \[([ xX])\] (TTO-\d+):\s*(.*?)\(weight:\s*(\d+)\)\s*\[([^\]]+)"
+    r"^- \[([ xX])\] (TTO-[\d.]+):\s*(.*?)\(weight:\s*(\d+)\)\s*\[([^\]]+)"
 )
 _FIELD_RE = re.compile(r"^- \*\*(\w[\w_]*):\*\*\s*(.*)")
+_TTO_SUBFIELD_RE = re.compile(r"^\s+- \*\*(\w[\w_]*):\*\*\s*(.*)")
 _SPRINT_RE = re.compile(r"^## Sprint \d+\s*[-—]\s*(.+)")
+
+# BO fields that should be parsed as float (None when not parseable / missing).
+_BO_FLOAT_FIELDS = {"baseline", "target", "current"}
+
+# TTO subfield names allowed (anything else is ignored).
+_TTO_KNOWN_SUBFIELDS = {"intent", "intent_vector", "verify_kind"}
+
+
+def _coerce_bo_field(bo: "BO", key: str, val: str) -> None:
+    """Set a BO field from a parsed `- **Key:** value` line, with type coercion."""
+    if key in _BO_FLOAT_FIELDS:
+        try:
+            setattr(bo, key, float(val))
+        except (TypeError, ValueError):
+            pass  # leave default (None); silent so legacy hierarchies parse fine
+        return
+    if hasattr(bo, key):
+        setattr(bo, key, val)
+
+
+def _parse_intent_vector(val: str) -> dict[str, float]:
+    """Parse an intent_vector string like 'BO-1: 0.40, BO-3: 0.05' into a dict.
+
+    Tolerates extra whitespace and trailing commas. Silently skips malformed
+    entries — partial results are better than a parser crash on legacy files.
+    """
+    out: dict[str, float] = {}
+    for chunk in val.split(","):
+        chunk = chunk.strip()
+        if not chunk:
+            continue
+        if ":" not in chunk:
+            continue
+        bo_id, num = chunk.split(":", 1)
+        try:
+            out[bo_id.strip()] = float(num.strip())
+        except (TypeError, ValueError):
+            continue
+    return out
 
 
 def parse(hierarchy_path: Path) -> list[Sprint]:
@@ -90,6 +170,7 @@ def parse(hierarchy_path: Path) -> list[Sprint]:
     current_sprint: Sprint | None = None
     current_bo: BO | None = None
     current_tbo: TBO | None = None
+    current_tto: TTO | None = None
 
     for line in text.splitlines():
         sm = _SPRINT_RE.match(line)
@@ -98,6 +179,7 @@ def parse(hierarchy_path: Path) -> list[Sprint]:
             sprints.append(current_sprint)
             current_bo = None
             current_tbo = None
+            current_tto = None
             continue
 
         bm = _BO_RE.match(line)
@@ -108,15 +190,28 @@ def parse(hierarchy_path: Path) -> list[Sprint]:
             )
             current_sprint.bos.append(current_bo)
             current_tbo = None
+            current_tto = None
             continue
 
+        # TTO subfield (indented `  - **field:** value`) attaches to the current TTO.
+        # Must be checked BEFORE the top-level _FIELD_RE so the indented form wins.
+        if current_tto is not None:
+            tsf = _TTO_SUBFIELD_RE.match(line)
+            if tsf:
+                key, val = tsf.group(1).lower(), tsf.group(2).strip()
+                if key in ("intent", "intent_vector"):
+                    current_tto.intent_vector = _parse_intent_vector(val)
+                elif key == "verify_kind":
+                    current_tto.verify_kind = val
+                continue
+
+        # BO-level field (`- **Key:** value`) at top level applies to current_bo.
         if current_bo is not None:
             fm = _FIELD_RE.match(line)
             if fm:
                 key, val = fm.group(1), fm.group(2).strip()
                 key_lower = key.lower().replace(" ", "_")
-                if hasattr(current_bo, key_lower):
-                    setattr(current_bo, key_lower, val)
+                _coerce_bo_field(current_bo, key_lower, val)
                 continue
 
         tbm = _TBO_RE.match(line)
@@ -126,16 +221,18 @@ def parse(hierarchy_path: Path) -> list[Sprint]:
                 weight=int(tbm.group(3)),
             )
             current_bo.tbos.append(current_tbo)
+            current_tto = None
             continue
 
         ttm = _TTO_RE.match(line)
         if ttm and current_tbo is not None:
-            current_tbo.ttos.append(TTO(
+            current_tto = TTO(
                 id=ttm.group(2), name=ttm.group(3).strip(),
                 weight=int(ttm.group(4)),
                 done=ttm.group(1).strip().lower() == "x",
                 ttype=ttm.group(5).strip(),
-            ))
+            )
+            current_tbo.ttos.append(current_tto)
 
     return sprints
 

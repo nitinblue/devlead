@@ -76,6 +76,12 @@ def check_pretooluse(hook_input: dict, repo_root: Path) -> dict:
         docs_dir, "gate_pass", tool=tool_name, file=file_path,
         cwi=cwi_ids, rule="intake_trace", result="pass",
     )
+    # FEATURES-0016: record edit-count effort attribution per active CWI.
+    # Tokens unknown from PreToolUse hook (Claude Code doesn't expose them);
+    # we capture the *event* so per-TTO cost-of-engineering can be summed.
+    from devlead import effort
+    for cwi_id in cwi_ids:
+        effort.record_effort(docs_dir, cwi_id, tokens=0)
     return {"continue": True}
 
 

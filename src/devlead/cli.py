@@ -89,12 +89,38 @@ def main(argv: list[str] | None = None) -> int:
         return 0
     if cmd == "config":
         return _cmd_config(args[1:])
+    if cmd == "verify-all":
+        from devlead import hierarchy, promise_ledger, resume, verifier
+        repo = Path.cwd()
+        results = verifier.run_all(repo)
+        flipped = verifier.update_hierarchy(repo, results)
+        print(verifier.summary(results))
+        if flipped:
+            print(f"\n{len(flipped)} TTOs checked in _project_hierarchy.md")
+            # Write a promise-ledger row for every TTO that just transitioned
+            # to done. Skips TTOs without an intent_vector (infrastructural).
+            sprints = hierarchy.parse(repo / "devlead_docs" / "_project_hierarchy.md")
+            written = promise_ledger.write_promises_for(
+                repo / "devlead_docs" / promise_ledger.LEDGER_FILENAME,
+                sprints, flipped,
+            )
+            if written:
+                print(f"{len(written)} promise-ledger rows written")
+            resume.refresh(repo)
+            print("_resume.md regenerated")
+        return 0
     if cmd == "report":
         return _cmd_report(args[1:])
     if cmd == "resume":
         return _cmd_resume(args[1:])
     if cmd == "kpi":
         return _cmd_kpi(args[1:])
+    if cmd == "metric-update":
+        return _cmd_metric_update(args[1:])
+    if cmd == "realisation-sweep":
+        return _cmd_realisation_sweep(args[1:])
+    if cmd == "project-init":
+        return _cmd_project_init(args[1:])
 
     # Unknown command -> exit 0 (warn-only by design).
     print(f"devlead: unknown command '{cmd}' (v2 under construction)", file=sys.stderr)
@@ -570,6 +596,117 @@ def _cmd_report(sub_args: list[str]) -> int:
     repo_root = Path(sub_args[0]) if sub_args else Path.cwd()
     out_path = report.write_report(repo_root)
     print(f"Report written to: {out_path}")
+    return 0
+
+
+def _cmd_project_init(sub_args: list[str]) -> int:
+    """`devlead project-init [lock|generate-intake]`
+
+    No subcommand: runs the interactive 10-question interview, writes answers
+    to devlead_docs/_project_init_answers.md.
+
+    `lock`: hashes _project_hierarchy.md and appends a lock entry to
+    _living_decisions.md (idempotent on same hash).
+
+    `generate-intake`: emits hierarchy-derived intake files
+    (_intake_hierarchy_features.md and _intake_hierarchy_nonfunctional.md)
+    by walking the parsed hierarchy and splitting TTOs by ttype.
+    """
+    from devlead import hierarchy, project_init
+
+    repo = Path.cwd()
+    docs_dir = repo / "devlead_docs"
+    sub = sub_args[0] if sub_args else ""
+
+    if sub == "lock":
+        h_path = docs_dir / "_project_hierarchy.md"
+        d_path = docs_dir / "_living_decisions.md"
+        if not h_path.exists():
+            print("no _project_hierarchy.md to lock", file=sys.stderr)
+            return 1
+        h = project_init.lock_hierarchy(h_path, d_path)
+        print(f"hierarchy hash: {h}")
+        return 0
+
+    if sub == "generate-intake":
+        h_path = docs_dir / "_project_hierarchy.md"
+        if not h_path.exists():
+            print("no _project_hierarchy.md to derive from", file=sys.stderr)
+            return 1
+        sprints = hierarchy.parse(h_path)
+        counts = project_init.generate_intake_from_ttos(sprints, docs_dir)
+        for fname, n in counts.items():
+            print(f"{fname}: {n} entries")
+        return 0
+
+    # Default: run interview
+    answers = project_init.interview()
+    answers_path = docs_dir / project_init.ANSWERS_FILENAME
+    project_init.write_answers(answers, answers_path)
+    print(f"\nAnswers written to: {answers_path}")
+    print("Next: paste the suggested prompt into Claude to draft the hierarchy,")
+    print("      then run: devlead project-init lock")
+    return 0
+
+
+def _cmd_realisation_sweep(sub_args: list[str]) -> int:
+    """`devlead realisation-sweep`
+
+    Walks _promise_ledger.jsonl, finds rows whose window has expired, and
+    computes φ/ε from current BO metrics. Updates row status to
+    realised | partial | vapor (skips when no data is available).
+    """
+    from devlead import hierarchy, metric_source, promise_ledger
+
+    repo = Path.cwd()
+    docs_dir = repo / "devlead_docs"
+    h_path = docs_dir / "_project_hierarchy.md"
+    if not h_path.exists():
+        print("no _project_hierarchy.md", file=sys.stderr)
+        return 1
+
+    sprints = hierarchy.parse(h_path)
+    metric_source.apply_to_sprints(docs_dir / metric_source.HISTORY_FILENAME, sprints)
+    result = promise_ledger.run_realisation_sweep(
+        docs_dir / promise_ledger.LEDGER_FILENAME, sprints,
+    )
+    print(
+        f"realisation sweep: checked {result['checked']} "
+        f"window-expired rows, updated {result['updated']} "
+        f"(skipped {result['skipped_no_data']} for missing data)"
+    )
+    return 0
+
+
+def _cmd_metric_update(sub_args: list[str]) -> int:
+    """`devlead metric-update <BO-ID> <value> [--note "..."]`
+
+    Records a manual metric reading into devlead_docs/_state_history.jsonl.
+    Used by the manual mode of metric_source — for shell/url modes, the Stop
+    hook will write the same row automatically (deferred).
+    """
+    from devlead import metric_source
+
+    if len(sub_args) < 2:
+        print(
+            "usage: devlead metric-update <BO-ID> <value> [--note '...']",
+            file=sys.stderr,
+        )
+        return 1
+    bo_id, value_str = sub_args[0], sub_args[1]
+    note = ""
+    if "--note" in sub_args:
+        i = sub_args.index("--note")
+        if i + 1 < len(sub_args):
+            note = sub_args[i + 1]
+    try:
+        value = float(value_str)
+    except ValueError:
+        print(f"value '{value_str}' is not a number", file=sys.stderr)
+        return 1
+    history_path = Path.cwd() / "devlead_docs" / metric_source.HISTORY_FILENAME
+    row = metric_source.record_reading(history_path, bo_id, value, note=note)
+    print(f"recorded: {bo_id} = {row['value']} at {row['ts']}")
     return 0
 
 

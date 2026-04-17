@@ -4,7 +4,7 @@
 > this project exposes. DO NOT EDIT - run `/devlead awareness` to refresh.
 > Hand-edits are overwritten on next refresh.
 >
-> **Last refresh:** 2026-04-16T03:03:15Z
+> **Last refresh:** 2026-04-17T04:28:13Z
 > **Generator:** devlead.awareness v1
 > **Scan sources:** commands/*.md, src/devlead/cli.py
 

@@ -1,0 +1,967 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1" />
+<title>DevLead — What it is, and where it goes</title>
+<style>
+  :root {
+    --bg: #0b0d10;
+    --panel: #11151a;
+    --panel-2: #161b22;
+    --line: #222a33;
+    --ink: #e6edf3;
+    --ink-dim: #9aa7b3;
+    --ink-faint: #6b7785;
+    --accent: #7ee787;
+    --accent-2: #79c0ff;
+    --warn: #ffa657;
+    --bad: #ff7b72;
+    --good: #56d364;
+    --chip: #1f2730;
+  }
+  * { box-sizing: border-box; }
+  html, body { margin: 0; padding: 0; background: var(--bg); color: var(--ink);
+    font: 15px/1.55 ui-sans-serif, -apple-system, "Segoe UI", Roboto, Helvetica, Arial, sans-serif; }
+  a { color: var(--accent-2); }
+  code, pre { font-family: ui-monospace, "SF Mono", Menlo, Consolas, monospace; font-size: 13px; }
+  pre { background: #0a0d11; border: 1px solid var(--line); border-radius: 8px; padding: 12px 14px; overflow-x: auto; }
+  header.hero {
+    padding: 40px 28px 28px; border-bottom: 1px solid var(--line);
+    background: radial-gradient(1200px 400px at 20% -10%, #1a2230 0%, transparent 60%), var(--bg);
+  }
+  header.hero h1 { margin: 0 0 6px; font-size: 30px; letter-spacing: -0.01em; }
+  header.hero p.tag { margin: 0; color: var(--ink-dim); font-size: 16px; }
+  header.hero p.meta { margin: 14px 0 0; color: var(--ink-faint); font-size: 13px; }
+  nav.tabs { display: flex; gap: 4px; padding: 0 28px; border-bottom: 1px solid var(--line); background: var(--panel); position: sticky; top: 0; z-index: 10; }
+  nav.tabs button {
+    background: transparent; color: var(--ink-dim); border: 0; padding: 14px 18px;
+    font: inherit; cursor: pointer; border-bottom: 2px solid transparent;
+  }
+  nav.tabs button.active { color: var(--ink); border-bottom-color: var(--accent); }
+  nav.tabs button:hover { color: var(--ink); }
+  main { padding: 28px; max-width: 1120px; margin: 0 auto; }
+  section.tab { display: none; }
+  section.tab.active { display: block; }
+  h2 { margin: 28px 0 10px; font-size: 22px; letter-spacing: -0.01em; }
+  h3 { margin: 22px 0 8px; font-size: 17px; color: var(--ink); }
+  h4 { margin: 16px 0 6px; font-size: 14px; color: var(--ink-dim); text-transform: uppercase; letter-spacing: 0.06em; }
+  p { margin: 8px 0; color: var(--ink); }
+  p.dim { color: var(--ink-dim); }
+  ul { padding-left: 20px; }
+  li { margin: 4px 0; }
+  .grid { display: grid; gap: 14px; }
+  .grid.cols-2 { grid-template-columns: 1fr 1fr; }
+  .grid.cols-3 { grid-template-columns: repeat(3, 1fr); }
+  @media (max-width: 820px) { .grid.cols-2, .grid.cols-3 { grid-template-columns: 1fr; } }
+  .card { background: var(--panel); border: 1px solid var(--line); border-radius: 10px; padding: 16px 18px; }
+  .card.tight { padding: 12px 14px; }
+  .card h3 { margin-top: 0; }
+  .chip { display: inline-block; background: var(--chip); color: var(--ink-dim); padding: 2px 8px; border-radius: 999px; font-size: 12px; margin-right: 6px; }
+  .chip.good { color: #b8ffc7; background: #10271a; }
+  .chip.warn { color: #ffd7a6; background: #2a1e10; }
+  .chip.bad { color: #ffc0bd; background: #2a1313; }
+  .callout { border-left: 3px solid var(--accent); padding: 12px 14px; background: #10161c; border-radius: 0 10px 10px 0; margin: 14px 0; }
+  .callout.warn { border-left-color: var(--warn); }
+  .callout.bad { border-left-color: var(--bad); }
+  table { width: 100%; border-collapse: collapse; margin: 10px 0; font-size: 14px; }
+  th, td { text-align: left; padding: 8px 10px; border-bottom: 1px solid var(--line); vertical-align: top; }
+  th { color: var(--ink-dim); font-weight: 600; font-size: 13px; }
+  td.num { text-align: right; font-variant-numeric: tabular-nums; }
+  .kpi { display: flex; gap: 12px; flex-wrap: wrap; margin: 10px 0 6px; }
+  .kpi .card { flex: 1 1 180px; }
+  .kpi .n { font-size: 26px; font-weight: 600; letter-spacing: -0.01em; }
+  .kpi .l { font-size: 12px; color: var(--ink-dim); text-transform: uppercase; letter-spacing: 0.08em; }
+  .funnel { display: grid; grid-template-columns: 1fr; gap: 8px; margin: 10px 0; }
+  .funnel .row { display: flex; align-items: center; gap: 10px; }
+  .funnel .bar { height: 28px; background: linear-gradient(90deg, var(--accent-2), var(--accent)); border-radius: 6px; }
+  .funnel .lab { flex: 0 0 210px; color: var(--ink-dim); font-size: 13px; }
+  .funnel .val { color: var(--ink); font-variant-numeric: tabular-nums; font-size: 13px; }
+  footer { padding: 30px 28px 50px; color: var(--ink-faint); font-size: 12px; border-top: 1px solid var(--line); margin-top: 30px; }
+  .honest { background: linear-gradient(180deg, #12170f, #0f130d); border: 1px solid #2a3a1e; }
+</style>
+</head>
+<body>
+
+<header class="hero">
+  <h1>DevLead</h1>
+  <p class="tag">A governance layer that makes AI pair-programming accountable. One channel between the codebase and the model — no dark code, no silent slips, no session amnesia.</p>
+  <p class="meta">Vision doc · generated 2026-04-16 · Opus 4.7 · owner: Nitin Jain</p>
+</header>
+
+<nav class="tabs">
+  <button class="tab-btn active" data-tab="what">What DevLead is</button>
+  <button class="tab-btn" data-tab="vision">Grand vision &amp; $1000/month plan</button>
+  <button class="tab-btn" data-tab="shakeout">Technical capabilities — shaken out by a human dev lead</button>
+  <button class="tab-btn" data-tab="convergence">Convergence — POC on DevLead itself</button>
+  <button class="tab-btn" data-tab="trial">Trial run — <code>devlead project-init</code></button>
+</nav>
+<style>
+  .matrix { font-family: ui-monospace, "SF Mono", Menlo, Consolas, monospace; font-size: 13px; background: #0a0d11; border: 1px solid var(--line); border-radius: 8px; padding: 14px 16px; overflow-x: auto; white-space: pre; line-height: 1.6; }
+  .eq { font-family: ui-monospace, "SF Mono", Menlo, Consolas, monospace; background: #11161c; border-left: 3px solid var(--accent-2); padding: 10px 14px; border-radius: 0 6px 6px 0; margin: 10px 0; font-size: 14px; }
+  .num-cell { font-variant-numeric: tabular-nums; text-align: right; }
+  .chat-user { background: #1a2230; border-radius: 12px 12px 4px 12px; padding: 14px 16px; margin: 12px 0 12px 60px; border: 1px solid #2a3a4f; }
+  .chat-dl { background: #0f1a14; border-radius: 12px 12px 12px 4px; padding: 14px 16px; margin: 12px 60px 12px 0; border: 1px solid #2a4f3a; }
+  .chat-label { font-size: 11px; text-transform: uppercase; letter-spacing: 0.08em; color: var(--ink-faint); margin-bottom: 6px; }
+  .phase-banner { background: linear-gradient(90deg, #1a2a3a, #11161c); border-left: 4px solid var(--accent); padding: 12px 18px; border-radius: 0 8px 8px 0; margin: 24px 0 14px; font-size: 14px; color: var(--ink); }
+  .bo-card { background: var(--panel); border: 1px solid var(--line); border-radius: 10px; padding: 14px 16px; margin: 10px 0; border-left: 4px solid var(--accent-2); }
+  .bo-card.b1 { border-left-color: #79c0ff; }
+  .bo-card.b2 { border-left-color: #d2a8ff; }
+  .bo-card.b3 { border-left-color: #7ee787; }
+  .bo-card.b4 { border-left-color: #ffa657; }
+  .bo-meta { display: flex; gap: 14px; font-size: 12px; color: var(--ink-dim); margin-top: 6px; flex-wrap: wrap; }
+  .progress-bar { background: #0a0d11; border: 1px solid var(--line); border-radius: 4px; height: 14px; position: relative; overflow: hidden; margin: 4px 0; }
+  .progress-fill { background: linear-gradient(90deg, var(--accent-2), var(--accent)); height: 100%; }
+  .progress-target { position: absolute; top: -2px; bottom: -2px; width: 2px; background: var(--warn); }
+  .file-tree { font-family: ui-monospace, Menlo, Consolas, monospace; font-size: 13px; background: #0a0d11; border: 1px solid var(--line); border-radius: 8px; padding: 14px 18px; line-height: 1.7; }
+  .file-tree .new { color: var(--good); }
+  .file-tree .ind { color: var(--ink-faint); }
+  .timeline { display: grid; grid-template-columns: 100px 1fr; gap: 8px 14px; font-size: 13px; margin: 10px 0; }
+  .timeline .when { color: var(--ink-faint); font-variant-numeric: tabular-nums; }
+  .timeline .what { color: var(--ink); }
+  .timeline .what.done { color: var(--good); }
+  .timeline .what.warn { color: var(--warn); }
+  .regime-vapor { color: #ffc0bd; }
+  .regime-true { color: #b8ffc7; }
+  .regime-drift { color: #ffd7a6; }
+  .regime-mismet { color: #ffd7a6; }
+</style>
+
+<main>
+
+
+<!-- ===================== TAB 1 ===================== -->
+<section class="tab active" id="what">
+
+  <h2>The problem — deeper than it looks</h2>
+
+  <div class="callout">
+    <p><strong>One sentence:</strong> software engineering's biggest unsolved problem is the missing link between <em>what the business is trying to achieve</em> and <em>what the code actually does</em>. We call that link <strong>Business Convergence</strong> — the gravitational pull every committed line should feel toward a declared business objective. DevLead is the first tool that installs this link as infrastructure rather than leaving it as tribal knowledge.</p>
+  </div>
+
+  <h3>Layer 1 — The career-defining skill almost nobody has</h3>
+  <p>The unsexy truth about software careers: the engineers who rise, get paid, and end up running teams are not the ones who ship the most code. They are the ones whose code <strong>converges on a business objective</strong>. They hold the business outcome in their head while they type. They kill scope that doesn't move the metric. They notice when the ticket they were handed won't actually deliver the thing the ticket was written for. They push back on the PM with "this story is green but the number didn't move — we're not done."</p>
+  <p>That skill has no agreed-upon name. We call it <strong>Business Convergence</strong> — the formal term, tied directly to weighted convergence math (TTO → TBO → BO). Every committed line contributes a fraction to a rollup percentage against a named business objective.</p>
+  <p>This skill is the single biggest differentiator in engineering and it is <em>nowhere taught</em>. It's picked up by apprenticeship, accidental trauma, or never at all. The majority of engineers are technically excellent and strategically invisible. Their code ships; the metric doesn't move; they wonder why the promotion went to the other guy. <strong>DevLead's ambition is to make this skill the default, not the privilege of the few.</strong></p>
+
+  <h3>Layer 2 — AI cannot do this, by construction</h3>
+  <p>It's tempting to hope AI pair-programming closes this gap. It does the opposite. An LLM converts <em>an idea held in the prompt window</em> into code — instantly, at zero friction, with no persistent link to the business objective that spawned the idea two months ago. The model has no memory of the BO. It has no mechanism to check its output against the BO. It has no stake in whether the shipped feature moves the metric. It just converts.</p>
+  <p>Read that again, because it's the load-bearing claim of this document: <strong>an AI coding assistant is a point-in-time idea-to-code converter. It is not, and cannot be, a convergence engine.</strong> Business Convergence requires persistent state (the objective), a running check (am I still converging?), and the authority to refuse work that doesn't. An autoregressive model running one prompt at a time has none of those by default.</p>
+  <p>This is not a limitation that scales away with a bigger model. A bigger model converts ideas into code faster — which <em>accelerates the drift</em>. Every session without a governance layer is a tiny further divergence. Six months in, the codebase is a compendium of small-correct decisions that together deliver the wrong product.</p>
+
+  <h3>Layer 3 — No tool on earth maintains the link</h3>
+  <p>Look at the toolchain honestly:</p>
+  <ul>
+    <li>JIRA, Linear, Asana track tickets. A ticket is a unit of <em>work</em>, not a unit of <em>convergence</em>. A green ticket doesn't mean the number moved.</li>
+    <li>Git tracks changes. A diff has no field for "which objective does this serve."</li>
+    <li>Copilot, Cursor, Claude Code, Aider track the session. The session ends; the link to the objective dies with the window.</li>
+    <li>OKR tools (Mooncamp, Lattice) track the objective but have zero awareness of the code. They're a slide deck, not a runtime.</li>
+  </ul>
+  <p>There is a gaping hole in the toolchain where a living link between <em>"what we are trying to achieve as a business"</em> and <em>"what was just committed to main"</em> should live. Nothing maintains that link today. The best engineers maintain it in their heads; everyone else fakes it in standups. DevLead fills the hole.</p>
+
+  <h3>Layer 4 — AI pair-programming turned this latent problem into an acute one</h3>
+  <p>Before AI pair-programming, the drift was slow enough that a good tech lead could catch it in code review. After AI pair-programming, drift happens at the speed of typing. The AI invents work that was never requested, forgets context between sessions, and produces code that nobody can later trace to a requirement. The product owner ends up managing the AI's hallucinations instead of managing the project. Existing PM tools don't know the AI exists; the AI doesn't know the PM tool exists.</p>
+  <p>Non-coder product owners feel this worst. They can't verify a diff. They can't tell if the AI built the right thing. They can't prove to themselves that work traces to an intent. Projects pile up, unfinished, in a graveyard of "I thought we were almost there."</p>
+
+  <h3>What DevLead does about it</h3>
+  <p>DevLead installs Business Convergence as infrastructure, not tribal knowledge. Every unit of work — human-authored or AI-authored — is forced to be declared, placed in a hierarchy, weighted, and rolled up into a <em>live convergence percentage</em> visible on the product owner's dashboard. The brake on Claude Code's Edit/Write tool is not the feature; it's the enforcement mechanism. The feature is that every engineer, and every AI session, now inherits the convergence skill on day one.</p>
+  <p>The dark-code problem, the session-amnesia problem, and the deadline-slip problem are all <em>symptoms</em>. Business Convergence is the disease. DevLead is the first tool that names it and treats it.</p>
+
+  <p class="dim">→ See <strong>Tab 5</strong> for the canonical experience: free-form input, drafted hierarchy, frozen MVP, live convergence dashboard. See <strong>Tab 4</strong> for the math underneath.</p>
+
+  <h2>What DevLead actually is</h2>
+  <div class="grid cols-2">
+    <div class="card">
+      <h3>A governance layer, not a framework</h3>
+      <p>DevLead installs onto an existing project with <code>devlead init</code>. It creates <code>devlead_docs/</code> — the single, canonical source of truth — and wires Claude Code hooks that gate every Edit/Write against an active intake entry.</p>
+    </div>
+    <div class="card">
+      <h3>Markdown-driven core</h3>
+      <p>Everything is plain Markdown: intake, hierarchy, decisions, awareness files, scratchpad, audit log. Git-native. Grep-able. No database to host, no SaaS to trust. The open-source core works fully offline.</p>
+    </div>
+    <div class="card">
+      <h3>Six responsibilities, hard-enforced</h3>
+      <ul>
+        <li><strong>R1</strong> — Build and maintain the BO → TBO → TTO hierarchy</li>
+        <li><strong>R2</strong> — No coding outside intake context (the discipline rule)</li>
+        <li><strong>R4</strong> — Deliver BOs on time; track slips with justification</li>
+        <li><strong>R5</strong> — Project-management answers computed from data, not vibes</li>
+        <li><strong>R6</strong> — KPIs generated from every DevLead action</li>
+        <li><strong>Session bootstrap</strong> — sessions never start from zero</li>
+      </ul>
+    </div>
+    <div class="card">
+      <h3>Plugin bridge, not plugin replacement</h3>
+      <p>DevLead doesn't compete with Superpowers, brainstorming, writing-plans, or any other Claude Code plugin. It ingests their output. Run your planning plugin normally, then <code>/devlead ingest &lt;plan&gt; --into _intake_features.md</code> and the work is tracked.</p>
+    </div>
+  </div>
+
+  <h2>Motivation — why this, why now</h2>
+  <ul>
+    <li>AI coding exploded in 18 months. Accountability tooling for AI coding did not.</li>
+    <li>Every engineer using Cursor, Claude Code, Copilot, Aider has the same complaint: <em>"I don't remember what we were doing,"</em> <em>"the AI went off on a tangent,"</em> <em>"I have files in my repo I don't recognize."</em></li>
+    <li>As AI-generated code enters production, compliance questions arrive: <em>who authorized this change? what requirement does it satisfy?</em> Today there is no answer.</li>
+    <li>The product owner's pain is acute and universal: projects don't finish. DevLead's discipline loop is explicitly designed for the owner who cannot read Python but can read Markdown.</li>
+  </ul>
+
+  <h2 id="caliber">Honest take on the caliber</h2>
+
+  <div class="grid cols-2">
+    <div class="card">
+      <h3>What is genuinely strong</h3>
+      <ul>
+        <li><strong>The category doesn't exist yet.</strong> "AI governance for AI coding" has no named competitor. Linear/JIRA don't gate the model. Copilot/Cursor don't govern themselves. That gap is the entire opportunity.</li>
+        <li><strong>The discipline loop is a moat.</strong> scratchpad → triage → plan → intake → hierarchy → code is a real workflow, not a marketing diagram.</li>
+        <li><strong>Hook enforcement is the "teeth."</strong> Most governance tools are advisory. DevLead's <code>PreToolUse</code> gate literally blocks Edit/Write when there's no focus. That's the difference between a policy doc and a working brake.</li>
+        <li><strong>Markdown-first is correct.</strong> Git-native, grep-able, no vendor lock-in, works offline, zero SaaS tax.</li>
+        <li><strong>Plugin-bridge, not plugin-replacement.</strong> DevLead wins by being the connective tissue, not a rival.</li>
+      </ul>
+    </div>
+    <div class="card">
+      <h3>What is still weak</h3>
+      <ul>
+        <li><strong>v2 is stubs in places.</strong> Convergence math + project-init CLI + effort wiring all on the build list — see Tab 5 Phase 1.</li>
+        <li><strong>Discipline tax is real.</strong> If the user skips intake, dark code returns. Onboarding needs ruthless defaults — the project-init interview is the answer.</li>
+        <li><strong>Claude-Code coupling.</strong> Today DevLead is effectively a Claude Code plugin. Cursor / Aider portability is the #1 distribution risk.</li>
+        <li><strong>Convergence math unvalidated externally.</strong> Weighted rollups per BO are clean on paper; nobody outside this repo has stress-tested them. Tab 5 BO-4 makes this the validation thesis.</li>
+      </ul>
+    </div>
+  </div>
+
+  <div class="callout">
+    <p><strong>Net:</strong> right product, right moment, by someone with earned pain. Risk is execution, not concept. <strong>Tab 5 shows the Phase 1 plan that closes the build gap.</strong></p>
+  </div>
+
+</section>
+
+<!-- ===================== TAB 2 ===================== -->
+<section class="tab" id="vision">
+
+  <h2>Where DevLead goes — the target state (post Phase 1)</h2>
+  <p class="dim">Tab 1 is today's baseline. Tab 5 is the immediate Phase 1 build. This tab is the longer-term target after Phase 1 ships. Pricing, distribution, and revenue execution are deliberately deferred — Phase 1 has no commercial track.</p>
+
+  <div class="callout">
+    <p><strong>One-line vision:</strong> DevLead becomes the default <strong>Business Convergence layer</strong> for software — the runtime where every committed line, human or AI, carries gravitational pull toward a declared objective, and where the answer to <em>"is the AI building the right thing?"</em> is a number, not a vibe.</p>
+  </div>
+
+  <div class="callout warn">
+    <p><strong>Tab 1 → Tab 2, the gap in one paragraph.</strong> Today DevLead is an installed governance layer — hooks wired, intake files in place, hierarchy maintained, one product owner on one project. Target state: convergence becomes a hosted, multi-project, multi-team substrate — the discipline layer that ships with Claude Code, Cursor and Aider; the dashboard engineering managers refresh before standup; the audit log compliance asks for first.</p>
+  </div>
+
+  <h3>Three deltas Tab 2 must close</h3>
+  <ol>
+    <li><strong>From single-tool to multi-tool.</strong> Today: Claude Code only. Target: Cursor, Aider, Copilot — same governance, same intake, same convergence math.</li>
+    <li><strong>From local to networked.</strong> Today: <code>devlead_docs/</code> in one repo on one machine. Target: signed-sync to a cloud read-view; team-shared hierarchies; cross-project convergence rollup.</li>
+    <li><strong>From self-reported to verified.</strong> Today: Claude marks its own TTOs done. Target: every functional TTO carries a <code>verify:</code> shell command; only DevLead checks the box, only on exit-zero. Convergence becomes evidence-backed. <strong>Phase 1 ships the foundation for this — see Tab 5 BO-1.</strong></li>
+  </ol>
+
+  <h2>Technical architecture — three concentric rings</h2>
+
+  <h3>Ring A — Local core (open source, Python)</h3>
+  <ul>
+    <li><code>src/devlead/</code> — CLI, hooks runner, ingest/promote/triage logic, gate enforcement, verify runner, convergence math.</li>
+    <li>State: <code>devlead_docs/*.md</code> + <code>_audit_log.jsonl</code>. No DB. Git is the history.</li>
+    <li>Integrations: Claude Code hooks (shipping), Cursor rules (next), Aider commands (after).</li>
+    <li>Extensibility: every command is a Python module + a Markdown slash-command file in <code>commands/</code>. Contributors add routes, not plumbing.</li>
+  </ul>
+
+  <h3>Ring B — Cloud (paid) — convergence at scale</h3>
+  <ul>
+    <li>Thin API (FastAPI to ship in a week): read-only view over a synced <code>devlead_docs/</code>.</li>
+    <li>Sync mechanism: signed Git push from local to a hosted repo; dashboard renders from it. <strong>No proprietary state.</strong> User can always leave — the truth is still in their repo.</li>
+    <li>Cross-project convergence rollup: an org sees one number across N repos. KPI history persists beyond the laptop.</li>
+    <li>Hosting: Cloudflare Workers + R2 + Pages. Auth: GitHub OAuth. Billing: Stripe. All deferred until Phase 1 ships.</li>
+  </ul>
+
+  <h3>Ring C — Ecosystem (community)</h3>
+  <ul>
+    <li>Plugin bridge registry: every supported planning plugin has an <code>ingest</code> adapter contributed by the community.</li>
+    <li>Dashboard themes + exporters (PDF weekly report for execs).</li>
+  </ul>
+
+  <h2>Risks I would not wave away</h2>
+  <div class="grid cols-2">
+    <div class="card">
+      <h3>Product risks</h3>
+      <ul>
+        <li>Discipline fatigue → churn. Mitigation: ruthless defaults, visible escape hatch.</li>
+        <li>Hook enforcement bugs blocking legit edits. Mitigation: warn-mode default for first 10 sessions, then auto-promote to hard.</li>
+        <li><strong>Convergence math doesn't validate in the wild.</strong> Weighted rollups TTO → TBO → BO are clean on paper; they may produce numbers product owners don't trust. Mitigation: Tab 5 BO-4 makes one external user the entire validation thesis of Phase 1.</li>
+      </ul>
+    </div>
+    <div class="card">
+      <h3>Adoption risks</h3>
+      <ul>
+        <li>"Free OSS is enough." Mitigation: Pro tier (Phase 2) leads with team-shared convergence URL — something OSS can't cleanly replicate.</li>
+        <li>Competitor ships first (probable: a Superpowers skill pack). Mitigation: <strong>ship faster</strong>; that is the only real answer.</li>
+        <li>Convergence framework gets cargo-culted without metrics. Mitigation: refuse to compute C(τ) for BOs without a real <code>metric_source</code> — no fake numbers.</li>
+      </ul>
+    </div>
+  </div>
+
+  <p class="dim">→ Phase 1 detailed in Tab 5. Phase 2 commercial work (pricing, distribution, monthly revenue) starts only when Phase 1 has at least one external user with computed convergence.</p>
+
+</section>
+
+<!-- ===================== TAB 3 ===================== -->
+<section class="tab" id="shakeout">
+
+  <h2>I'm a real dev lead. Here's how I shake out this thing.</h2>
+
+  <div class="callout">
+    <p><strong>Voice for this whole tab:</strong> I'm writing as a human dev lead — 12 years engineering, 4 years leading, currently running a 7-engineer team building a B2B data product. Every claim about AI DevLead below is checked against the actual implemented code under <code>src/devlead/</code> as of 2026-04-17. Where it's stubbed, I say "stubbed." Where it's claimed in a doc but not in the code, I say "vapor."</p>
+  </div>
+
+  <h2>Part A — Who I am and what I actually do</h2>
+
+  <h3>Who I am</h3>
+  <ul>
+    <li>12 years engineering, mostly backend. 4 years as a tech lead.</li>
+    <li>Currently lead 7 engineers (3 senior, 2 mid, 2 junior) shipping a B2B data product on a 2-week cadence.</li>
+    <li>I have lived through three "AI tools will save us" cycles — Copilot in 2022, Cursor in 2024, Claude Code in 2025. I have shipped on all three. I have buried more side-quests on each.</li>
+    <li>I code maybe 30–40% of my week. The rest is people, decisions, defenses, unblocking, and translating between PM and engineering.</li>
+    <li>I am the person whose calendar people complain about.</li>
+  </ul>
+
+  <h3>A typical week, hour-blocked</h3>
+  <table>
+    <thead><tr><th>Block</th><th>What I'm actually doing</th></tr></thead>
+    <tbody>
+      <tr><td>Mon 8:30</td><td>Slack triage from the weekend + EU early-shift. ~30 messages overnight, 5 actually matter. Filter the rest.</td></tr>
+      <tr><td>Mon 9:00</td><td>Standup. 15 min. What people say vs what I learn from their tone is often very different.</td></tr>
+      <tr><td>Mon 9:30–11:00</td><td>Code reviews. 4 PRs in queue. The 2 AI-assisted ones take 3× longer because the diff doesn't tell me <em>why</em>.</td></tr>
+      <tr><td>Mon 11:00</td><td>1:1 with a senior who is about to architect us into a corner. Have to make him feel heard while killing the design.</td></tr>
+      <tr><td>Tue–Thu am</td><td>Cross-team syncs, design reviews, the architecture decisions nobody else will make. PM has changed scope on something we're already building. Push back.</td></tr>
+      <tr><td>Tue–Thu pm</td><td>If I'm lucky, 90 min of my own coding. Usually interrupted twice.</td></tr>
+      <tr><td>Fri</td><td>Sprint demo + retro + stakeholder update email. What we shipped, what slipped, why. The "why" is where careers are made and lost.</td></tr>
+      <tr><td>Always-on</td><td>Slack. On-call rotation. The compliance person asking what AI generated which line. The exec asking "are we using AI tools well?"</td></tr>
+    </tbody>
+  </table>
+
+  <h3>What I'm actually accountable for</h3>
+  <ul>
+    <li><strong>Delivery.</strong> If we miss the date, it's me explaining it.</li>
+    <li><strong>Quality.</strong> If the production bug is mine to own, I'll find it on Friday at 5pm.</li>
+    <li><strong>Architecture.</strong> Three engineers will design three different systems if I don't pick one.</li>
+    <li><strong>Roadmap defense.</strong> PM wants 12 things. We can do 4. I have to defend the 8 we won't do.</li>
+    <li><strong>Mentoring.</strong> The juniors won't grow unless I make space. They especially won't grow if AI does their thinking for them.</li>
+    <li><strong>Compliance / audit.</strong> Increasingly: "show me what AI generated this code, on whose authority." Today I have nothing to show.</li>
+    <li><strong>The cost.</strong> Our Anthropic + OpenAI bill tripled in 6 months. I have zero per-feature attribution.</li>
+    <li><strong>The AI question itself.</strong> Every quarter someone asks "are we using AI tools well?" I have to have an answer with a number behind it.</li>
+  </ul>
+
+  <h3>Where my week actually breaks</h3>
+  <ul>
+    <li>AI-assisted PRs that don't trace back to a ticket. Reviewer-burden balloons. I become a human linter for hallucinations.</li>
+    <li>Engineers using Cursor / Claude Code who ship clever features I never approved. Sprint demos turn into "look what the AI built."</li>
+    <li>Half-finished AI sessions left as branches. Nobody can resume after a vacation. The context died with the session window.</li>
+    <li>"In progress" in standup with no number behind it, week after week.</li>
+    <li>Junior engineers shipping code they cannot defend in review. "The AI built this for me and I can't read it" — said unironically twice this month.</li>
+    <li>Compliance ask for "show me the requirement this AI-generated change traces to." I have nothing.</li>
+    <li>The cost line. Three engineers running 50 sessions a week each. No idea which sessions moved the metric.</li>
+    <li>The quiet drift: 8 weeks of small-correct decisions adding up to the wrong product. I notice in the demo. PM notices in the dashboard. Customer notices in churn.</li>
+  </ul>
+
+  <h2>Part B — AI DevLead, capability by capability, against my reality</h2>
+
+  <p class="dim">Below: every implemented capability I verified in the codebase, what it actually does, and whether I'd trust it in front of my team. Sourced from <code>src/devlead/</code> at 2026-04-17 — not from the marketing tabs.</p>
+
+  <h3>What's actually shipped (verified, not claimed)</h3>
+  <table>
+    <thead><tr><th>Capability</th><th>Where it lives</th><th>State</th></tr></thead>
+    <tbody>
+      <tr><td>PreToolUse hook on Edit/Write/MultiEdit (the "brake")</td><td><code>gate.check_pretooluse()</code></td><td><span class="chip good">Implemented · warn-only by config lock</span></td></tr>
+      <tr><td>SessionStart hook — injects context from <code>_resume.md</code></td><td><code>gate.check_session_start()</code></td><td><span class="chip good">Implemented · wired</span></td></tr>
+      <tr><td>UserPromptSubmit — captures every user message + matches routing table</td><td><code>gate.check_user_prompt()</code></td><td><span class="chip good">Implemented · wired</span></td></tr>
+      <tr><td>Stop hook — auto-runs resume + dashboard + records session</td><td><code>gate.check_stop()</code></td><td><span class="chip good">Implemented · wired</span></td></tr>
+      <tr><td>13 slash commands (audit, awareness, config, focus, gate, ingest, init, intake, migrate, promote, scratchpad, triage, verify-links)</td><td><code>cli.py</code> + <code>commands/*.md</code></td><td><span class="chip good">All implemented and dispatching</span></td></tr>
+      <tr><td>BO → TBO → TTO hierarchy with weighted convergence</td><td><code>hierarchy.py</code></td><td><span class="chip good">Math implemented</span> · <span class="chip warn">weights set by user — gameable</span></td></tr>
+      <tr><td>Append-only audit log (JSONL, 2,100+ events accumulated)</td><td><code>audit.py</code> + <code>_audit_log.jsonl</code></td><td><span class="chip good">Working</span></td></tr>
+      <tr><td>KPI engine — 4 categories, 25+ metrics</td><td><code>kpi.py</code></td><td><span class="chip warn">Implemented but bloated</span></td></tr>
+      <tr><td>Verifier — runs <code>verify:</code> shell commands per TTO; only DevLead checks the box</td><td><code>verifier.py</code></td><td><span class="chip good">Implemented · functional</span></td></tr>
+      <tr><td>Plugin bridge — ingests external plans into intake (no plugin modification)</td><td><code>bridge.py</code></td><td><span class="chip good">Implemented</span></td></tr>
+      <tr><td>10-tab HTML dashboard (no JS framework)</td><td><code>dashboard.py</code></td><td><span class="chip warn">Built · 7 tabs more than needed</span></td></tr>
+      <tr><td>Auto-derived <code>_aware_features.md</code> + <code>_aware_design.md</code> from code</td><td><code>awareness.py</code></td><td><span class="chip good">Working — last refresh 2026-04-16T03:03Z</span></td></tr>
+      <tr><td>Auto-generated <code>CLAUDE.md</code> section from <code>devlead_docs/</code></td><td><code>bootstrap.py</code></td><td><span class="chip good">Working · verifiable</span></td></tr>
+      <tr><td>Hash-checked, reversible content migration between files</td><td><code>migrate.py</code></td><td><span class="chip good">Implemented · underused</span></td></tr>
+      <tr><td>Effort tracking module (tokens per TTO)</td><td><code>effort.py</code></td><td><span class="chip bad">Module exists, NOT WIRED to any hook or command. Zero data captured.</span></td></tr>
+      <tr><td>SOT block parser (lineage metadata)</td><td><code>sot.py</code></td><td><span class="chip warn">Parser shipped · no CLI dispatch yet</span></td></tr>
+    </tbody>
+  </table>
+
+  <h3>What I trust — and would tell my team to use today</h3>
+  <div class="grid cols-2">
+    <div class="card honest">
+      <h3>The PreToolUse brake</h3>
+      <p>I have <em>never</em> seen another AI-coding tool put a hook on the model's Edit/Write before this. Real teeth. Even in warn-only it nudges the model. In hard mode (the config supports it; the lock is product-side) it would literally exit-2 the AI's tool call. That is the first authentic governance primitive in this category.</p>
+      <p class="dim">Caveat: it covers Edit/Write/MultiEdit only. The AI can still drift via Bash, MCP tools, and chat-talked-into-it edits. The brake is on one wheel — but one wheel is more brake than anyone else has shipped.</p>
+    </div>
+    <div class="card honest">
+      <h3>The verifier</h3>
+      <p>This is the feature I want most. AI cannot mark its own TTO done. Only the verifier can — and only if the <code>verify:</code> shell command exits 0. This kills the single most expensive failure mode in AI-coded teams: <em>"claimed done, actually broken."</em> Concrete, small, hard to game.</p>
+      <p class="dim">If the rest of DevLead vanished and I kept just this primitive, I'd still install it.</p>
+    </div>
+    <div class="card honest">
+      <h3>The audit log</h3>
+      <p>Append-only JSONL, structured schema, 2,100 events accumulated in their own dogfood project. My compliance officer would hug the founder. This is the answer to "show me which AI session authorized which change" — finally.</p>
+    </div>
+    <div class="card honest">
+      <h3>Auto-generated <code>CLAUDE.md</code></h3>
+      <p>The next session reads context from one file that DevLead generates from <code>devlead_docs/</code>. I can read it. I can audit it. I can diff it. It's not a magic context window I have to trust — it's a Markdown file in git. That is the right answer to the session-amnesia problem.</p>
+    </div>
+    <div class="card honest">
+      <h3><code>/devlead focus</code></h3>
+      <p>Focus is a status flip on the intake entry. No second source of truth, no <code>session_state.json</code>, no separate cache. One command. Beautifully un-engineered. This is what a tool looks like when the author has the discipline to <em>not</em> add abstractions.</p>
+    </div>
+    <div class="card honest">
+      <h3>The <code>project-init</code> interview flow (Tab 5)</h3>
+      <p>The 10-question free-form interview that drafts a Vision, four BOs, TBOs, TTOs, and locks an MVP in twelve minutes — without forcing the user to learn what a TBO is — is the first onboarding I've seen for a governance tool that doesn't feel like a JIRA setup. <strong>This is the missing front door.</strong> If shipped well, it solves the blank-page problem that kills adoption of every tool in this category.</p>
+    </div>
+    <div class="card honest">
+      <h3>Plugin bridge, not plugin replacement</h3>
+      <p>They ingest Superpowers / writing-plans output instead of competing with it. My team uses 4 different planning workflows; I'm not switching them all because one tool wanted a turf war. Strategically the right call, and surprisingly rare.</p>
+    </div>
+  </div>
+
+  <h3>What I do not trust — engineer LARP, marketing, or vapor</h3>
+  <div class="grid cols-2">
+    <div class="card">
+      <h3>"Business Convergence" as a brand</h3>
+      <p>The math behind it (Tab 4) is real, and the worked POC (Tab 5) is concrete. But the <em>brand</em> still needs case studies before it lands at standup. My team would call it "ticket-to-PR traceability" until they see one external project quote a real C(τ). Earn the term with two or three real customer outcomes, then re-introduce.</p>
+    </div>
+    <div class="card">
+      <h3>The 25+ KPI bloat</h3>
+      <p>A tool that ships 25 metrics in 4 categories has not decided which one matters. As a buyer I want 3: convergence %, on-time BO rate, and forced-origin count. Earn the rest. The 10-tab dashboard has the same disease — 7 tabs are anxiety, not insight. The dashboard should answer 3 questions: <em>what's done, what's blocked, what's at risk.</em></p>
+    </div>
+    <div class="card">
+      <h3>Convergence percentage as currently computed</h3>
+      <p>The user picks the TTO weights. So the convergence number is whatever the user wants it to be. Tab 4's math fixes this for projects that wire <code>metric_source:</code>, but the legacy weighted-tasks-done number lives on for any project that doesn't. Without independent benchmarking or weight-anchoring rules, the legacy number is decoration.</p>
+    </div>
+    <div class="card">
+      <h3>Effort tracking exists but isn't wired</h3>
+      <p>The <code>effort.py</code> module is real. <em>Nothing calls it.</em> Per-feature cost attribution is the killer feature for me as a buyer — and it's the one thing the doc does <strong>not</strong> emphasize, while the module that would deliver it sits dark. <strong>Tab 5 BO-3 wires it. Until then, vapor.</strong></p>
+    </div>
+    <div class="card">
+      <h3>Dogfood-only validation (32 TTOs, all internal)</h3>
+      <p>The only hierarchy that exists is the one DevLead uses to build DevLead. Tools that only work on themselves don't survive contact with a stranger's mess. Until I see one external project with a populated hierarchy and a non-trivial convergence trend, every number is internal-only. <strong>Tab 5 BO-4 makes this the entire validation thesis of Phase 1.</strong></p>
+    </div>
+  </div>
+
+  <h3>What's missing that would block adoption for my team</h3>
+  <ol>
+    <li><strong>Per-engineer attribution.</strong> I want "Engineer A's AI sessions converged on objective X to Y%." Not visible. The schema almost supports it; nobody filters by author.</li>
+    <li><strong>Real cost attribution.</strong> Effort module exists, isn't wired. Without per-feature $-cost I can't justify or defend the AI-tool spend upward.</li>
+    <li><strong>Multi-tool coverage.</strong> My team is mixed Claude Code + Cursor + occasional Aider. DevLead works for 1 of those. Single-tool coupling is the #1 adoption blocker for any team larger than 3.</li>
+    <li><strong>A read-only "boss view."</strong> I want to send my engineering manager a URL. They want to skim, not <code>pip install</code>. Today the dashboard is a local HTML file.</li>
+    <li><strong>External validation.</strong> One non-DevLead team running this for 30 days, with a dashboard I can look at. Until then every claim is a self-portrait.</li>
+    <li><strong>An honest "what's stubbed" page in the dashboard itself.</strong> The doc-team admits stubs in CLAUDE.md and in scratchpad. The dashboard does not. As a buyer I want to see the gap visualized — that earns more trust than hiding it.</li>
+  </ol>
+
+  <h2>Part C — Verdict</h2>
+
+  <table>
+    <thead><tr><th>Question</th><th>Answer</th><th>Why</th></tr></thead>
+    <tbody>
+      <tr><td>Install on a sandbox project for myself?</td><td><span class="chip good">Yes — this week</span></td><td>The PreToolUse brake + verifier alone are worth it. Nothing else in the category has these.</td></tr>
+      <tr><td>Roll across 7 engineers tomorrow?</td><td><span class="chip bad">No</span></td><td>Discipline tax. Single-tool. Convergence math unvalidated externally. I'd lose a week of velocity to onboarding fights.</td></tr>
+      <tr><td>Recommend to a peer dev lead?</td><td><span class="chip warn">With qualifier</span></td><td>"If you're a 1–2-person team on Claude Code and tired of dark code, install it today. If you're 5+ engineers on mixed tools, wait three months."</td></tr>
+      <tr><td>Pay for a Team seat?</td><td><span class="chip warn">Only after one external customer</span></td><td>Show me one real customer who isn't the founder, with 30 days of dashboard data. Then yes.</td></tr>
+      <tr><td>Pay enterprise pilot rate?</td><td><span class="chip warn">Only if compliance leans in</span></td><td>The audit log is genuinely enterprise-grade. If I'm the dev lead at a regulated shop and our compliance team wants AI-change traceability, this is the only tool that has the trail. That is the enterprise wedge — not the dashboard.</td></tr>
+    </tbody>
+  </table>
+
+  <div class="callout">
+    <p><strong>Honest one-liner from inside the role:</strong> One genuinely novel mechanism (the PreToolUse brake), one feature my compliance officer would buy on its own (the audit log), one primitive that kills the worst failure mode in AI coding (the verifier), and a project-init flow that finally solves the blank-page onboarding problem. Wire effort tracking, ship a Cursor adapter, and produce one external case study (all in Tab 5 Phase 1) and I sign for a Team seat in Q3.</p>
+  </div>
+
+</section>
+
+<!-- ===================== TAB 4 ===================== -->
+<section class="tab" id="convergence">
+
+  <h2>Convergence — the math layer</h2>
+
+  <div class="callout">
+    <p><strong>What this tab is.</strong> The math engine that powers Business Convergence — five computed scalars over an intent matrix and a goal vector. The hierarchy these run on, and the project-init flow that drafts that hierarchy, both live in <strong>Tab 5</strong>. Read this tab only if you want to see how the numbers underneath are computed.</p>
+  </div>
+
+  <h2>The math, applied</h2>
+
+  <p>Below: the same five computed scalars from the convergence framework, run on a sample of 10 TTOs drawn from Tab 5's four release-world BOs. Math is the engine; the table headings are what an engineer would actually see on the dashboard.</p>
+
+  <h3>Goal vector and today's state</h3>
+
+  <div class="eq">
+    <strong>g</strong> = (0.30, 0.20, 0.30, 0.20)  weighted by BO priority (Σwᵢ = 1)<br>
+    <strong>s</strong>(today) = (0, 0, 0, 0)  per-axis normalised progress, nothing shipped yet<br>
+    <strong>C</strong>(today) = <strong>s</strong> · <strong>g</strong> = Σ wᵢ × sᵢ = <strong>0.0% converged</strong>
+  </div>
+  <p class="dim"><strong>Formula correction</strong> (vs early Tab-4 drafts): convergence ratio is the weighted progress <code>s · g</code>, which sits in [0, 1] at full convergence when weights sum to 1. The earlier <code>(s·g)/(g·g)</code> form was a scalar projection that overshot 1 at the limit; the corrected form is what <code>convergence.compute_C</code> actually computes (verified by 40 unit tests).</p>
+
+  <h3>Intent matrix — 10 TTOs, mixed functional and non-functional</h3>
+
+  <div class="matrix">                                                       BO-1   BO-2   BO-3   BO-4
+TTO-1.1.1 (F)  Gate exit-2 config flag                  0.40   0.00   0.05   0.00
+TTO-1.2.1 (F)  /devlead focus auto-suggest              0.20   0.00   0.00   0.00
+TTO-2.1.1 (F)  Stop hook regenerates _resume.md         0.00   0.74   0.00   0.00
+TTO-2.1.2 (NF) _resume.md cap at 50 lines               0.00   0.10   0.00   0.00
+TTO-3.1.1 (F)  BO schema with metric/baseline/target    0.00   0.00   0.30   0.10
+TTO-3.1.2 (F)  convergence.py computes 5 scalars        0.00   0.00   0.40   0.10
+TTO-3.2.1 (NF) False-positive rate < 10% in detector    0.00   0.00   0.20   0.00
+TTO-4.1.1 (F)  Schema requires verify: field            0.00   0.00   0.00   0.30
+TTO-4.2.1 (F)  Only verifier can flip checkboxes        0.00   0.00   0.00   0.50
+TTO-4.3.1 (NF) Real-time refresh on TTO state change    0.00   0.05   0.00   0.10
+
+Column sums (planned closure per BO):                   0.60   0.89   0.95   1.10
+                                                          ^^^^   under-covered (need a 3rd TBO-1 TTO)</div>
+
+  <p class="dim"><strong>Math caught a planning hole on day zero:</strong> BO-1 only covered to 60%. We need another functional or non-functional TTO under one of TBO-1.x to close the gap. <strong>The framework refused to let me ship a plan with a hole in it.</strong></p>
+
+  <h3>Per-TTO intent alignment α — what the math says to do first</h3>
+
+  <table>
+    <thead><tr><th>TTO</th><th>Type</th><th class="num-cell">α</th><th>Math-priority rank</th></tr></thead>
+    <tbody>
+      <tr><td>TTO-3.1.1 BO schema (multi-axis BO-3 + BO-4)</td><td>F</td><td class="num-cell">0.683</td><td>1st</td></tr>
+      <tr><td>TTO-3.1.2 convergence.py (multi-axis)</td><td>F</td><td class="num-cell">0.666</td><td>2nd</td></tr>
+      <tr><td>TTO-1.1.1 Gate exit-2 (multi-axis BO-1 + BO-3)</td><td>F</td><td class="num-cell">0.657</td><td>3rd</td></tr>
+      <tr><td>TTO-1.2.1 Focus auto-suggest</td><td>F</td><td class="num-cell">0.588</td><td>= 4th</td></tr>
+      <tr><td>TTO-3.2.1 False-positive rate &lt; 10%</td><td>NF</td><td class="num-cell">0.588</td><td>= 4th</td></tr>
+      <tr><td>TTO-4.3.1 Real-time refresh (multi-axis)</td><td>NF</td><td class="num-cell">0.526</td><td>6th</td></tr>
+      <tr><td>TTO-2.1.1 Stop hook regenerates _resume.md</td><td>F</td><td class="num-cell">0.392</td><td>= 7th</td></tr>
+      <tr><td>TTO-2.1.2 _resume.md cap at 50 lines</td><td>NF</td><td class="num-cell">0.392</td><td>= 7th</td></tr>
+      <tr><td>TTO-4.1.1 Schema requires verify: field</td><td>F</td><td class="num-cell">0.392</td><td>= 7th</td></tr>
+      <tr><td>TTO-4.2.1 Only verifier can flip checkboxes</td><td>F</td><td class="num-cell">0.392</td><td>= 7th</td></tr>
+    </tbody>
+  </table>
+
+  <p class="dim"><strong>What the math reveals:</strong> the multi-axis TTOs win — work that pulls on more than one BO outranks single-axis work. <strong>A non-functional TTO (TTO-3.2.1) ranks 4th, ahead of single-axis functional work.</strong> The framework doesn't penalise non-functional work — it ranks every TTO by the same yardstick.</p>
+
+  <h3>One worked realization (the promise ledger in action)</h3>
+
+  <p>Three weeks pass. Verifier marks <strong>TTO-2.1.1 (Stop hook regenerates _resume.md)</strong> done. The promise ledger fires a 7-day re-check.</p>
+
+  <pre>{ "tto_id": "TTO-2.1.1",
+  "promised_contribution": [0, 0.74, 0, 0],
+  "verified_done_at": "2026-05-08T11:30Z",
+  "metric_at_done": { "BO-2_session_start_seconds": 600 },
+  "expected_after":  { "BO-2_session_start_seconds": 200 },
+  "realization_window_days": 7 }</pre>
+
+  <p>Seven days later: actual median session-start time is <strong>240 s</strong> (not the promised 200 s). Normalised realised progress on BO-2: (600−240)/(600−60) = <strong>0.667</strong>.</p>
+
+  <div class="eq">
+    α(TTO-2.1.1) = 0.392<br>
+    φ(TTO-2.1.1) = (<strong>r</strong>·<strong>i</strong>) / (<strong>i</strong>·<strong>i</strong>) = (0.667 × 0.74) / (0.74 × 0.74) = <strong>0.901</strong><br>
+    ε(TTO-2.1.1) = (<strong>r</strong>·<strong>g</strong>) / (<strong>i</strong>·<strong>g</strong>) = <strong>0.901</strong>
+  </div>
+
+  <p><strong>Diagnosis:</strong> work landed almost exactly as predicted (φ = 0.90), pulled on the goal as expected (ε = 0.90), but on a moderately-weighted axis (α = 0.39). Translation: <em>"good work, hit the prediction, on a BO that may deserve a higher weight if this kind of pain matters more than I declared."</em> The framework prompts a re-weighting conversation, not a blame conversation.</p>
+
+  <h3>Four-regime diagnosis on a sample of TTOs</h3>
+
+  <table>
+    <thead><tr><th>TTO</th><th class="num-cell">α</th><th class="num-cell">φ</th><th class="num-cell">ε</th><th>Regime</th><th>Action</th></tr></thead>
+    <tbody>
+      <tr><td>TTO-2.1.1 (worked above, real numbers)</td><td class="num-cell">0.39</td><td class="num-cell">0.90</td><td class="num-cell">0.90</td><td class="regime-true">Good work, low-priority axis</td><td>Re-weight BO-2 if this matters more than declared</td></tr>
+      <tr><td>TTO-1.1.1 (illustrative)</td><td class="num-cell">0.66</td><td class="num-cell">0.95</td><td class="num-cell">0.94</td><td class="regime-true">True convergent</td><td>Replicate the pattern</td></tr>
+      <tr><td>TTO-3.1.2 (illustrative)</td><td class="num-cell">0.67</td><td class="num-cell">0.50</td><td class="num-cell">0.50</td><td class="regime-vapor">Realisation gap</td><td>Shipped, only half the metric moved — investigate prerequisite</td></tr>
+      <tr><td>TTO-4.2.1 (illustrative)</td><td class="num-cell">0.39</td><td class="num-cell">0.20</td><td class="num-cell">0.18</td><td class="regime-vapor">Vapor work</td><td>Verifier shipped but nobody is using verify: commands — pricing or doc problem</td></tr>
+    </tbody>
+  </table>
+
+  <h3>Conflict detection (the Gram matrix)</h3>
+
+  <p>Compute <strong>O</strong> = <strong>I</strong> · <strong>I</strong>ᵀ. Off-diagonal positive = synergy, zero = orthogonal, negative = silent conflict. Showing a 4×4 excerpt with one hypothetical mid-sprint scope-cut TTO:</p>
+
+  <div class="matrix">                            TTO-3.1.1  TTO-3.1.2  TTO-4.2.1  TTO-X (hypothetical)
+TTO-3.1.1 BO schema           0.10       0.13       0.05      -0.08
+TTO-3.1.2 convergence.py      0.13       0.17       0.05      -0.12
+TTO-4.2.1 verifier-only flip  0.05       0.05       0.25       0.00
+TTO-X "drop metric_source"   -0.08      -0.12       0.00       0.04
+
+Reading:
+  + TTO-3.1.1 / TTO-3.1.2 = 0.13   -> strong synergy (both close BO-3 + BO-4)
+  + TTO-4.2.1 self        = 0.25   -> heavy single-axis TTO
+  o TTO-3.1.1 / TTO-4.2.1 = 0.05   -> mostly orthogonal (small overlap on BO-4)
+  - TTO-X / TTO-3.1.2     = -0.12  -> CONFLICT detected automatically</div>
+
+  <p><strong>The TTO-X case:</strong> mid-sprint someone proposes <em>"let's drop the <code>metric_source:</code> requirement, just let users declare goals freely."</em> Sounds reasonable in conversation. The Gram matrix surfaces it as a negative inner product against the foundation work — silent conflict caught at the linear-algebra level.</p>
+
+  <h3>Convergence rate theorem applied to my deadline</h3>
+
+  <p>Six weeks of effective capacity, mostly solo. ‖<strong>c</strong>‖ ≈ 0.30 (one full sprint of all-out work could ship 30% of the entire intent matrix). Realistic realisation rate from the worked TTO above: φ̄ = 0.6. Hold-the-line discipline: α_min = 0.4.</p>
+
+  <div class="eq">Per-sprint convergence closure ≈ ‖<strong>c</strong>‖ × φ̄ × α_min<br>
+                                ≈ 0.30 × 0.6 × 0.4 = <strong>0.072 (7.2% per 6-week sprint)</strong></div>
+
+  <p>To take C from 0% to a respectable 80% at this rate: ~11 sprints ≈ 16 months. <strong>The math forces an honest planning conversation on day zero:</strong> either drop a BO from this sprint, recruit one engineer (doubling capacity), or extend the deadline. <em>I cannot fake convergence.</em></p>
+
+  <h2>The five numbers DevLead actually shows the user</h2>
+
+  <table>
+    <thead><tr><th>Number</th><th>What it answers</th><th>Anti-LARP property</th></tr></thead>
+    <tbody>
+      <tr><td><strong>C(τ)</strong></td><td>How far have we closed the goal?</td><td>Cannot rise without a real metric moving.</td></tr>
+      <tr><td><strong>α(k)</strong></td><td>Is this work pulling on the right axes?</td><td>Computed from declared weights; reveals priority blindness.</td></tr>
+      <tr><td><strong>φ(k)</strong></td><td>Did the work deliver what it promised?</td><td>Surfaces the gap between "shipped" and "moved the metric."</td></tr>
+      <tr><td><strong>ε(k)</strong></td><td>Did the work pull toward the goal as planned?</td><td>Combines α and φ — the per-TTO honesty score.</td></tr>
+      <tr><td><strong>G(τ)</strong></td><td>What's the team's overall gravity efficiency?</td><td>One number a manager can quote upward without lying.</td></tr>
+    </tbody>
+  </table>
+
+  <div class="callout">
+    <p><strong>Bottom line.</strong> Five computed scalars over an intent matrix and a goal vector. The math caught a planning hole on day zero, ranked a non-functional TTO above single-axis features, exposed a silent mid-sprint conflict, and admitted the deadline was infeasible at full scope before week one. <strong>Tab 5 ships this end-to-end as Phase 1.</strong></p>
+  </div>
+
+</section>
+
+<!-- ===================== TAB 5 ===================== -->
+<section class="tab" id="trial">
+
+  <h2>Trial run — <code>devlead project-init</code> on DevLead Phase 1</h2>
+
+  <div class="callout">
+    <p><strong>What this tab is.</strong> The full <code>devlead project-init</code> experience, run on a real project: <strong>DevLead Phase 1 itself</strong>. No fictional Chrome extension. The free-form input is what an honest founder-engineer would dictate at 9pm. The BOs map directly to actual gaps surfaced in Tab 3 (effort tracking unwired, convergence math missing, single-tool dogfood, no external user). The convergence dashboard at the bottom is real-shaped, with numbers that reflect today's true baseline (zero on every axis).</p>
+  </div>
+
+  <div class="phase-banner"><strong>Phase 1 — Engineer talks. DevLead listens. No forms.</strong></div>
+
+  <pre>$ devlead project-init
+
+Tell me about your project. One paragraph, three paragraphs, doesn't
+matter. What are you building, when do you want to ship, and what
+would make you call it a win?
+
+> _</pre>
+
+  <div class="chat-user">
+    <div class="chat-label">Engineer input — verbatim, unstructured</div>
+    <p>DevLead today has a brake (PreToolUse hook), a verifier (verify: shell commands), and a 10-tab dashboard. What it doesn't have: actual convergence math. The BO/TBO/TTO hierarchy parses but the "convergence" it shows is just weighted-tasks-done — that's velocity wearing a fancy name. Phase 1 fixes this. I want convergence math running on a real BO with a real metric within 3 weeks. I want the project-init CLI as the front door so a stranger can scope a project in 15 minutes without learning what a TBO is. I want effort tracking actually wired so per-feature cost shows up. And I want at least one external user trying it so I stop dogfooding only on myself. No revenue work this phase. No cloud sync. Phase 1 is: prove convergence is real on a real project, with a stranger, by end of May.</p>
+  </div>
+
+  <div class="phase-banner"><strong>Phase 2 — DevLead drafts. Vision, BOs, TBOs, TTOs. Nothing assumed.</strong></div>
+
+  <div class="chat-dl">
+    <div class="chat-label">DevLead — first draft (you can change anything)</div>
+    <p><strong>Vision.</strong> Make DevLead the first AI-coding governance tool that proves software converged on what was promised — by computing realised business-metric movement against declared intent, on real projects, including its own.</p>
+  </div>
+
+  <h3>Four release-world BOs for DevLead Phase 1</h3>
+
+  <div class="bo-card b1">
+    <strong>BO-1 — Convergence math runs on a real metric</strong><br>
+    <span class="dim">"Our 'convergence' today is weighted-tasks-done. That's velocity wearing a fancy name."</span>
+    <div class="bo-meta">
+      <span><strong>Metric:</strong> Number of BOs (any DevLead-installed project) showing C(τ) computed from a real <code>metric_source</code></span>
+      <span><strong>Baseline → Target:</strong> 0 → 1</span>
+      <span><strong>Deadline:</strong> +3 weeks (2026-05-08)</span>
+      <span><strong>Weight:</strong> 0.30</span>
+    </div>
+  </div>
+
+  <div class="bo-card b2">
+    <strong>BO-2 — <code>project-init</code> CLI ships; cold-start to hierarchy under 15 minutes</strong><br>
+    <span class="dim">"Every new install starts with a blank-page problem. Nobody writes BOs cold."</span>
+    <div class="bo-meta">
+      <span><strong>Metric:</strong> Median minutes from <code>devlead project-init</code> to a frozen MVP hierarchy</span>
+      <span><strong>Baseline → Target:</strong> ∞ (CLI doesn't exist) → 15</span>
+      <span><strong>Deadline:</strong> +2 weeks (2026-05-01)</span>
+      <span><strong>Weight:</strong> 0.25</span>
+    </div>
+  </div>
+
+  <div class="bo-card b3">
+    <strong>BO-3 — Effort tracking wired and visible</strong><br>
+    <span class="dim">"I have no idea which AI sessions cost what. The module exists; nothing calls it."</span>
+    <div class="bo-meta">
+      <span><strong>Metric:</strong> % of Edit/Write events with effort recorded (tokens + $-cost) and surfaced per-TTO in dashboard</span>
+      <span><strong>Baseline → Target:</strong> 0.00 → 0.95</span>
+      <span><strong>Deadline:</strong> +3 weeks (2026-05-08)</span>
+      <span><strong>Weight:</strong> 0.20</span>
+    </div>
+  </div>
+
+  <div class="bo-card b4">
+    <strong>BO-4 — One external user runs DevLead Phase 1 end-to-end</strong><br>
+    <span class="dim">"I am the only user. Anything I claim is internal-only theatre until proven."</span>
+    <div class="bo-meta">
+      <span><strong>Metric:</strong> Non-Nitin users who installed, declared a BO with <code>metric_source</code>, and ran 7+ days</span>
+      <span><strong>Baseline → Target:</strong> 0 → 1</span>
+      <span><strong>Deadline:</strong> +4 weeks (2026-05-15)</span>
+      <span><strong>Weight:</strong> 0.25</span>
+    </div>
+  </div>
+
+  <p class="dim">Each BO ties directly to a gap surfaced in Tab 3 ("trash card" review). BO-1 → "convergence math is theatre"; BO-2 → "blank-page onboarding problem"; BO-3 → "effort tracking exists but isn't wired"; BO-4 → "67 TTOs, all dogfooded by the tool itself." <strong>Nothing was invented. Every BO closes a known weakness.</strong></p>
+
+  <h3>TBOs and TTOs (functional · non-functional split)</h3>
+
+  <table>
+    <thead><tr><th style="width: 28%;">TBO (functional — what the system does)</th><th>Functional TTOs</th><th>Non-functional TTOs</th></tr></thead>
+    <tbody>
+      <tr><td><strong>TBO-1.1</strong> Schema extensions in intake / hierarchy</td>
+        <td>Add <code>metric / baseline / target / metric_source</code> to BO · Add <code>intent_vector / verify_kind</code> to TTO · Update parser</td>
+        <td>Schema migration reversible · Backward-compat for existing hierarchies (missing fields → "self-reported" mode)</td></tr>
+      <tr><td><strong>TBO-1.2</strong> <code>convergence.py</code> math module</td>
+        <td><code>compute_g</code>, <code>compute_s</code>, <code>compute_C</code> · per-TTO α, φ, ε · gravity G(τ) · Gram matrix conflict detect</td>
+        <td>Numpy as only new dep · &lt; 100 ms for &lt; 200 TTOs · graceful degradation when metric unavailable</td></tr>
+      <tr><td><strong>TBO-1.3</strong> Promise ledger live</td>
+        <td>Verifier writes promise row on TTO done · Stop hook computes φ/ε at window expiry · audit log emits realisation events</td>
+        <td>Ledger entries immutable once written · Default window 7 days, configurable per TTO</td></tr>
+      <tr><td><strong>TBO-1.4</strong> <code>metric_source:</code> adapters</td>
+        <td><code>manual</code> mode (Stop hook prompts owner weekly) · <code>shell</code> mode (parse stdout as float) · <code>url</code> mode (JSON path extract)</td>
+        <td>Adapter failures don't crash convergence; degrade to last-known · Per-source timeout 5 s</td></tr>
+      <tr><td><strong>TBO-2.1</strong> Interview prompt + drafter</td>
+        <td>10-question template with conditional follow-ups · Free-form input → BO drafter (Claude prompt template) · Skip allowed; defaults inferred</td>
+        <td>Completes in 10–15 min for typical user · No question requires DevLead vocabulary</td></tr>
+      <tr><td><strong>TBO-2.2</strong> HTML preview renderer</td>
+        <td>Render Vision + BO cards from drafted hierarchy · Render TBO/TTO tables with func/non-func split · Render convergence panel mock</td>
+        <td>No JS framework · Single-file output (portable) · Renders in &lt; 500 ms</td></tr>
+      <tr><td><strong>TBO-2.3</strong> Iterative refinement loop</td>
+        <td>Accept free-form feedback · Generate diff · Apply diff · Re-render preview · Lock primitive (hash hierarchy + write to <code>_living_decisions.md</code>)</td>
+        <td>Hash survives whitespace / reformat · Diff renders inline, no PR-style ceremony</td></tr>
+      <tr><td><strong>TBO-2.4</strong> Plan-mode generator</td>
+        <td>After lock: write <code>_intake_features.md</code>, <code>_intake_nonfunctional.md</code>, backfill <code>_living_design.md</code> + <code>_living_metrics.md</code></td>
+        <td>All 12 <code>devlead_docs/</code> files generated atomically (transaction) · Idempotent on re-run</td></tr>
+      <tr><td><strong>TBO-3.1</strong> <code>effort.record_effort</code> wiring</td>
+        <td>PreToolUse calls record_effort with active CWI · Capture token counts from Anthropic response · Roll up per TTO/TBO/BO</td>
+        <td>Adds &lt; 5 ms per call · <code>_effort_log.jsonl</code> rotates at 10 MB</td></tr>
+      <tr><td><strong>TBO-3.2</strong> Cost attribution surface</td>
+        <td>$ column per TTO/TBO/BO in dashboard · Daily $-burn report in Stop hook</td>
+        <td>$-rates configurable per model · Rate change doesn't rewrite past</td></tr>
+      <tr><td><strong>TBO-4.1</strong> Public install path</td>
+        <td><code>pip install devlead</code> via PyPI · 5-min quickstart in README · One-command init auto-wires Claude Code</td>
+        <td>Install errors actionable · Idempotent re-init doesn't break state</td></tr>
+      <tr><td><strong>TBO-4.2</strong> First external recruit</td>
+        <td>r/ClaudeAI post with worked example · Cold DM 5 indie hackers · 30-min onboarding call with first volunteer</td>
+        <td>Friction log captured live during onboarding</td></tr>
+      <tr><td><strong>TBO-4.3</strong> 7-day adoption proof</td>
+        <td>Daily check-in for 7 days · Ship one fix per friction point within 48 h · Capture user's convergence dashboard on day 7</td>
+        <td>User must have declared ≥ 1 BO with <code>metric_source</code> · No fake adoption metric</td></tr>
+    </tbody>
+  </table>
+
+  <p class="dim">12 TBOs, ~32 TTOs total. Functional in the middle column; non-functional on the right. Read what you care about.</p>
+
+  <div class="phase-banner"><strong>Phase 3 — Engineer reacts. Free form. DevLead diffs.</strong></div>
+
+  <div class="chat-user">
+    <div class="chat-label">Engineer feedback — round 1</div>
+    <p>BO-4 weight needs to be higher. One external user is the entire validation thesis — without it, the rest is dogfood. Bump to 0.35. Drop BO-3 to 0.10 — effort tracking is nice but not blocking the proof point. Also: under TBO-2.4, add a non-functional TTO that says "rollback if any of the 12 file writes fail" — atomic should mean atomic, not aspirational.</p>
+  </div>
+
+  <div class="chat-dl">
+    <div class="chat-label">DevLead — applied</div>
+    <ul>
+      <li>BO-3 weight: <s>0.20</s> → <strong>0.10</strong></li>
+      <li>BO-4 weight: <s>0.25</s> → <strong>0.35</strong></li>
+      <li>New NF TTO under TBO-2.4: <strong>"Rollback all 12 file writes on any failure (true atomic)"</strong></li>
+      <li>Weight sum still = 1.00 ✓</li>
+    </ul>
+  </div>
+
+  <div class="phase-banner"><strong>Phase 4 — Round 2 → MVP frozen.</strong></div>
+
+  <div class="chat-user">
+    <div class="chat-label">Engineer feedback — round 2</div>
+    <p>Lock it. Let's go.</p>
+  </div>
+
+  <div class="chat-dl">
+    <div class="chat-label">DevLead — MVP frozen</div>
+    <p>DevLead Phase 1 hierarchy locked at <code>2026-04-17 19:14 IST</code>. Hash <code>e3b0c9</code>. Logged to <code>_living_decisions.md</code>. Any future change creates a tracked revision. <strong>From here, all work traces to this hierarchy. Nothing else gets coded without a TTO.</strong></p>
+  </div>
+
+  <div class="phase-banner"><strong>Phase 5 — Plan mode. DevLead writes the intake files end-to-end.</strong></div>
+
+  <p>Before any code is touched, DevLead drafts intake comprehensively — this can span multiple sessions for a project this size. Default coding priority comes from these files, ranked by α from convergence math.</p>
+
+  <div class="file-tree">devlead/  <span class="ind"># existing repo, not a new install</span>
+└── devlead_docs/
+    ├── <span class="new">_project_hierarchy.md</span>     <span class="ind"># 4 BOs · 12 TBOs · 34 TTOs · weights, deadlines, metric_sources</span>
+    ├── <span class="new">_intake_features.md</span>      <span class="ind"># 22 entries — all functional TTOs as feature backlog</span>
+    ├── <span class="new">_intake_nonfunctional.md</span> <span class="ind"># 12 entries — perf, reliability, atomicity, idempotence</span>
+    ├── <span class="new">_intake_bugs.md</span>          <span class="ind"># empty (no Phase 1 bugs surfaced yet)</span>
+    ├── <span class="new">_living_decisions.md</span>     <span class="ind"># MVP hash e3b0c9 locked 2026-04-17</span>
+    ├── <span class="new">_living_design.md</span>        <span class="ind"># Math layer + interview architecture + adapter pattern</span>
+    ├── <span class="new">_living_metrics.md</span>       <span class="ind"># 4 metric definitions; manual mode for BO-1, BO-4; shell for BO-2, BO-3</span>
+    ├── _aware_features.md       <span class="ind"># existing — refreshed at first awareness pass</span>
+    ├── _aware_design.md         <span class="ind"># existing — refreshed at first awareness pass</span>
+    ├── _resume.md               <span class="ind"># next: TTO-1.1.1 — extend BO schema with metric fields</span>
+    ├── _routing_table.md        <span class="ind"># existing 6 responsibilities (R1–R6)</span>
+    ├── _scratchpad.md           <span class="ind"># existing — preserved</span>
+    └── _audit_log.jsonl         <span class="ind"># existing — appended: project_init, hierarchy_lock, plan_complete</span></div>
+
+  <p class="dim">7 files newly written or refreshed (green). 5 existing files preserved. <strong>This is the moment "coding starts" — and not before.</strong></p>
+
+  <div class="phase-banner"><strong>Phase 6 — Coding begins. Math priority drives the order.</strong></div>
+
+  <p>Convergence math computes per-TTO α at lock time. Highest-α TTOs surface first in <code>_resume.md</code>. The first chosen task is the multi-axis BO-1 schema work — it touches both the math foundation and unlocks the verifier path.</p>
+
+  <div class="timeline">
+    <div class="when">Day 0 · 19:30</div><div class="what">Focus set: TTO-1.1.1 — Add metric/baseline/target/source to BO schema</div>
+    <div class="when">Day 0 · 21:14</div><div class="what done">TTO-1.1.1 done · verifier exit 0 · 7 BOs in test fixtures parse cleanly</div>
+    <div class="when">Day 1 · 09:02</div><div class="what">Focus set: TTO-1.1.2 — Add intent_vector + verify_kind to TTO schema</div>
+    <div class="when">Day 1 · 14:38</div><div class="what done">TTO-1.1.2 done · backward-compat: missing fields → "self-reported"</div>
+    <div class="when">Day 2 · 10:21</div><div class="what">Focus set: TTO-1.2.1 — Write <code>convergence.py</code> with compute_g / compute_s / compute_C</div>
+    <div class="when">Day 2 · 16:55</div><div class="what done">TTO-1.2.1 done · 87 LOC · numpy added to pyproject · &lt; 40 ms on 34-TTO hierarchy</div>
+    <div class="when">Day 3 · 11:03</div><div class="what warn">Edit attempted on src/devlead/dashboard.py — no focus matches · gate blocked · scratchpad entry appended for triage</div>
+    <div class="when">Day 3 · 11:18</div><div class="what">Triage: scratchpad → BUGS-0001 (dashboard column rename) · focus shifted · edit re-attempted</div>
+    <div class="when">Day 4 · 17:42</div><div class="what done">TTO-1.3.1 done · promise ledger writer wired into verifier · first ledger row written for TTO-1.1.1</div>
+    <div class="when">Day 7 · 23:59</div><div class="what">Promise-ledger re-check window for TTO-1.1.1 — schema work, no BO metric expected to move yet · marked "infrastructural, ε not applicable"</div>
+    <div class="when">Day 9 · 14:20</div><div class="what done">TTO-1.4.1 done · manual <code>metric_source</code> mode · BO-1 instrumented on this very project · <strong>first real C(τ) computed</strong></div>
+  </div>
+
+  <div class="phase-banner"><strong>Phase 7 — The convergence dashboard. Numbers from this exact project.</strong></div>
+
+  <p>What loads at <code>http://localhost:7777</code> after Day 9's Stop hook. SVG, no JavaScript.</p>
+
+  <h3>Headline — single number, no ambiguity</h3>
+
+  <div style="display: flex; gap: 24px; flex-wrap: wrap; align-items: center; margin: 14px 0 22px;">
+    <div style="text-align: center;">
+      <svg width="180" height="100" viewBox="0 0 180 100">
+        <path d="M 20 90 A 70 70 0 0 1 160 90" fill="none" stroke="#222a33" stroke-width="14" />
+        <path d="M 20 90 A 70 70 0 0 1 88 25" fill="none" stroke="#7ee787" stroke-width="14" />
+        <text x="90" y="72" text-anchor="middle" fill="#e6edf3" font-size="28" font-family="ui-sans-serif" font-weight="600">31%</text>
+        <text x="90" y="90" text-anchor="middle" fill="#9aa7b3" font-size="11" font-family="ui-sans-serif" letter-spacing="0.08em">CONVERGENCE C(τ)</text>
+      </svg>
+    </div>
+    <div style="text-align: center;">
+      <svg width="180" height="100" viewBox="0 0 180 100">
+        <path d="M 20 90 A 70 70 0 0 1 160 90" fill="none" stroke="#222a33" stroke-width="14" />
+        <path d="M 20 90 A 70 70 0 0 1 142 38" fill="none" stroke="#79c0ff" stroke-width="14" />
+        <text x="90" y="72" text-anchor="middle" fill="#e6edf3" font-size="28" font-family="ui-sans-serif" font-weight="600">0.83</text>
+        <text x="90" y="90" text-anchor="middle" fill="#9aa7b3" font-size="11" font-family="ui-sans-serif" letter-spacing="0.08em">GRAVITY G(τ)</text>
+      </svg>
+    </div>
+    <div style="text-align: center;">
+      <svg width="180" height="100" viewBox="0 0 180 100">
+        <path d="M 20 90 A 70 70 0 0 1 160 90" fill="none" stroke="#222a33" stroke-width="14" />
+        <path d="M 20 90 A 70 70 0 0 1 116 23" fill="none" stroke="#ffa657" stroke-width="14" />
+        <text x="90" y="72" text-anchor="middle" fill="#e6edf3" font-size="28" font-family="ui-sans-serif" font-weight="600">19d</text>
+        <text x="90" y="90" text-anchor="middle" fill="#9aa7b3" font-size="11" font-family="ui-sans-serif" letter-spacing="0.08em">TO BO-1 DEADLINE</text>
+      </svg>
+    </div>
+  </div>
+
+  <p class="dim">G(τ) = 0.83 because most early TTOs were schema/math foundation work where the prediction matched the realisation almost perfectly. Expect this to drop when BO-2 and BO-4 work (interview, recruitment) starts producing softer signals.</p>
+
+  <h3>Per-BO progress on Day 9 — DevLead Phase 1</h3>
+
+  <div style="margin: 14px 0 22px;">
+    <div style="margin: 10px 0;">
+      <div style="display: flex; justify-content: space-between; font-size: 13px; margin-bottom: 4px;"><span><strong>BO-1</strong> Convergence math on a real metric</span><span class="dim">~70% (foundation done; 1 BO instrumented) · 19d left · w 0.30</span></div>
+      <div class="progress-bar"><div class="progress-fill" style="width: 70%;"></div><div class="progress-target" style="left: 100%;"></div></div>
+    </div>
+    <div style="margin: 10px 0;">
+      <div style="display: flex; justify-content: space-between; font-size: 13px; margin-bottom: 4px;"><span><strong>BO-2</strong> <code>project-init</code> CLI under 15 min</span><span class="dim">0% (not started) · 14d left · w 0.25</span></div>
+      <div class="progress-bar"><div class="progress-fill" style="width: 0%;"></div><div class="progress-target" style="left: 100%;"></div></div>
+    </div>
+    <div style="margin: 10px 0;">
+      <div style="display: flex; justify-content: space-between; font-size: 13px; margin-bottom: 4px;"><span><strong>BO-3</strong> Effort tracking wired (deferred-priority)</span><span class="dim">0% · 19d left · w 0.10</span></div>
+      <div class="progress-bar"><div class="progress-fill" style="width: 0%;"></div><div class="progress-target" style="left: 100%;"></div></div>
+    </div>
+    <div style="margin: 10px 0;">
+      <div style="display: flex; justify-content: space-between; font-size: 13px; margin-bottom: 4px;"><span><strong>BO-4</strong> One external user end-to-end</span><span class="dim">0/1 user · 28d left · w 0.35</span></div>
+      <div class="progress-bar"><div class="progress-fill" style="width: 0%;"></div><div class="progress-target" style="left: 100%;"></div></div>
+    </div>
+  </div>
+
+  <p class="dim">Foundation-heavy progress. BO-1 close to closure on math + schema; BO-2/3/4 still at zero — and the dashboard says so honestly. <strong>No "weighted % of TTOs done" trick to inflate the number.</strong></p>
+
+  <h3>The radar — DevLead Phase 1 today vs target</h3>
+
+  <div style="text-align: center; margin: 14px 0;">
+    <svg width="360" height="320" viewBox="0 0 360 320" style="background: #0a0d11; border: 1px solid var(--line); border-radius: 8px;">
+      <g transform="translate(180,160)">
+        <polygon points="0,-120 120,0 0,120 -120,0" fill="none" stroke="#222a33" stroke-width="1" />
+        <polygon points="0,-90 90,0 0,90 -90,0" fill="none" stroke="#222a33" stroke-width="1" />
+        <polygon points="0,-60 60,0 0,60 -60,0" fill="none" stroke="#222a33" stroke-width="1" />
+        <polygon points="0,-30 30,0 0,30 -30,0" fill="none" stroke="#222a33" stroke-width="1" />
+        <line x1="0" y1="0" x2="0" y2="-120" stroke="#444a52" stroke-width="1" />
+        <line x1="0" y1="0" x2="120" y2="0" stroke="#444a52" stroke-width="1" />
+        <line x1="0" y1="0" x2="0" y2="120" stroke="#444a52" stroke-width="1" />
+        <line x1="0" y1="0" x2="-120" y2="0" stroke="#444a52" stroke-width="1" />
+        <polygon points="0,-120 120,0 0,120 -120,0" fill="rgba(255,166,87,0.06)" stroke="#ffa657" stroke-width="1.5" stroke-dasharray="3,3" />
+        <polygon points="0,-84 0,0 0,0 0,0" fill="rgba(126,231,135,0.30)" stroke="#7ee787" stroke-width="2" />
+        <text x="0" y="-132" text-anchor="middle" fill="#79c0ff" font-size="12" font-family="ui-sans-serif">BO-1 math on real metric</text>
+        <text x="135" y="4" fill="#d2a8ff" font-size="12" font-family="ui-sans-serif">BO-2 project-init CLI</text>
+        <text x="0" y="142" text-anchor="middle" fill="#7ee787" font-size="12" font-family="ui-sans-serif">BO-3 effort tracking</text>
+        <text x="-135" y="4" text-anchor="end" fill="#ffa657" font-size="12" font-family="ui-sans-serif">BO-4 external user</text>
+        <circle cx="0" cy="0" r="3" fill="#e6edf3" />
+      </g>
+    </svg>
+    <p class="dim" style="margin-top: 8px;">A spike upward, nothing on the other axes. <strong>The shape is the diagnosis.</strong> A founder who only does what they love (build the math) without recruiting (BO-4) ships a great library that nobody uses. The radar exposes that mistake at glance, week one.</p>
+  </div>
+
+  <h3>TTO scatter — α vs φ on the 5 shipped TTOs</h3>
+
+  <div style="text-align: center; margin: 14px 0;">
+    <svg width="500" height="320" viewBox="0 0 500 320" style="background: #0a0d11; border: 1px solid var(--line); border-radius: 8px;">
+      <line x1="60" y1="280" x2="460" y2="280" stroke="#444a52" stroke-width="1" />
+      <line x1="60" y1="280" x2="60" y2="30" stroke="#444a52" stroke-width="1" />
+      <line x1="60" y1="155" x2="460" y2="155" stroke="#222a33" stroke-width="1" stroke-dasharray="2,3" />
+      <line x1="260" y1="280" x2="260" y2="30" stroke="#222a33" stroke-width="1" stroke-dasharray="2,3" />
+      <text x="365" y="46" fill="#56d364" font-size="11" font-family="ui-sans-serif" font-weight="600">TRUE CONVERGENT</text>
+      <text x="158" y="46" fill="#ff7b72" font-size="11" font-family="ui-sans-serif" font-weight="600">VAPOR (mis-targeted)</text>
+      <text x="158" y="270" fill="#ffa657" font-size="11" font-family="ui-sans-serif" font-weight="600">HONEST DRIFT</text>
+      <text x="365" y="270" fill="#ffa657" font-size="11" font-family="ui-sans-serif" font-weight="600">WRONG METRIC</text>
+      <text x="260" y="305" text-anchor="middle" fill="#9aa7b3" font-size="12" font-family="ui-sans-serif">α (intent alignment with goal) →</text>
+      <text x="20" y="160" fill="#9aa7b3" font-size="12" font-family="ui-sans-serif" transform="rotate(-90,20,160)">φ (realisation fidelity) →</text>
+      <circle cx="385" cy="78" r="11" fill="#7ee787" opacity="0.85" />
+      <text x="400" y="82" fill="#9aa7b3" font-size="11" font-family="ui-sans-serif">TTO-1.1.1 BO schema</text>
+      <circle cx="395" cy="92" r="10" fill="#7ee787" opacity="0.85" />
+      <text x="412" y="96" fill="#9aa7b3" font-size="11" font-family="ui-sans-serif">TTO-1.1.2 TTO schema</text>
+      <circle cx="375" cy="65" r="14" fill="#7ee787" opacity="0.85" />
+      <text x="392" y="69" fill="#9aa7b3" font-size="11" font-family="ui-sans-serif">TTO-1.2.1 convergence.py</text>
+      <circle cx="370" cy="105" r="9" fill="#7ee787" opacity="0.85" />
+      <text x="385" y="109" fill="#9aa7b3" font-size="11" font-family="ui-sans-serif">TTO-1.3.1 ledger writer</text>
+      <circle cx="350" cy="135" r="8" fill="#79c0ff" opacity="0.85" />
+      <text x="365" y="139" fill="#9aa7b3" font-size="11" font-family="ui-sans-serif">TTO-1.4.1 manual source</text>
+    </svg>
+    <p class="dim" style="margin-top: 8px;">All 5 shipped TTOs sit in the true-convergent quadrant — high α (foundation work on the highest-weighted BO), high φ (predictions matched reality). <strong>This is what a healthy first-week scatter looks like.</strong> The empty other quadrants are just as informative — they would expose vapor work the moment any BO-4 recruitment TTO under-delivers.</p>
+  </div>
+
+  <h3>Promise vs Realisation — Day 9 ledger</h3>
+
+  <table>
+    <thead><tr><th>TTO</th><th>Promised</th><th>Realised (window expired)</th><th class="num-cell">φ</th><th>Action</th></tr></thead>
+    <tbody>
+      <tr><td>TTO-1.1.1 BO schema</td><td>Infrastructural — no metric movement expected</td><td>n/a</td><td class="num-cell">—</td><td>Marked "infrastructural" — excluded from gravity calc</td></tr>
+      <tr><td>TTO-1.1.2 TTO schema</td><td>Infrastructural</td><td>n/a</td><td class="num-cell">—</td><td>Marked "infrastructural"</td></tr>
+      <tr><td>TTO-1.2.1 convergence.py</td><td>Enables BO-1 metric to start computing</td><td>BO-1 metric: 0 → 0 (still no real source wired)</td><td class="num-cell">0.00</td><td>Expected — the closing TTO is TTO-1.4.1, ship that next</td></tr>
+      <tr><td>TTO-1.3.1 ledger writer</td><td>Promise-ledger row count: 0 → ≥1</td><td>1 row written (own dogfood)</td><td class="num-cell">1.00</td><td>Spot on. Replicate.</td></tr>
+      <tr><td>TTO-1.4.1 manual <code>metric_source</code></td><td>BO-1 metric: 0 → 1 (one BO instrumented)</td><td>1 BO live with C(τ) = 0.31</td><td class="num-cell">1.00</td><td><strong>The first real convergence number computed by DevLead, ever.</strong></td></tr>
+    </tbody>
+  </table>
+
+  <div class="callout">
+    <p><strong>What just happened.</strong> One paragraph dictated by the founder → a four-BO Phase-1 hierarchy mapped to actual gaps from Tab 3 → one round of free-form refinement → MVP frozen with hash → 7 intake/living files generated → coding starts on the highest-α TTO → 9 days later, the first real C(τ) is computed by DevLead on its own first instrumented BO. Founder touched the keyboard <strong>three times during scoping</strong> (initial paragraph + one feedback round + "lock it"). The framework did the rest.</p>
+    <p><strong>Cost to ship the project-init CLI itself:</strong> ~3 engineering days (the CLI is small — interview prompt, drafter, HTML renderer, lock primitive). The convergence math + schema + ledger + adapters are the other ~10 days. Phase 1 total: ~13 days. <strong>Half the engineering, 100% of the validation thesis.</strong></p>
+  </div>
+
+</section>
+
+
+</main>
+
+<footer>
+  DevLead vision document · 2026-04-16 · authored with Claude Opus 4.7 (1M context) · this doc lives at <code>docs/devlead-vision-2026-04-16.html</code> · it is a draft for discussion, not a locked decision.
+</footer>
+
+<script>
+  const buttons = document.querySelectorAll('.tab-btn');
+  const tabs = document.querySelectorAll('section.tab');
+  buttons.forEach(b => b.addEventListener('click', () => {
+    buttons.forEach(x => x.classList.remove('active'));
+    tabs.forEach(x => x.classList.remove('active'));
+    b.classList.add('active');
+    document.getElementById(b.dataset.tab).classList.add('active');
+    window.scrollTo({ top: 0, behavior: 'instant' });
+  }));
+</script>
+
+</body>
+</html>

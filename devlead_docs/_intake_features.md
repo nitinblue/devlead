@@ -57,7 +57,7 @@
 - **Proposed BO:** (needs BO)
 - **Proposed Sprint:** (needs sprint)
 - **Proposed weight:** (needs weight)
-- **Status:** in_progress
+- **Status:** done
 - **Origin:** normal
 - **Promoted to:** (pending)
 - **Promoted at:** (pending)
@@ -267,5 +267,76 @@
 - **Proposed weight:** (needs weight)
 - **Status:** done
 - **Origin:** forced
+- **Promoted to:** (pending)
+- **Promoted at:** (pending)
+
+## FEATURES-0014 - Convergence math layer (Phase 1 BO-1)
+- **Source:** docs/devlead-vision-2026-04-16.html#tab4 + #tab5 (BO-1 of Phase 1)
+- **Captured:** 2026-04-17T22:00:00Z
+- **Summary:** Ship the convergence math engine end-to-end on DevLead's own project. Pure-math `convergence.py` module + tests, then BO/TTO schema extensions for `metric / baseline / target / metric_source / intent_vector`, then promise-ledger writer wired into the verifier, then a `metric_source: manual` adapter so one BO can compute a real C(τ) from a real metric reading. This delivers Tab 5 BO-1 ("Convergence math runs on a real metric") within ~10 engineering days.
+- **Actionable items:**
+  - [x] Step 2: src/devlead/convergence.py — 190 LOC, 40 tests
+  - [x] Step 3: tests/test_convergence.py — Tab 4 worked numbers pinned
+  - [x] Step 4: BO + TTO schema extensions, parser updates, backward-compat (18 tests)
+  - [x] Step 5a: promise-ledger writer in verifier.py
+  - [x] Step 5b: realisation sweep — computes φ/ε at window expiry, classifies regime
+  - [x] Step 6: metric_source: manual mode + history overlay (16 tests)
+  - [x] Dashboard: Convergence panel in dashboard.py (renders C, G, per-BO, promise/realisation)
+  - [x] Verify: convergence.py 40 tests pass, BO-001 instrumented, real C(τ) = 3.1% computed
+- **Proposed BO:** (Phase 1 BO-1 per Tab 5)
+- **Proposed Sprint:** Phase 1 (3 weeks from 2026-04-17, deadline 2026-05-08)
+- **Proposed weight:** 0.30
+- **Status:** done
+- **Origin:** normal
+- **Promoted to:** (pending)
+- **Promoted at:** (pending)
+
+## FEATURES-0015 - project-init CLI (Phase 1 BO-2)
+- **Source:** docs/devlead-vision-2026-04-16.html#tab5 (BO-2 of Phase 1)
+- **Captured:** 2026-04-17T04:10:00Z
+- **Summary:** Ship `devlead project-init` — the cold-start onboarding CLI. Interactive 10-question interview captures structured answers about a project; a "lock" subcommand hashes the resulting hierarchy and writes it to `_living_decisions.md` plus auto-generates `_intake_features.md` and `_intake_nonfunctional.md` from the TTOs. The Claude-in-the-loop drafting step (free-form answers → BO/TBO/TTO draft) is documented but executed by Claude in the user's session, not embedded as an LLM call in DevLead itself. v1 closes the blank-page problem without shipping LLM dependencies.
+- **Actionable items:**
+  - [x] src/devlead/project_init.py — 292 LOC, 21 tests
+  - [x] tests/test_project_init.py — interview, lock idempotency, generate_intake split by ttype
+  - [x] cli.py — `devlead project-init [lock|generate-intake]` dispatch
+  - [x] Verify: lock produced hash `e149c98e52c5` on this repo's hierarchy; generate-intake derived 42 functional + 10 non-functional entries
+- **Proposed BO:** (Phase 1 BO-2 per Tab 5)
+- **Proposed Sprint:** Phase 1 (deadline 2026-05-01)
+- **Proposed weight:** 0.25
+- **Status:** done
+- **Origin:** normal
+- **Promoted to:** (pending)
+- **Promoted at:** (pending)
+
+## FEATURES-0017 - Auto session hand-off in _resume.md (anti-amnesia)
+- **Source:** Nitin question 2026-04-17 — "can DevLead detect this and fix instead of claude"
+- **Captured:** 2026-04-17T04:25:00Z
+- **Summary:** Symptom: at session end, _resume.md said "No active focus" and listed STALE legacy TTOs as pending, while in reality FEATURES-0014/15/16 had just shipped today (~1140 LOC, 120 tests). A fresh Claude session reading _resume.md cold had no idea what was just built. Cure: enriched resume.py with three auto-derived sections — Recently shipped, Recent activity by intake (audit-derived), Untracked modules detected. Every section sourced from existing files; nothing hand-written. Session amnesia is now structurally impossible because the data was always there — just not rendered.
+- **Actionable items:**
+  - [x] resume.py: _recent_done_intake / _recent_active_cwi / _untracked_modules helpers
+  - [x] resume.py.generate(): three new sections injected (top of file for Recently shipped, bottom for Untracked)
+  - [x] tests/test_resume_enrichment.py — 13 tests including matcher edge-cases
+  - [x] Verify: regenerated _resume.md now shows FEATURES-0014/15/16/17 under "Recently shipped" + per-CWI edit counts under "Recent activity"
+- **Proposed BO:** (anti-amnesia / cross-cutting)
+- **Proposed Sprint:** Phase 1 follow-up
+- **Proposed weight:** 0.05
+- **Status:** done
+- **Origin:** normal
+- **Promoted to:** (pending)
+- **Promoted at:** (pending)
+
+## FEATURES-0016 - Effort tracking wired (Phase 1 BO-3)
+- **Source:** docs/devlead-vision-2026-04-16.html#tab5 (BO-3 of Phase 1) + Tab 3 trash card "Effort tracking exists but isn't wired"
+- **Captured:** 2026-04-17T04:14:00Z
+- **Summary:** The `effort.py` module is fully implemented (record_effort + aggregation) but nothing calls it. Wire `gate.check_pretooluse` to invoke `effort.record_effort` for each Edit/Write/MultiEdit attempt with the active CWI. Token count is NOT available from PreToolUse hooks in Claude Code, so v1 captures "edit count per TTO" as a cost-attribution proxy. Real token cost can be backfilled later from session-history if/when that data becomes accessible. Honest about the limit — surface as "edits per TTO" not "$ per TTO" until token cost is real.
+- **Actionable items:**
+  - [x] gate.check_pretooluse calls effort.record_effort with active CWI per gate_pass event
+  - [x] tests/test_effort_wiring.py — 6 tests verifying CWI attribution, exempt skip, multi-CWI fan-out, accumulation
+  - [x] Verify: edit to src/devlead/effort.py at 04:16:44Z wrote the first FEATURES-0016 row to _effort_log.jsonl, fully closed loop
+- **Proposed BO:** (Phase 1 BO-3 per Tab 5)
+- **Proposed Sprint:** Phase 1 (deadline 2026-05-08)
+- **Proposed weight:** 0.10
+- **Status:** done
+- **Origin:** normal
 - **Promoted to:** (pending)
 - **Promoted at:** (pending)

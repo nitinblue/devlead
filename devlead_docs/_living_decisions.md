@@ -102,3 +102,9 @@
 - **Rationale:** Not all scratchpad content is work. Decisions and facts have their own canonical homes. Single-target promotion would force-fit content into intake files, creating clutter.
 - **Status:** locked
 - **Supersedes:** Earlier single-target `/devlead ingest --from-scratchpad` framing (still works as alias)
+
+## 2026-04-17 - Hierarchy locked
+- **Decision:** Project hierarchy frozen as MVP baseline.
+- **Hash:** `e149c98e52c5` (sha256 prefix of normalised `_project_hierarchy.md`)
+- **Locked at:** 2026-04-17T04:12:20Z
+- **Status:** locked

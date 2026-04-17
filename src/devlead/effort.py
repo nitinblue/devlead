@@ -1,10 +1,16 @@
-"""Effort tracking — record and aggregate tokens per TTO.
+"""Effort tracking — record and aggregate per-TTO engineering attribution.
 
 Ported from legacy/v1/src_devlead/effort.py. Adapted for v2's TTO IDs
 instead of v1's TASK IDs. Mandatory per BO-001/TBO-003/TTO-024.
 
 Appends effort entries to _effort_log.jsonl. Aggregates by TTO, TBO, and BO
 for the dashboard's Token Economics tab.
+
+FEATURES-0016 wired `gate.check_pretooluse` to call `record_effort` on every
+non-exempt Edit/Write/MultiEdit with the active CWI(s). Token counts are not
+available from the PreToolUse hook — Claude Code doesn't expose them — so v1
+records `tokens=0` and the row count itself is the cost-attribution proxy
+("edits per TTO"). Real token cost backfills if/when session-history exposes it.
 """
 
 from __future__ import annotations

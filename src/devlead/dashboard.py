@@ -27,6 +27,7 @@ def generate(repo_root: Path) -> str:
 
     tabs = [
         ("summary", "Summary", _tab_summary(sprints, kpis, today)),
+        ("convergence", "Convergence", _tab_convergence(sprints, repo_root)),
         ("hierarchy", "Hierarchy", _tab_hierarchy(sprints)),
         ("kpis", "KPIs", _tab_kpis(kpis)),
         ("timelines", "Timelines", _tab_timelines(sprints, today)),
@@ -293,6 +294,135 @@ def _tab_changes(sprints):
     if not rows:
         return '<div class="nba">No deadline revisions — all BOs on track.</div>'
     return f'<table class="dt"><thead><tr><th>BO</th><th>Name</th><th>Original</th><th>Revised</th><th>Justification</th></tr></thead><tbody>{rows}</tbody></table>'
+
+
+def _tab_convergence(sprints, repo_root):
+    """Convergence panel — C(τ), G(τ), per-BO progress, promise vs realisation.
+
+    Reads `_state_history.jsonl` for current metric values (overlays BO.current)
+    and `_promise_ledger.jsonl` for realisation rows. BOs without metric_source
+    are listed but excluded from C/G — keeps the math honest.
+    """
+    from devlead import convergence, metric_source, promise_ledger
+
+    docs = repo_root / "devlead_docs"
+    metric_source.apply_to_sprints(docs / metric_source.HISTORY_FILENAME, sprints)
+
+    # Collect BOs that can compute (have metric_source declared).
+    measurable = [bo for s in sprints for bo in s.bos if bo.has_metric_source]
+    declared_only = [bo for s in sprints for bo in s.bos if not bo.has_metric_source]
+
+    if not measurable and not sprints:
+        return '<p class="muted">No hierarchy.</p>'
+
+    if not measurable:
+        return ('<p class="muted">No BOs have a <code>metric_source</code> declared yet — '
+                'C(τ) cannot be computed. Declare <code>metric / baseline / target / metric_source</code> '
+                'on a BO and run <code>devlead metric-update &lt;BO-ID&gt; &lt;value&gt;</code> '
+                'to record a reading.</p>')
+
+    # Compute C(τ) on the measurable subset, weighted by their declared BO weights.
+    bo_order = sorted([bo.id for bo in measurable])
+    bo_index = {bo.id: bo for bo in measurable}
+    weights_raw = [bo_index[bid].weight for bid in bo_order]
+    total_w = sum(weights_raw) or 1
+    g = tuple(w / total_w for w in weights_raw)
+    s_components = []
+    for bid in bo_order:
+        p = bo_index[bid].normalised_progress
+        s_components.append(p if p is not None else 0.0)
+    s = tuple(s_components)
+    C = convergence.compute_C(s, g)
+
+    # G(τ) — gravity over realised promise-ledger entries
+    ledger_rows = promise_ledger.read_all(docs / promise_ledger.LEDGER_FILENAME)
+    realised_rows = [r for r in ledger_rows if r.get("status") in ("realised", "partial", "vapor")]
+    realised_vectors = []
+    for r in realised_rows:
+        rd = r.get("realised") or {}
+        realised_vectors.append(tuple(float(rd.get(bid, 0.0)) for bid in bo_order))
+    G = convergence.compute_gravity(realised_vectors, g) if realised_vectors else None
+
+    # --- Render -----------------------------------------------------------
+    if G is None:
+        gravity_block = (
+            '<div class="widget"><div class="widget-head">Gravity G(&tau;)</div>'
+            '<div class="hero-num">—</div>'
+            '<div class="muted">no realised TTOs yet</div></div>'
+        )
+    else:
+        gravity_block = (
+            f'<div class="widget"><div class="widget-head">Gravity G(&tau;)</div>'
+            f'<div class="hero-num">{G:.2f}</div>'
+            f'<div class="muted">over {len(realised_vectors)} realised TTOs</div></div>'
+        )
+    headline = (
+        f'<div class="grid-2" style="margin-bottom:14px;">'
+        f'<div class="widget"><div class="widget-head">Convergence C(&tau;)</div>'
+        f'<div class="hero-num" style="color:{_pc(C * 100)}">{C * 100:.1f}%</div>'
+        f'<div class="muted">computed across {len(measurable)} measurable BO(s)</div></div>'
+        f'{gravity_block}</div>'
+    )
+
+    # Per-BO progress
+    bo_rows = ""
+    for bo in measurable:
+        p = bo.normalised_progress or 0.0
+        pct = max(0.0, min(p * 100, 110))  # clamp render width
+        bar_color = _pc(p * 100)
+        bo_rows += (
+            f'<tr><td class="mono">{bo.id}</td><td>{_e(bo.name[:50])}</td>'
+            f'<td>{bo.metric or "—"}</td>'
+            f'<td>{bo.baseline if bo.baseline is not None else "—"}</td>'
+            f'<td>{bo.current if bo.current is not None else "—"}</td>'
+            f'<td>{bo.target if bo.target is not None else "—"}</td>'
+            f'<td><div class="bar"><div class="bar-fill" style="width:{pct}%;background:{bar_color}"></div></div>'
+            f' <span class="muted">{p * 100:.0f}%</span></td></tr>'
+        )
+    declared_rows = ""
+    for bo in declared_only:
+        declared_rows += (
+            f'<tr><td class="mono">{bo.id}</td><td>{_e(bo.name[:50])}</td>'
+            f'<td colspan="5" class="muted">no metric_source declared — excluded from C(&tau;)</td></tr>'
+        )
+
+    bo_table = (
+        f'<div class="widget"><div class="widget-head">Per-BO progress</div>'
+        f'<table class="dt"><thead><tr><th>BO</th><th>Name</th><th>Metric</th><th>Baseline</th>'
+        f'<th>Current</th><th>Target</th><th>Progress</th></tr></thead>'
+        f'<tbody>{bo_rows}{declared_rows}</tbody></table></div>'
+    )
+
+    # Promise vs realisation
+    if not ledger_rows:
+        ledger_html = '<div class="nba">No promise-ledger entries yet — verify a TTO with intent_vector to populate.</div>'
+    else:
+        prl_rows = ""
+        for r in ledger_rows:
+            status = r.get("status", "pending")
+            phi = r.get("phi")
+            eps = r.get("epsilon")
+            phi_s = f"{phi:.2f}" if phi is not None else "—"
+            eps_s = f"{eps:.2f}" if eps is not None else "—"
+            promised_s = ", ".join(f"{k}: {v:.2f}" for k, v in (r.get("promised") or {}).items())
+            realised_d = r.get("realised") or {}
+            realised_s = ", ".join(f"{k}: {v:.2f}" for k, v in realised_d.items()) if realised_d else "—"
+            status_cls = {"realised": "st-good", "partial": "st-warn", "vapor": "st-bad",
+                          "pending": "muted"}.get(status, "")
+            prl_rows += (
+                f'<tr><td class="mono">{_e(r.get("tto_id", "?"))}</td>'
+                f'<td>{_e(promised_s)}</td><td>{_e(realised_s)}</td>'
+                f'<td>{phi_s}</td><td>{eps_s}</td>'
+                f'<td><span class="{status_cls}">{status}</span></td></tr>'
+            )
+        ledger_html = (
+            f'<div class="widget"><div class="widget-head">Promise &middot; Realisation</div>'
+            f'<table class="dt"><thead><tr><th>TTO</th><th>Promised</th><th>Realised</th>'
+            f'<th>&phi;</th><th>&epsilon;</th><th>Status</th></tr></thead>'
+            f'<tbody>{prl_rows}</tbody></table></div>'
+        )
+
+    return headline + bo_table + ledger_html
 
 
 def _build_tabs(tabs, tab_ids):

@@ -1,0 +1,2 @@
+{"ts": "2026-04-17T03:47:30Z", "bo_id": "BO-1", "value": 0.32, "source": "manual", "note": "FEATURES-0014 Step 6 dogfood \u2014 first manual reading, BO-1 cwi% baseline"}
+{"ts": "2026-04-17T04:03:40Z", "bo_id": "BO-001", "value": 0.32, "source": "manual", "note": "FEATURES-0014 verify line \u2014 first real C(\u03c4) reading on a populated BO"}
